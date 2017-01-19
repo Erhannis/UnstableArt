@@ -25,6 +25,18 @@ import java.util.Random;
  * status bar and navigation/system bar) with user interaction.
  */
 public class FullscreenActivity extends AppCompatActivity {
+  public static class StrokePoint {
+    public PointF pos;
+    public float pressure;
+    public int color;
+
+    public StrokePoint(PointF pos, float pressure, int color) {
+      this.pos = pos;
+      this.pressure = pressure;
+      this.color = color;
+    }
+  }
+
   /**
    * Whether or not the system UI should be auto-hidden after
    * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -45,10 +57,8 @@ public class FullscreenActivity extends AppCompatActivity {
 
   private SurfaceView surf;
 
-  private ArrayList<ArrayList<PointF>> lines = new ArrayList<ArrayList<PointF>>();
-  private ArrayList<ArrayList<PointF>> hulls = new ArrayList<ArrayList<PointF>>();
-  private ArrayList<float[]> circles = new ArrayList<float[]>();
-  private float lastScore = 0;
+  private ArrayList<ArrayList<StrokePoint>> lines = new ArrayList<ArrayList<StrokePoint>>();
+  private int curColor = 0xFF000000;
 
   private final Handler mHideHandler = new Handler();
   private final Runnable mHidePart2Runnable = new Runnable() {
@@ -142,21 +152,19 @@ public class FullscreenActivity extends AppCompatActivity {
 
         switch (event.getActionMasked()) {
           case MotionEvent.ACTION_DOWN:
-            lines.add(new ArrayList<PointF>());
+            lines.add(new ArrayList<StrokePoint>());
             break;
           case MotionEvent.ACTION_CANCEL:
           case MotionEvent.ACTION_UP:
             if (lines.size() > 0) {
-              checkCircle(lines.get(lines.size() - 1));
-              hulls.add(new ArrayList<PointF>(MiscUtils.convexHullGrahamScan(lines.get(lines.size() - 1))));
             }
             break;
         }
         if (lines.size() == 0) {
           return true;
         }
-        ArrayList<PointF> line = lines.get(lines.size() - 1);
-        line.add(new PointF(x, y));
+        ArrayList<StrokePoint> line = lines.get(lines.size() - 1);
+        line.add(new StrokePoint(new PointF(x, y), p, curColor));
 
         Canvas c = sh.lockCanvas();
         if (c != null) {
@@ -173,44 +181,18 @@ public class FullscreenActivity extends AppCompatActivity {
     //toggle();
   }
 
-  private void checkCircle(ArrayList<PointF> line) {
-    PointF center = MiscUtils.findCircleCenter(line);
-    float radius = MiscUtils.findCircleRadius(line, center);
-    float[] circle = MiscUtils.makeCircle(center, radius);
-    circles.add(circle);
-    float score = MiscUtils.rateCircle(line, circle);
-    System.out.println("score " + score);
-    lastScore = score;
-  }
-
   private void drawCanvas(Canvas c) {
     c.drawARGB(0xFF, 0xFF, 0xFF, 0xFF);
     Paint paint = new Paint();
-    for (ArrayList<PointF> line : lines) {
+    for (ArrayList<StrokePoint> line : lines) {
       for (int i = 0; i < line.size() - 1; i++) {
-        PointF a = line.get(i);
-        PointF b = line.get(i+1);
-        c.drawLine(a.x, a.y, b.x, b.y, paint);
+        StrokePoint a = line.get(i);
+        StrokePoint b = line.get(i+1);
+        paint.setColor(a.color);
+        //TODO Set size
+        c.drawLine(a.pos.x, a.pos.y, b.pos.x, b.pos.y, paint);
       }
     }
-
-    paint.setColor(0xFF00FF00);
-    for (ArrayList<PointF> line : hulls) {
-      for (int i = 0; i < line.size() - 1; i++) {
-        PointF a = line.get(i);
-        PointF b = line.get(i+1);
-        c.drawLine(a.x, a.y, b.x, b.y, paint);
-      }
-    }
-
-    paint.setColor(0xFF0000FF);
-    paint.setStyle(Paint.Style.STROKE);
-
-    for (float[] circle : circles) {
-      c.drawCircle(circle[0], circle[1], circle[2], paint);
-    }
-
-    c.drawText("" + lastScore, 10, 10, paint);
   }
 
 
