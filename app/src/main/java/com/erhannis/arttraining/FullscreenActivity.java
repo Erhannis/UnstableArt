@@ -2,6 +2,7 @@ package com.erhannis.arttraining;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
@@ -16,6 +17,17 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -37,23 +49,20 @@ public class FullscreenActivity extends AppCompatActivity {
     }
   }
 
-  /**
-   * Whether or not the system UI should be auto-hidden after
-   * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
-   */
   private static final boolean AUTO_HIDE = true;
-
-  /**
-   * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
-   * user interaction before hiding the system UI.
-   */
   private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
-
-  /**
-   * Some older devices needs a small delay between UI widget updates
-   * and a change of the status and navigation bar.
-   */
   private static final int UI_ANIMATION_DELAY = 300;
+
+  MqttAndroidClient mqttAndroidClient;
+
+  final String serverUri = "tcp://192.168.0.6:1883";
+
+  final String clientId = "ExampleAndroidClient";
+  final String subscriptionTopic = "topic1";
+  final String publishTopic = "topic2";
+  final String publishMessage = "blah blah blah";
+  private static final String COLOR_SPLINE_TOPIC = "color_spline";
+  private static final String COLOR_VALUE_TOPIC = "color_value";
 
   private SurfaceView surf;
 
@@ -65,17 +74,6 @@ public class FullscreenActivity extends AppCompatActivity {
     @SuppressLint("InlinedApi")
     @Override
     public void run() {
-      // Delayed removal of status and navigation bar
-
-      // Note that some of these constants are new as of API 16 (Jelly Bean)
-      // and API 19 (KitKat). It is safe to use them, as they are inlined
-      // at compile-time and do nothing on earlier devices.
-//      mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
-//              | View.SYSTEM_UI_FLAG_FULLSCREEN
-//              | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-//              | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-//              | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-//              | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
     }
   };
   private final Runnable mShowPart2Runnable = new Runnable() {
@@ -116,6 +114,8 @@ public class FullscreenActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
 
     setContentView(R.layout.activity_fullscreen);
+
+    initMqtt();
 
     InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
     InputManager im = (InputManager) this.getSystemService(Context.INPUT_SERVICE);
@@ -181,18 +181,138 @@ public class FullscreenActivity extends AppCompatActivity {
     //toggle();
   }
 
+
+  private void initMqtt() {
+    mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), serverUri, clientId);
+    mqttAndroidClient.setCallback(new MqttCallbackExtended() {
+      @Override
+      public void connectComplete(boolean reconnect, String serverURI) {
+
+        if (reconnect) {
+          addToHistory("Reconnected to : " + serverURI);
+          // Because Clean Session is true, we need to re-subscribe
+          //subscribeToTopic(subscriptionTopic);
+          subscribeToColorTopic();
+        } else {
+          addToHistory("Connected to: " + serverURI);
+        }
+      }
+
+      @Override
+      public void connectionLost(Throwable cause) {
+        addToHistory("The Connection was lost.");
+      }
+
+      @Override
+      public void messageArrived(String topic, MqttMessage message) throws Exception {
+        addToHistory("Incoming message: " + new String(message.getPayload()));
+      }
+
+      @Override
+      public void deliveryComplete(IMqttDeliveryToken token) {
+
+      }
+    });
+
+    MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
+    mqttConnectOptions.setAutomaticReconnect(true);
+    mqttConnectOptions.setCleanSession(false);
+
+    try {
+      //addToHistory("Connecting to " + serverUri);
+      mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
+        @Override
+        public void onSuccess(IMqttToken asyncActionToken) {
+          DisconnectedBufferOptions disconnectedBufferOptions = new DisconnectedBufferOptions();
+          disconnectedBufferOptions.setBufferEnabled(true);
+          disconnectedBufferOptions.setBufferSize(100);
+          disconnectedBufferOptions.setPersistBuffer(false);
+          disconnectedBufferOptions.setDeleteOldestMessages(false);
+          mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
+          subscribeToColorTopic();
+        }
+
+        @Override
+        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+          exception.printStackTrace();
+          addToHistory("Failed to connect to: " + serverUri);
+        }
+      });
+    } catch (MqttException ex){
+      ex.printStackTrace();
+    }
+  }
+
+
+  public void subscribeToTopic(final String topic, IMqttMessageListener listener) {
+    try {
+      mqttAndroidClient.subscribe(topic, 0, null, new IMqttActionListener() {
+        @Override
+        public void onSuccess(IMqttToken asyncActionToken) {
+          addToHistory("Subscribed to " + topic);
+        }
+
+        @Override
+        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+          addToHistory("Failed to subscribe to " + topic);
+        }
+      });
+
+      mqttAndroidClient.subscribe(topic, 0, listener);
+
+    } catch (MqttException ex){
+      System.err.println("Exception whilst subscribing");
+      ex.printStackTrace();
+    }
+  }
+
+  public void subscribeToColorTopic() {
+    subscribeToTopic(COLOR_VALUE_TOPIC, new IMqttMessageListener() {
+      @Override
+      public void messageArrived(String topic, MqttMessage message) throws Exception {
+        String payload = new String(message.getPayload());
+        System.out.println("Message: " + topic + " : " + payload);
+        curColor = (int)Long.parseLong(payload);
+      }
+    });
+  }
+
+  public void publishMessage(String topic, String msg) {
+    try {
+      MqttMessage message = new MqttMessage();
+      message.setPayload(msg.getBytes());
+      mqttAndroidClient.publish(topic, message);
+      addToHistory("Message Published");
+      if(!mqttAndroidClient.isConnected()){
+        addToHistory(mqttAndroidClient.getBufferedMessageCount() + " messages in buffer.");
+      }
+    } catch (MqttException e) {
+      System.err.println("Error Publishing: " + e.getMessage());
+      e.printStackTrace();
+    }
+  }
+
+  private void addToHistory(String s) {
+    System.out.println(s);
+  }
+
+
   private void drawCanvas(Canvas c) {
     c.drawARGB(0xFF, 0xFF, 0xFF, 0xFF);
     Paint paint = new Paint();
+    float lastPressure = 0;
     for (ArrayList<StrokePoint> line : lines) {
       for (int i = 0; i < line.size() - 1; i++) {
         StrokePoint a = line.get(i);
         StrokePoint b = line.get(i+1);
         paint.setColor(a.color);
+        lastPressure = b.pressure;
         //TODO Set size
         c.drawLine(a.pos.x, a.pos.y, b.pos.x, b.pos.y, paint);
       }
     }
+
+    c.drawText("" + lastPressure, 10, 10, paint);
   }
 
 
