@@ -18,6 +18,10 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
+import com.erhannis.arttraining.color.Color;
+import com.erhannis.arttraining.color.DoublesColor;
+import com.erhannis.arttraining.color.IntColor;
+
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -40,9 +44,9 @@ public class FullscreenActivity extends AppCompatActivity {
   public static class StrokePoint {
     public PointF pos;
     public float pressure;
-    public int color;
+    public Color color;
 
-    public StrokePoint(PointF pos, float pressure, int color) {
+    public StrokePoint(PointF pos, float pressure, Color color) {
       this.pos = pos;
       this.pressure = pressure;
       this.color = color;
@@ -67,7 +71,7 @@ public class FullscreenActivity extends AppCompatActivity {
   private SurfaceView surf;
 
   private ArrayList<ArrayList<StrokePoint>> lines = new ArrayList<ArrayList<StrokePoint>>();
-  private int curColor = 0xFF000000;
+  private Color curColor = new DoublesColor(1, 0, 0, 0);
 
   private final Handler mHideHandler = new Handler();
   private final Runnable mHidePart2Runnable = new Runnable() {
@@ -115,7 +119,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
     setContentView(R.layout.activity_fullscreen);
 
-    initMqtt();
+    //initMqtt();
 
     InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
     InputManager im = (InputManager) this.getSystemService(Context.INPUT_SERVICE);
@@ -238,7 +242,7 @@ public class FullscreenActivity extends AppCompatActivity {
           addToHistory("Failed to connect to: " + serverUri);
         }
       });
-    } catch (MqttException ex){
+    } catch (Exception ex){
       ex.printStackTrace();
     }
   }
@@ -260,7 +264,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
       mqttAndroidClient.subscribe(topic, 0, listener);
 
-    } catch (MqttException ex){
+    } catch (Exception ex){
       System.err.println("Exception whilst subscribing");
       ex.printStackTrace();
     }
@@ -272,7 +276,7 @@ public class FullscreenActivity extends AppCompatActivity {
       public void messageArrived(String topic, MqttMessage message) throws Exception {
         String payload = new String(message.getPayload());
         System.out.println("Message: " + topic + " : " + payload);
-        curColor = (int)Long.parseLong(payload);
+        curColor = new IntColor((int)Long.parseLong(payload));
       }
     });
   }
@@ -286,7 +290,7 @@ public class FullscreenActivity extends AppCompatActivity {
       if(!mqttAndroidClient.isConnected()){
         addToHistory(mqttAndroidClient.getBufferedMessageCount() + " messages in buffer.");
       }
-    } catch (MqttException e) {
+    } catch (Exception e) {
       System.err.println("Error Publishing: " + e.getMessage());
       e.printStackTrace();
     }
@@ -305,7 +309,7 @@ public class FullscreenActivity extends AppCompatActivity {
       for (int i = 0; i < line.size() - 1; i++) {
         StrokePoint a = line.get(i);
         StrokePoint b = line.get(i+1);
-        paint.setColor(a.color);
+        paint.setColor(a.color.getARGBInt());
         lastPressure = b.pressure;
         //TODO Set size
         c.drawLine(a.pos.x, a.pos.y, b.pos.x, b.pos.y, paint);

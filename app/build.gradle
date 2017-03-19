@@ -23,6 +23,7 @@ repositories {
     maven {
         url "https://repo.eclipse.org/content/repositories/paho-snapshots/"
     }
+    mavenLocal()
 }
 
 dependencies {
@@ -31,5 +32,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.3.0'
     compile 'com.android.support:support-v4:23.3.0'
     compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
-    compile 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1-SNAPSHOT'
+    compile 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.2-SNAPSHOT'
+    compile 'com.erhannis:MathNStuff:0.1.0-SNAPSHOT'
 }
