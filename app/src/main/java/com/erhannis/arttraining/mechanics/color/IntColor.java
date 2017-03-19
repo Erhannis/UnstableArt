@@ -1,4 +1,4 @@
-package com.erhannis.arttraining.color;
+package com.erhannis.arttraining.mechanics.color;
 
 /**
  * ARGB int

@@ -2,7 +2,6 @@ package com.erhannis.arttraining;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
@@ -18,9 +17,12 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
-import com.erhannis.arttraining.color.Color;
-import com.erhannis.arttraining.color.DoublesColor;
-import com.erhannis.arttraining.color.IntColor;
+import com.erhannis.arttraining.history.HistoryManager;
+import com.erhannis.arttraining.mechanics.stroke.Stroke;
+import com.erhannis.arttraining.mechanics.stroke.StrokePoint;
+import com.erhannis.arttraining.mechanics.color.Color;
+import com.erhannis.arttraining.mechanics.color.DoublesColor;
+import com.erhannis.arttraining.mechanics.color.IntColor;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
@@ -30,29 +32,15 @@ import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
 public class FullscreenActivity extends AppCompatActivity {
-  public static class StrokePoint {
-    public PointF pos;
-    public float pressure;
-    public Color color;
-
-    public StrokePoint(PointF pos, float pressure, Color color) {
-      this.pos = pos;
-      this.pressure = pressure;
-      this.color = color;
-    }
-  }
-
   private static final boolean AUTO_HIDE = true;
   private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
   private static final int UI_ANIMATION_DELAY = 300;
@@ -70,8 +58,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
   private SurfaceView surf;
 
-  private ArrayList<ArrayList<StrokePoint>> lines = new ArrayList<ArrayList<StrokePoint>>();
-  private Color curColor = new DoublesColor(1, 0, 0, 0);
+  private final HistoryManager historyManager = new HistoryManager();
 
   private final Handler mHideHandler = new Handler();
   private final Runnable mHidePart2Runnable = new Runnable() {
@@ -156,18 +143,18 @@ public class FullscreenActivity extends AppCompatActivity {
 
         switch (event.getActionMasked()) {
           case MotionEvent.ACTION_DOWN:
-            lines.add(new ArrayList<StrokePoint>());
+            historyManager.startStrokeTransaction();
             break;
           case MotionEvent.ACTION_CANCEL:
           case MotionEvent.ACTION_UP:
-            if (lines.size() > 0) {
+            if (historyManager.getCurStroke().points.size() > 0) {
             }
             break;
         }
         if (lines.size() == 0) {
           return true;
         }
-        ArrayList<StrokePoint> line = lines.get(lines.size() - 1);
+        ArrayList<StrokePoint> line = lines.get(lines.size() - 1).points;
         line.add(new StrokePoint(new PointF(x, y), p, curColor));
 
         Canvas c = sh.lockCanvas();
@@ -305,10 +292,10 @@ public class FullscreenActivity extends AppCompatActivity {
     c.drawARGB(0xFF, 0xFF, 0xFF, 0xFF);
     Paint paint = new Paint();
     float lastPressure = 0;
-    for (ArrayList<StrokePoint> line : lines) {
-      for (int i = 0; i < line.size() - 1; i++) {
-        StrokePoint a = line.get(i);
-        StrokePoint b = line.get(i+1);
+    for (Stroke line : lines) {
+      for (int i = 0; i < line.points.size() - 1; i++) {
+        StrokePoint a = line.points.get(i);
+        StrokePoint b = line.points.get(i+1);
         paint.setColor(a.color.getARGBInt());
         lastPressure = b.pressure;
         //TODO Set size

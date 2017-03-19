@@ -1,6 +1,5 @@
-package com.erhannis.arttraining.color;
+package com.erhannis.arttraining.mechanics.color;
 
-import com.erhannis.mathnstuff.MeMath;
 import com.erhannis.mathnstuff.MeUtils;
 
 /**
