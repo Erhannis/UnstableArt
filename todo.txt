@@ -1,0 +1,10 @@
+save, load, export
+(could intersect viewport with canvas for efficiency)
+tools (erase)
+mipmap caches
+figure out bg drawing, and similar things
+layers
+layer interface
+undo tree interface
+find higher res graphics api
+brightness scaling?
