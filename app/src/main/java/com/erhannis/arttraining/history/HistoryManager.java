@@ -1,5 +1,8 @@
 package com.erhannis.arttraining.history;
 
+import android.graphics.Canvas;
+
+import com.erhannis.arttraining.mechanics.context.ArtContext;
 import com.erhannis.arttraining.mechanics.stroke.Stroke;
 
 /**
@@ -15,7 +18,7 @@ public class HistoryManager {
 
   public HistoryManager() {
     //TODO Consider
-    root = new HistoryNode();
+    root = new RootHN();
     select(root);
   }
 
@@ -29,9 +32,12 @@ public class HistoryManager {
     //TODO Send events, etc.
     //TODO Check connected to root?
     parent.children.add(child);
+    child.parent = parent;
   }
 
   //TODO Commit-rollback architecture?
+
+  //TODO How show current stroke?
 
   //TODO Allow pass in?
   public synchronized Stroke startStrokeTransaction() {
@@ -47,11 +53,27 @@ public class HistoryManager {
   }
 
   public synchronized Stroke commitStrokeTransaction() {
+    //TODO Throw error if not in correct state?
     HistoryNode strokeNode = new AddStrokeHN(mCurStroke);
     attach(selected, strokeNode);
     select(strokeNode);
     Stroke stroke = mCurStroke;
     mCurStroke = null;
     return stroke;
+  }
+
+  public synchronized void rollbackStrokeTransaction() {
+    //TODO Throw error if not in correct state?
+    mCurStroke = null;
+  }
+
+  //TODO Create context, rather than pass it?
+  /**
+   *
+   * @param artContext
+   * @param canvas The canvas to be filled with art.  This canvas is unaware of the viewport.  The viewport will probably copy this canvas into itself, scaled and transformed.
+   */
+  public void draw(ArtContext artContext, Canvas canvas) {
+    selected.draw(artContext, canvas);
   }
 }

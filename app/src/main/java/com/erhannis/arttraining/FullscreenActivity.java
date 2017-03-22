@@ -2,7 +2,9 @@ package com.erhannis.arttraining;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.hardware.input.InputManager;
@@ -10,6 +12,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -18,6 +21,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
 import com.erhannis.arttraining.history.HistoryManager;
+import com.erhannis.arttraining.mechanics.context.ArtContext;
 import com.erhannis.arttraining.mechanics.stroke.Stroke;
 import com.erhannis.arttraining.mechanics.stroke.StrokePoint;
 import com.erhannis.arttraining.mechanics.color.Color;
@@ -41,6 +45,8 @@ import java.util.ArrayList;
  * status bar and navigation/system bar) with user interaction.
  */
 public class FullscreenActivity extends AppCompatActivity {
+  private static final String TAG = "FullscreenActivity";
+
   private static final boolean AUTO_HIDE = true;
   private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
   private static final int UI_ANIMATION_DELAY = 300;
@@ -136,33 +142,31 @@ public class FullscreenActivity extends AppCompatActivity {
     surf.setOnTouchListener(new View.OnTouchListener() {
       @Override
       public boolean onTouch(View v, MotionEvent event) {
+        //TODO Make SURE this thing gets all the processing it needs.  Do NOT drop points or strokes, so help me.
         float x = event.getX();
         float y = event.getY();
         float p = event.getPressure();
         //System.out.println(event.getActionMasked());
 
         switch (event.getActionMasked()) {
-          case MotionEvent.ACTION_DOWN:
-            historyManager.startStrokeTransaction();
-            break;
           case MotionEvent.ACTION_CANCEL:
+            //TODO DO I want to rollback?
+            historyManager.rollbackStrokeTransaction();
+            return true; //TODO Still redraw?
           case MotionEvent.ACTION_UP:
-            if (historyManager.getCurStroke().points.size() > 0) {
-            }
+            historyManager.commitStrokeTransaction();
+            break;
+          case MotionEvent.ACTION_DOWN:
+            historyManager.startStrokeTransaction(); // Continue into next case
+          case MotionEvent.ACTION_MOVE: //TODO What about basically anything else?
+            //TODO Check transaction?
+            historyManager.getCurStroke().points.add(new StrokePoint(new PointF(x, y), p));
+            break;
+          default:
+            Log.d(TAG, "Unhandled action: " + event.getActionMasked());
             break;
         }
-        if (lines.size() == 0) {
-          return true;
-        }
-        ArrayList<StrokePoint> line = lines.get(lines.size() - 1).points;
-        line.add(new StrokePoint(new PointF(x, y), p, curColor));
-
-        Canvas c = sh.lockCanvas();
-        if (c != null) {
-          drawCanvas(c);
-          sh.unlockCanvasAndPost(c);
-        }
-
+        redraw(sh);
         return true;
       }
     });
@@ -172,7 +176,52 @@ public class FullscreenActivity extends AppCompatActivity {
     //toggle();
   }
 
+  //TODO A little weird to pass sh in
+  protected void redraw(SurfaceHolder sh) {
+    Canvas c = sh.lockCanvas();
+    if (c != null) {
+      drawCanvas(c);
+      sh.unlockCanvasAndPost(c);
+    }
+  }
 
+  private void drawCanvas(Canvas viewport) {
+    //TODO BACKGROUND background?
+    viewport.drawARGB(0xFF, 0xFF, 0xFF, 0xFF);
+    ArtContext artContext = new ArtContext();
+    // Don't forget; graphics origin is in the top left corner.  ... :/
+    int cHPix = 1500; //NOTE Canvas render width
+    int cVPix = 900; //NOTE Canvas render height
+    //NOTE Canvas target
+    artContext.spatialBounds.left = 0;
+    artContext.spatialBounds.right = artContext.spatialBounds.left + cHPix;
+    artContext.spatialBounds.top = 0;
+    artContext.spatialBounds.bottom = artContext.spatialBounds.top + cVPix;
+    //TODO Inefficient?  Keep canvas?
+    Bitmap bCanvas = Bitmap.createBitmap(cHPix, cVPix, Bitmap.Config.ARGB_8888);
+    Canvas cCanvas = new Canvas(bCanvas);
+    //cCanvas.drawARGB(0xFF, 0x00, 0xFF, 0xFF);
+    historyManager.draw(artContext, cCanvas);
+    //TODO Save/keep/etc. matrix
+    Matrix viewMatrix = new Matrix();
+    //TODO Paint?
+    viewport.drawBitmap(bCanvas, viewMatrix, null);
+    //c.drawText("" + lastPressure, 10, 10, paint);
+  }
+
+
+
+  @Override
+  protected void onPostCreate(Bundle savedInstanceState) {
+    super.onPostCreate(savedInstanceState);
+
+    // Trigger the initial hide() shortly after the activity has been
+    // created, to briefly hint to the user that UI controls
+    // are available.
+    delayedHide(100);
+  }
+
+  //<editor-fold desc="MQTT">
   private void initMqtt() {
     mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), serverUri, clientId);
     mqttAndroidClient.setCallback(new MqttCallbackExtended() {
@@ -263,7 +312,8 @@ public class FullscreenActivity extends AppCompatActivity {
       public void messageArrived(String topic, MqttMessage message) throws Exception {
         String payload = new String(message.getPayload());
         System.out.println("Message: " + topic + " : " + payload);
-        curColor = new IntColor((int)Long.parseLong(payload));
+        //TODO Change color
+        //curColor = new IntColor((int)Long.parseLong(payload));
       }
     });
   }
@@ -286,38 +336,9 @@ public class FullscreenActivity extends AppCompatActivity {
   private void addToHistory(String s) {
     System.out.println(s);
   }
+  //</editor-fold>
 
-
-  private void drawCanvas(Canvas c) {
-    c.drawARGB(0xFF, 0xFF, 0xFF, 0xFF);
-    Paint paint = new Paint();
-    float lastPressure = 0;
-    for (Stroke line : lines) {
-      for (int i = 0; i < line.points.size() - 1; i++) {
-        StrokePoint a = line.points.get(i);
-        StrokePoint b = line.points.get(i+1);
-        paint.setColor(a.color.getARGBInt());
-        lastPressure = b.pressure;
-        //TODO Set size
-        c.drawLine(a.pos.x, a.pos.y, b.pos.x, b.pos.y, paint);
-      }
-    }
-
-    c.drawText("" + lastPressure, 10, 10, paint);
-  }
-
-
-
-  @Override
-  protected void onPostCreate(Bundle savedInstanceState) {
-    super.onPostCreate(savedInstanceState);
-
-    // Trigger the initial hide() shortly after the activity has been
-    // created, to briefly hint to the user that UI controls
-    // are available.
-    delayedHide(100);
-  }
-
+  //<editor-fold desc="SHOW/HIDE OVERLAY">
   private void toggle() {
     if (mVisible) {
       hide();
@@ -359,4 +380,5 @@ public class FullscreenActivity extends AppCompatActivity {
     mHideHandler.removeCallbacks(mHideRunnable);
     mHideHandler.postDelayed(mHideRunnable, delayMillis);
   }
+  //</editor-fold>
 }
