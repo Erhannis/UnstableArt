@@ -161,7 +161,7 @@ public class FullscreenActivity extends AppCompatActivity {
           case MotionEvent.ACTION_MOVE: //TODO What about basically anything else?
             //TODO Check transaction?
             historyManager.getCurStroke().points.add(new StrokePoint(new PointF(x, y), p));
-            break;
+            return true; //TODO SHOULD draw?
           default:
             Log.d(TAG, "Unhandled action: " + event.getActionMasked());
             break;
