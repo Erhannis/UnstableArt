@@ -1,5 +1,6 @@
 package com.erhannis.arttraining.history;
 
+import com.erhannis.arttraining.mechanics.State;
 import com.erhannis.arttraining.mechanics.color.Color;
 
 /**
@@ -9,10 +10,15 @@ import com.erhannis.arttraining.mechanics.color.Color;
  *
  * Created by erhannis on 3/18/17.
  */
-public class SetColorHN extends HistoryNode {
+public class SetColorSMHN extends StateModificationAHN {
   public final Color color;
 
-  public SetColorHN(Color color) {
+  public SetColorSMHN(Color color) {
     this.color = color;
+  }
+
+  @Override
+  public void apply(State state) {
+    state.color = color;
   }
 }

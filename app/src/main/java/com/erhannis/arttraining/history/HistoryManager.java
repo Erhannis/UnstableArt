@@ -1,9 +1,11 @@
 package com.erhannis.arttraining.history;
 
-import android.graphics.Canvas;
-
-import com.erhannis.arttraining.mechanics.context.ArtContext;
+import com.erhannis.arttraining.mechanics.State;
+import com.erhannis.arttraining.mechanics.context.UACanvas;
 import com.erhannis.arttraining.mechanics.stroke.Stroke;
+
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Created by erhannis on 3/18/17.
@@ -54,7 +56,7 @@ public class HistoryManager {
 
   public synchronized Stroke commitStrokeTransaction() {
     //TODO Throw error if not in correct state?
-    HistoryNode strokeNode = new AddStrokeHN(mCurStroke);
+    HistoryNode strokeNode = new AddStrokePHN(mCurStroke);
     attach(selected, strokeNode);
     select(strokeNode);
     Stroke stroke = mCurStroke;
@@ -67,13 +69,33 @@ public class HistoryManager {
     mCurStroke = null;
   }
 
-  //TODO Create context, rather than pass it?
-  /**
-   *
-   * @param artContext
-   * @param canvas The canvas to be filled with art.  This canvas is unaware of the viewport.  The viewport will probably copy this canvas into itself, scaled and transformed.
-   */
-  public void draw(ArtContext artContext, Canvas canvas) {
-    selected.draw(artContext, canvas);
+  public UACanvas rebuild() {
+    HistoryNode curr = selected;
+    ArrayList<HistoryNode> chain = new ArrayList<HistoryNode>();
+    while (curr != null) {
+      chain.add(curr);
+      curr = curr.preferredParent;
+    }
+    Collections.reverse(chain);
+    // Now we have a list of actions, from start to finish
+    // Set up current layer structure
+    UACanvas canvas = new UACanvas();
+    for (HistoryNode node : chain) {
+      if (node instanceof LayerModificationAHN) {
+        ((LayerModificationAHN)node).apply(canvas);
+      }
+    }
+    //TODO Do
+    State state = new State();
+    //TODO Initialize state to a default?
+    for (HistoryNode node : chain) {
+      if (node instanceof StateModificationAHN) {
+        ((StateModificationAHN)node).apply(state);
+      } else if (node instanceof PaintAHN) {
+        //TODO Still need to figure out how we're referring to layers
+        //TODO Still need to figure out how to get the AddStrokePHNs to set up the StrokePLs.
+        ((PaintAHN)node);
+      }
+    }
   }
 }

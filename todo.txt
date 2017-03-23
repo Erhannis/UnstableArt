@@ -8,3 +8,25 @@ layer interface
 undo tree interface
 find higher res graphics api
 brightness scaling?
+how to deal with selections?
+finish AddLayerHN
+ugh, SetLayerSettingsAHN
+Hmm, "normally" colors only mix on a given layer.  Should we, should we not?  Should there be an isolation-layer-wrapper?
+
+
+Ideas/Things to do
+------------------
+layer A can go over part of layer B and then under another part of B
+masks (special layer type?)
+blur/hue/function/script layers
+COLOR MATRIX
+also non-orderable layers?
+allow collapse of certain nodes?  (e.g., moving a layer twice)
+preferred child, for undo/redo ease?
+hide similar nodes, for clarity?  (imagine 100 stroke nodes....)
+
+
+Thinking on paper
+-----------------
+1.  What to do about layers?  Is a layer responsible for drawing over input, or does its parent pass it a clear canvas and composite the output?  Or both?  On the side of child, it'd make more sense for a child to apply its own opacity, etc., rather than making the parent do it.  On the side of parent, consider clipping masks - once the child composites its output with the existing stuff, the parent can no longer clip it.  And what about, say, a blur layer?  It would require the existing stuff, to function.  How would you clip that, anyway?  
+2.  Layers are transient.  I think.  It's the tree that canonically defines the state of the art.

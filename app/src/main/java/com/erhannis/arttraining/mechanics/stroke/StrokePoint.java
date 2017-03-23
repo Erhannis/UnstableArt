@@ -12,11 +12,9 @@ import com.erhannis.arttraining.mechanics.color.Color;
 public class StrokePoint {
   public PointF pos;
   public float pressure;
-  //public Color color;
 
-  public StrokePoint(PointF pos, float pressure) {//, Color color) {
+  public StrokePoint(PointF pos, float pressure) {
     this.pos = pos;
     this.pressure = pressure;
-    //this.color = color;
   }
 }

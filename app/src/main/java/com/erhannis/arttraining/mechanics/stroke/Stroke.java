@@ -9,6 +9,5 @@ import java.util.ArrayList;
  */
 public class Stroke {
   //TODO Make these final and immutable?
-  public Tool tool;
   public ArrayList<StrokePoint> points = new ArrayList<>();
 }

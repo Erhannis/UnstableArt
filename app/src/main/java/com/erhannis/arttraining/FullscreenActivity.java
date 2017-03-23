@@ -199,6 +199,7 @@ public class FullscreenActivity extends AppCompatActivity {
     artContext.spatialBounds.bottom = artContext.spatialBounds.top + cVPix;
     //TODO Inefficient?  Keep canvas?
     Bitmap bCanvas = Bitmap.createBitmap(cHPix, cVPix, Bitmap.Config.ARGB_8888);
+    bCanvas.
     Canvas cCanvas = new Canvas(bCanvas);
     //cCanvas.drawARGB(0xFF, 0x00, 0xFF, 0xFF);
     historyManager.draw(artContext, cCanvas);
