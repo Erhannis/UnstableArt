@@ -28,7 +28,7 @@ public class AddLayerLMHN extends LayerModificationAHN {
    * @param iCanvas
    */
   @Override
-  public void apply(State state, UACanvas iCanvas) {
+  public void apply(UACanvas iCanvas) {
     Layer iChild = aChild.instantiate();
     iCanvas.archetypeToInstantiation.put(aChild, iChild);
     ((GroupLayer)iCanvas.archetypeToInstantiation.get(aParent)).addLayer(iChild);

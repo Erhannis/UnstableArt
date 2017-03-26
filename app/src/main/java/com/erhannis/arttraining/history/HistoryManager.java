@@ -47,6 +47,7 @@ public class HistoryManager {
 
   public void attach(HistoryNode child) {
     attach(selected, child);
+    select(child);
   }
 
   public void attach(HistoryNode parent, HistoryNode child) {
@@ -99,6 +100,7 @@ public class HistoryManager {
     // Now we have a list of actions, from start to finish
     // Set up current layer structure
     UACanvas iCanvas = root.aCanvas.instantiate();
+    iCanvas.archetypeToInstantiation.put(root.aCanvas, iCanvas);
     for (HistoryNode node : chain) {
       if (node instanceof LayerModificationAHN) {
         ((LayerModificationAHN)node).apply(iCanvas);

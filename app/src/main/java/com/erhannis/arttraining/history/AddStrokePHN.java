@@ -12,6 +12,7 @@ import com.erhannis.arttraining.mechanics.context.StrokePL;
 import com.erhannis.arttraining.mechanics.context.UACanvas;
 import com.erhannis.arttraining.mechanics.stroke.Stroke;
 import com.erhannis.arttraining.mechanics.stroke.StrokePoint;
+import com.erhannis.arttraining.mechanics.stroke.StrokeTool;
 
 /**
  * Created by erhannis on 3/18/17.
@@ -25,8 +26,10 @@ public class AddStrokePHN extends PaintAHN {
 
   @Override
   public void apply(State state, UACanvas iCanvas) {
-    if (state.iSelectedLayer instanceof StrokePL) {
+    if (state.iSelectedLayer instanceof StrokePL && state.tool instanceof StrokeTool) {
       ((StrokePL)state.iSelectedLayer).strokes.add(stroke);
+      ((StrokePL)state.iSelectedLayer).colors.add(state.color);
+      ((StrokePL)state.iSelectedLayer).tools.add((StrokeTool)state.tool);
     }
   }
 }

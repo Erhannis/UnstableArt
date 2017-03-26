@@ -2,6 +2,7 @@ package com.erhannis.arttraining.history;
 
 import com.erhannis.arttraining.mechanics.State;
 import com.erhannis.arttraining.mechanics.color.Color;
+import com.erhannis.arttraining.mechanics.context.UACanvas;
 
 /**
  * //TODO What if we want to allow changing color during a stroke?
@@ -18,7 +19,7 @@ public class SetColorSMHN extends StateModificationAHN {
   }
 
   @Override
-  public void apply(State state) {
+  public void apply(State state, UACanvas iCanvas) {
     state.color = color;
   }
 }

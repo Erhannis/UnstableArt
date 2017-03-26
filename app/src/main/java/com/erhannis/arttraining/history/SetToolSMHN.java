@@ -3,6 +3,7 @@ package com.erhannis.arttraining.history;
 import com.erhannis.arttraining.mechanics.State;
 import com.erhannis.arttraining.mechanics.color.Color;
 import com.erhannis.arttraining.mechanics.context.ArtContext;
+import com.erhannis.arttraining.mechanics.context.UACanvas;
 import com.erhannis.arttraining.mechanics.stroke.Tool;
 
 /**
@@ -18,7 +19,7 @@ public class SetToolSMHN extends StateModificationAHN {
   }
 
   @Override
-  public void apply(State state) {
+  public void apply(State state, UACanvas iCanvas) {
     state.tool = tool;
   }
 }
