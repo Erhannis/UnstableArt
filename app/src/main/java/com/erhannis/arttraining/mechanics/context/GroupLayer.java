@@ -17,18 +17,18 @@ import java.util.ArrayList;
 public class GroupLayer extends Layer {
   //IDEA It may be worth considering non-orderable layers.
   // Low=back
-  public transient ArrayList<Layer> layers;
+  public transient ArrayList<Layer> iLayers;
 
   public void addLayer(Layer iLayer) {
-    layers.add(iLayer);
+    iLayers.add(iLayer);
     //TODO Notify anyone?
   }
 
   @Override
   public void draw(ArtContext artContext, Bitmap canvas) {
     Bitmap copy = canvas.copy(canvas.getConfig(), true);
-    for (Layer layer : layers) {
-      layer.draw(artContext, copy);
+    for (Layer iLayer : iLayers) {
+      iLayer.draw(artContext, copy);
     }
     Canvas cCanvas = new Canvas(canvas);
     Paint p = new Paint();
@@ -40,12 +40,12 @@ public class GroupLayer extends Layer {
   @Override
   protected Layer init() {
     super.init();
-    layers = new ArrayList<Layer>();
+    iLayers = new ArrayList<Layer>();
     return this;
   }
 
   @Override
-  public Layer instantiate() {
-    return new GroupLayer().init();
+  public GroupLayer instantiate() {
+    return (GroupLayer) new GroupLayer().init();
   }
 }

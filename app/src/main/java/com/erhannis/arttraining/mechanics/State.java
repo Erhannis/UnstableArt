@@ -11,5 +11,7 @@ public class State {
   public Tool tool;
   public Color color;
   //TODO Note that this may not make sense for non-PaintLayers.
-  public Layer selectedLayer;
+  //TODO Archetype or instantiation?
+  // Instance, until proven otherwise
+  public Layer iSelectedLayer;
 }

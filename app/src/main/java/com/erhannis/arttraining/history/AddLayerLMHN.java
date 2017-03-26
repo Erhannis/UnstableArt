@@ -1,5 +1,6 @@
 package com.erhannis.arttraining.history;
 
+import com.erhannis.arttraining.mechanics.State;
 import com.erhannis.arttraining.mechanics.context.GroupLayer;
 import com.erhannis.arttraining.mechanics.context.Layer;
 import com.erhannis.arttraining.mechanics.context.PaintLayer;
@@ -27,7 +28,7 @@ public class AddLayerLMHN extends LayerModificationAHN {
    * @param iCanvas
    */
   @Override
-  public void apply(UACanvas iCanvas) {
+  public void apply(State state, UACanvas iCanvas) {
     Layer iChild = aChild.instantiate();
     iCanvas.archetypeToInstantiation.put(aChild, iChild);
     ((GroupLayer)iCanvas.archetypeToInstantiation.get(aParent)).addLayer(iChild);

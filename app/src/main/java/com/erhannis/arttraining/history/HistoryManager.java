@@ -1,7 +1,11 @@
 package com.erhannis.arttraining.history;
 
 import com.erhannis.arttraining.mechanics.State;
+import com.erhannis.arttraining.mechanics.color.DoublesColor;
+import com.erhannis.arttraining.mechanics.context.SolidPL;
+import com.erhannis.arttraining.mechanics.context.StrokePL;
 import com.erhannis.arttraining.mechanics.context.UACanvas;
+import com.erhannis.arttraining.mechanics.stroke.BrushST;
 import com.erhannis.arttraining.mechanics.stroke.Stroke;
 
 import java.util.ArrayList;
@@ -22,12 +26,27 @@ public class HistoryManager {
     //TODO Consider
     root = new RootHN();
     select(root);
+
+    //TODO Just for testing
+    testInit();
+  }
+
+  public void testInit() {
+    StrokePL strokeLayer = new StrokePL();
+    attach(new AddLayerLMHN(root.aCanvas, strokeLayer));
+    attach(new SetLayerSMHN(strokeLayer));
+    attach(new SetToolSMHN(new BrushST()));
+    attach(new SetColorSMHN(new DoublesColor(1, 0, 0.9, 0.5)));
   }
 
   public void select(HistoryNode node) {
     //TODO Send events, etc.
     //TODO Check connected to root?
     selected = node;
+  }
+
+  public void attach(HistoryNode child) {
+    attach(selected, child);
   }
 
   public void attach(HistoryNode parent, HistoryNode child) {
@@ -79,10 +98,10 @@ public class HistoryManager {
     Collections.reverse(chain);
     // Now we have a list of actions, from start to finish
     // Set up current layer structure
-    UACanvas canvas = root.aCanvas.instantiate();
+    UACanvas iCanvas = root.aCanvas.instantiate();
     for (HistoryNode node : chain) {
       if (node instanceof LayerModificationAHN) {
-        ((LayerModificationAHN)node).apply(canvas);
+        ((LayerModificationAHN)node).apply(iCanvas);
       }
     }
     //TODO Do
@@ -90,11 +109,12 @@ public class HistoryManager {
     //TODO Initialize state to a default?
     for (HistoryNode node : chain) {
       if (node instanceof StateModificationAHN) {
-        ((StateModificationAHN)node).apply(state);
+        ((StateModificationAHN)node).apply(state, iCanvas);
       } else if (node instanceof PaintAHN) {
-        //TODO Still need to figure out how to get the AddStrokePHNs to set up the StrokePLs.
-        ((PaintAHN)node);
+        ((PaintAHN) node).apply(state, iCanvas);
       }
+      //TODO Account for all node types?
     }
+    return iCanvas;
   }
 }

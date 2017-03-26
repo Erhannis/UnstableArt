@@ -22,6 +22,7 @@ import android.view.inputmethod.InputMethodManager;
 
 import com.erhannis.arttraining.history.HistoryManager;
 import com.erhannis.arttraining.mechanics.context.ArtContext;
+import com.erhannis.arttraining.mechanics.context.UACanvas;
 import com.erhannis.arttraining.mechanics.stroke.Stroke;
 import com.erhannis.arttraining.mechanics.stroke.StrokePoint;
 import com.erhannis.arttraining.mechanics.color.Color;
@@ -199,10 +200,13 @@ public class FullscreenActivity extends AppCompatActivity {
     artContext.spatialBounds.bottom = artContext.spatialBounds.top + cVPix;
     //TODO Inefficient?  Keep canvas?
     Bitmap bCanvas = Bitmap.createBitmap(cHPix, cVPix, Bitmap.Config.ARGB_8888);
-    bCanvas.
-    Canvas cCanvas = new Canvas(bCanvas);
+
+    //Canvas cCanvas = new Canvas(bCanvas);
     //cCanvas.drawARGB(0xFF, 0x00, 0xFF, 0xFF);
-    historyManager.draw(artContext, cCanvas);
+    //TODO INEFFICIENT, DON'T KEEP
+    UACanvas iCanvas = historyManager.rebuild();
+    iCanvas.draw(artContext, bCanvas);
+
     //TODO Save/keep/etc. matrix
     Matrix viewMatrix = new Matrix();
     //TODO Paint?
