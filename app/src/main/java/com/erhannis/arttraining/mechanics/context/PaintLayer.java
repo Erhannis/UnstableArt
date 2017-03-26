@@ -17,4 +17,9 @@ import java.util.ArrayList;
  * Created by erhannis on 3/23/17.
  */
 public abstract class PaintLayer extends Layer {
+  @Override
+  protected Layer init() {
+    super.init();
+    return this;
+  }
 }

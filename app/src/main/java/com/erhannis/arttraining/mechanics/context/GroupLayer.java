@@ -4,6 +4,10 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
+import com.erhannis.arttraining.mechanics.color.Color;
+import com.erhannis.arttraining.mechanics.stroke.Stroke;
+import com.erhannis.arttraining.mechanics.stroke.StrokeTool;
+
 import java.util.ArrayList;
 
 /**
@@ -13,7 +17,12 @@ import java.util.ArrayList;
 public class GroupLayer extends Layer {
   //IDEA It may be worth considering non-orderable layers.
   // Low=back
-  public ArrayList<Layer> layers = new ArrayList<Layer>();
+  public transient ArrayList<Layer> layers;
+
+  public void addLayer(Layer iLayer) {
+    layers.add(iLayer);
+    //TODO Notify anyone?
+  }
 
   @Override
   public void draw(ArtContext artContext, Bitmap canvas) {
@@ -26,5 +35,17 @@ public class GroupLayer extends Layer {
     //TODO Clamp?
     p.setAlpha((int)(opacity * 255)); //LOSS
     cCanvas.drawBitmap(copy, 0, 0, p);
+  }
+
+  @Override
+  protected Layer init() {
+    super.init();
+    layers = new ArrayList<Layer>();
+    return this;
+  }
+
+  @Override
+  public Layer instantiate() {
+    return new GroupLayer().init();
   }
 }

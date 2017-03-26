@@ -24,6 +24,8 @@ also non-orderable layers?
 allow collapse of certain nodes?  (e.g., moving a layer twice)
 preferred child, for undo/redo ease?
 hide similar nodes, for clarity?  (imagine 100 stroke nodes....)
+user-defined constants, variables, colors, equations?  For supporting the symbolic re-caluclation
+cache and optimize certain actions?  like compress 10 strokes into a bitmap until res changes, maybe?
 
 
 Thinking on paper

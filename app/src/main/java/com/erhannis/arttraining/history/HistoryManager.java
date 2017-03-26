@@ -12,7 +12,7 @@ import java.util.Collections;
  */
 public class HistoryManager {
   //TODO Consider finality
-  protected final HistoryNode root;
+  protected final RootHN root;
   //TODO Hmm, how show chain?  Double-link?
   protected HistoryNode selected;
 
@@ -33,8 +33,8 @@ public class HistoryManager {
   public void attach(HistoryNode parent, HistoryNode child) {
     //TODO Send events, etc.
     //TODO Check connected to root?
-    parent.children.add(child);
-    child.parent = parent;
+    parent.addChild(child);
+    child.setParent(parent);
   }
 
   //TODO Commit-rollback architecture?
@@ -79,7 +79,7 @@ public class HistoryManager {
     Collections.reverse(chain);
     // Now we have a list of actions, from start to finish
     // Set up current layer structure
-    UACanvas canvas = new UACanvas();
+    UACanvas canvas = root.aCanvas.instantiate();
     for (HistoryNode node : chain) {
       if (node instanceof LayerModificationAHN) {
         ((LayerModificationAHN)node).apply(canvas);
@@ -92,7 +92,6 @@ public class HistoryManager {
       if (node instanceof StateModificationAHN) {
         ((StateModificationAHN)node).apply(state);
       } else if (node instanceof PaintAHN) {
-        //TODO Still need to figure out how we're referring to layers
         //TODO Still need to figure out how to get the AddStrokePHNs to set up the StrokePLs.
         ((PaintAHN)node);
       }

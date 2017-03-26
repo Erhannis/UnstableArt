@@ -16,9 +16,9 @@ public class StrokePL extends PaintLayer {
   //TODO Initialize?
   // These must all have the same sizes; they go together.
   // first=bottom
-  public ArrayList<Stroke> strokes;
-  public ArrayList<StrokeTool> tools;
-  public ArrayList<Color> colors;
+  public transient ArrayList<Stroke> strokes;
+  public transient ArrayList<StrokeTool> tools;
+  public transient ArrayList<Color> colors;
 
   @Override
   public void draw(ArtContext artContext, Bitmap canvas) {
@@ -27,5 +27,19 @@ public class StrokePL extends PaintLayer {
       //TODO Pass cCanvas in?
       tools.get(i).apply(colors.get(i), strokes.get(i), canvas);
     }
+  }
+
+  @Override
+  protected Layer init() {
+    super.init();
+    strokes = new ArrayList<Stroke>();
+    tools = new ArrayList<StrokeTool>();
+    colors = new ArrayList<Color>();
+    return this;
+  }
+
+  @Override
+  public StrokePL instantiate() {
+    return (StrokePL)new StrokePL().init();
   }
 }

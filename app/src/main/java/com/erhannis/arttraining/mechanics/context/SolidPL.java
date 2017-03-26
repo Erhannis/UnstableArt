@@ -14,11 +14,23 @@ import java.util.ArrayList;
  */
 public class SolidPL extends PaintLayer {
   //TODO Initialize?
-  public Color color;
+  public transient Color color;
 
   @Override
   public void draw(ArtContext artContext, Bitmap canvas) {
     Canvas cCanvas = new Canvas(canvas);
     cCanvas.drawColor(color.getARGBInt());
+  }
+
+  @Override
+  protected Layer init() {
+    super.init();
+    return this;
+  }
+
+  //TODO Pass in color?
+  @Override
+  public StrokePL instantiate() {
+    return (StrokePL)new StrokePL().init();
   }
 }
