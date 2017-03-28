@@ -2,6 +2,7 @@ package com.erhannis.arttraining.history;
 
 import com.erhannis.arttraining.mechanics.State;
 import com.erhannis.arttraining.mechanics.color.DoublesColor;
+import com.erhannis.arttraining.mechanics.context.BlurEL;
 import com.erhannis.arttraining.mechanics.context.SolidPL;
 import com.erhannis.arttraining.mechanics.context.StrokePL;
 import com.erhannis.arttraining.mechanics.context.UACanvas;
@@ -37,6 +38,9 @@ public class HistoryManager {
     attach(new SetLayerSMHN(strokeLayer));
     attach(new SetToolSMHN(new BrushST()));
     attach(new SetColorSMHN(new DoublesColor(1, 0, 0.9, 0.5)));
+    //TODO Fix
+    BlurEL blurLayer = new BlurEL();
+    attach(new AddLayerLMHN(root.aCanvas, blurLayer));
   }
 
   public void select(HistoryNode node) {

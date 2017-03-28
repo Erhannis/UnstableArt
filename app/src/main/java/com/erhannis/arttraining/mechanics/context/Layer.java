@@ -2,6 +2,7 @@ package com.erhannis.arttraining.mechanics.context;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 
 import java.io.Serializable;
 
@@ -34,6 +35,15 @@ public abstract class Layer implements Serializable {
    * @param canvas
    */
   public abstract void draw(ArtContext artContext, Bitmap canvas);
+
+  protected void copyOntoWithOpacity(Bitmap bIn, Bitmap bOut) {
+    Canvas cCanvas = new Canvas(bOut);
+    //TODO Factor out?
+    Paint p = new Paint();
+    //TODO Clamp?
+    p.setAlpha((int)(opacity * 255)); //LOSS
+    cCanvas.drawBitmap(bIn, 0, 0, p);
+  }
 
   /**
    * Instances of this (via `instantiate`) ought to call super.init()

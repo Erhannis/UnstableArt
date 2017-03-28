@@ -12,6 +12,7 @@ how to deal with selections?
 finish AddLayerHN
 ugh, SetLayerSettingsAHN
 Hmm, "normally" colors only mix on a given layer.  Should we, should we not?  Should there be an isolation-layer-wrapper?
+Figure out natural scale, system for relative scaling and translation of viewport
 
 
 Ideas/Things to do
@@ -26,6 +27,9 @@ preferred child, for undo/redo ease?
 hide similar nodes, for clarity?  (imagine 100 stroke nodes....)
 user-defined constants, variables, colors, equations?  For supporting the symbolic re-caluclation
 cache and optimize certain actions?  like compress 10 strokes into a bitmap until res changes, maybe?
+functions on pressure, etc.
+    functions on everything, in general
+time-finder: playback art until you find the spot you want to change it at.  Or time-slider?
 
 
 Thinking on paper
