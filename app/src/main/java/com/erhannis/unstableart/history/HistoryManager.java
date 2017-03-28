@@ -37,9 +37,8 @@ public class HistoryManager {
     attach(new SetLayerSMHN(strokeLayer));
     attach(new SetToolSMHN(new BrushST()));
     attach(new SetColorSMHN(new DoublesColor(1, 0, 0.9, 0.5)));
-    //TODO Fix
-    BlurEL blurLayer = new BlurEL();
-    attach(new AddLayerLMHN(root.aCanvas, blurLayer));
+    //BlurEL blurLayer = new BlurEL();
+    //attach(new AddLayerLMHN(root.aCanvas, blurLayer));
   }
 
   public void select(HistoryNode node) {

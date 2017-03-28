@@ -184,10 +184,8 @@ public class FullscreenActivity extends AppCompatActivity {
     viewport.drawARGB(0xFF, 0xFF, 0xFF, 0xFF);
     ArtContext artContext = new ArtContext();
     // Don't forget; graphics origin is in the top left corner.  ... :/
-//    int cHPix = 1500; //NOTE Canvas render width
-//    int cVPix = 900; //NOTE Canvas render height
-    int cHPix = 100; //NOTE Canvas render width
-    int cVPix = 100; //NOTE Canvas render height
+    int cHPix = 1500; //NOTE Canvas render width
+    int cVPix = 900; //NOTE Canvas render height
     //NOTE Canvas target
     artContext.spatialBounds.left = 0;
     artContext.spatialBounds.right = artContext.spatialBounds.left + cHPix;

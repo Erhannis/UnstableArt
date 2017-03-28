@@ -15,9 +15,8 @@ public abstract class HistoryNode {
   //TODO Would it make any sense to allow multiple inheritance?  cycles?
   //TODO Ech, do I or do I not make these final?
   public HistoryNode preferredParent;
-
   public LinkedHashSet<HistoryNode> parents = new LinkedHashSet<>();
-  //TODO Preferred child, for ease of undo/redo?
+  public HistoryNode preferredChild; // For ease of redo
   public LinkedHashSet<HistoryNode> children = new LinkedHashSet<>();
 
   public HistoryNode() {
@@ -37,6 +36,7 @@ public abstract class HistoryNode {
 
   public void addChild(HistoryNode child) {
     children.add(child);
+    preferredChild = child;
     //TODO Notify anybody?
   }
 }
