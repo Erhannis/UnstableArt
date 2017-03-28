@@ -3,6 +3,7 @@ package com.erhannis.unstableart;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -12,9 +13,11 @@ import android.hardware.input.InputManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.InputType;
 import android.util.Log;
 import android.view.InputDevice;
 import android.view.Menu;
@@ -26,16 +29,23 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.erhannis.unstableart.history.HistoryManager;
+import com.erhannis.unstableart.history.SetColorSMHN;
 import com.erhannis.unstableart.history.SetToolSMHN;
+import com.erhannis.unstableart.history.SetToolSizeSMHN;
+import com.erhannis.unstableart.mechanics.color.DoublesColor;
+import com.erhannis.unstableart.mechanics.color.IntColor;
 import com.erhannis.unstableart.mechanics.context.ArtContext;
 import com.erhannis.unstableart.mechanics.context.UACanvas;
 import com.erhannis.unstableart.mechanics.stroke.BrushST;
 import com.erhannis.unstableart.mechanics.stroke.PenST;
 import com.erhannis.unstableart.mechanics.stroke.StrokePoint;
+import com.erhannis.unstableart.mechanics.stroke.Tool;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
@@ -46,6 +56,8 @@ import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+
+import java8.util.function.Consumer;
 
 /**
  * The double-drawer functionality was taken from the question and answers at
@@ -204,21 +216,47 @@ public class FullscreenActivity extends AppCompatActivity {
       });
 
       mRightDrawerView.setAdapter(new ArrayAdapter<String>(this,
-              android.R.layout.simple_list_item_1, new String[]{"Redo", "Undo"}));
+              android.R.layout.simple_list_item_1, new String[]{"Redo", "Undo", "Color", "Size"}));
       mRightDrawerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
           //TODO Brittle.
           switch (i) {
-            case 0:
+            case 0: // Redo
               if (historyManager.tryRedo()) {
                 redraw();
               }
               break;
-            case 1:
+            case 1: // Undo
               if (historyManager.tryUndo()) {
                 redraw();
               }
+              break;
+            case 2: // Color
+              getTextInput(FullscreenActivity.this, "8 digit hex color", new Consumer<String>() {
+                @Override
+                public void accept(String s) {
+                  try {
+                    int intARGB = (int)Long.parseLong(s, 16); //LOSS
+                    historyManager.attach(new SetColorSMHN(new IntColor(intARGB)));
+                  } catch (NumberFormatException nfe) {
+                    showToast(FullscreenActivity.this, "Invalid hex string; use 0-9 and A-F");
+                  }
+                }
+              });
+              break;
+            case 3: // Size
+              getTextInput(FullscreenActivity.this, "Size, double-precision", new Consumer<String>() {
+                @Override
+                public void accept(String s) {
+                  try {
+                    double size = Double.parseDouble(s);
+                    historyManager.attach(new SetToolSizeSMHN(size));
+                  } catch (NumberFormatException nfe) {
+                    showToast(FullscreenActivity.this, "Invalid double, decimal numbers only");
+                  }
+                }
+              });
               break;
           }
         }
@@ -384,6 +422,45 @@ public class FullscreenActivity extends AppCompatActivity {
 
     return super.onOptionsItemSelected(item);
   }
+
+//<editor-fold desc="EXPORTABLE">
+  // From http://stackoverflow.com/a/10904665/513038
+  public static void getTextInput(Context ctx, String title, final Consumer<String> callback) {
+    AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
+    builder.setTitle(title);
+
+// Set up the input
+    final EditText input = new EditText(ctx);
+// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+    input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+    builder.setView(input);
+
+// Set up the buttons
+    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog, int which) {
+        callback.accept(input.getText().toString());
+      }
+    });
+    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog, int which) {
+        dialog.cancel();
+      }
+    });
+
+    builder.show();
+  }
+
+  public static void showToast(final Activity ctx, final String text) {
+    ctx.runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        Toast.makeText(ctx, text, Toast.LENGTH_LONG).show();
+      }
+    });
+  }
+//</editor-fold>
 
   //<editor-fold desc="MQTT">
   private void initMqtt() {

@@ -37,6 +37,7 @@ AlterColorwheelSMHN ?
 More sliding drawers
 Tilt/rotation support
     General map-number support?
+Art training mode/tools?
 
 
 Thinking on paper
