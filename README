@@ -1,0 +1,5 @@
+Unstable Art!  Art program with experimental features.
+
+Undo-tree: mess with time; never draw on the wrong layer again.  Auto-redraw painting in higher-res.
+
+Note: you'll probably need to clone and `mvn clean install` my util project, MathNStuff.  ( https://github.com/Erhannis/MathNStuff )
