@@ -72,6 +72,8 @@ public class FullscreenActivity extends AppCompatActivity {
 
 //<editor-fold desc="UI">
   private SurfaceView surf;
+  //TODO Is this permissible?
+  private SurfaceHolder mSurfaceHolder;
 
   private DrawerLayout mDrawerLayout;
   private ActionBarDrawerToggle mDrawerToggle;
@@ -209,8 +211,14 @@ public class FullscreenActivity extends AppCompatActivity {
           //TODO Brittle.
           switch (i) {
             case 0:
+              if (historyManager.tryRedo()) {
+                redraw();
+              }
               break;
             case 1:
+              if (historyManager.tryUndo()) {
+                redraw();
+              }
               break;
           }
         }
@@ -255,7 +263,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
     surf = (SurfaceView)findViewById(R.id.surfaceView);
 
-    final SurfaceHolder sh = surf.getHolder();
+    mSurfaceHolder = surf.getHolder();
 
     surf.setOnTouchListener(new View.OnTouchListener() {
       @Override
@@ -284,7 +292,7 @@ public class FullscreenActivity extends AppCompatActivity {
             Log.d(TAG, "Unhandled action: " + event.getActionMasked());
             break;
         }
-        redraw(sh);
+        redraw();
         return true;
       }
     });
@@ -294,12 +302,14 @@ public class FullscreenActivity extends AppCompatActivity {
     //toggle();
   }
 
-  //TODO A little weird to pass sh in
-  protected void redraw(SurfaceHolder sh) {
-    Canvas c = sh.lockCanvas();
-    if (c != null) {
-      drawCanvas(c);
-      sh.unlockCanvasAndPost(c);
+  //TODO Is this use of mSurfaceHolder ok?
+  protected void redraw() {
+    if (mSurfaceHolder != null) {
+      Canvas c = mSurfaceHolder.lockCanvas();
+      if (c != null) {
+        drawCanvas(c);
+        mSurfaceHolder.unlockCanvasAndPost(c);
+      }
     }
   }
 

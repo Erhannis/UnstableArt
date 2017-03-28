@@ -60,6 +60,32 @@ public class HistoryManager {
     child.setParent(parent);
   }
 
+  /**
+   * Iff possible, undo.
+   * @return whether undo happened
+   */
+  public synchronized boolean tryUndo() {
+    if (selected.preferredParent != null) {
+      select(selected.preferredParent);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Iff possible, redo.
+   * @return whether redo happened
+   */
+  public synchronized boolean tryRedo() {
+    if (selected.preferredChild != null) {
+      select(selected.preferredChild);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   //TODO Commit-rollback architecture?
 
   //TODO How show current stroke?
