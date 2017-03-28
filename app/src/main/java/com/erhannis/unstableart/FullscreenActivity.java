@@ -1,27 +1,40 @@
 package com.erhannis.unstableart;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.hardware.input.InputManager;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.InputDevice;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 
 import com.erhannis.unstableart.history.HistoryManager;
+import com.erhannis.unstableart.history.SetToolSMHN;
 import com.erhannis.unstableart.mechanics.context.ArtContext;
 import com.erhannis.unstableart.mechanics.context.UACanvas;
+import com.erhannis.unstableart.mechanics.stroke.BrushST;
+import com.erhannis.unstableart.mechanics.stroke.PenST;
 import com.erhannis.unstableart.mechanics.stroke.StrokePoint;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
@@ -35,17 +48,17 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 /**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
+ * The double-drawer functionality was taken from the question and answers at
+ * http://stackoverflow.com/questions/17861755
+ *
  */
 public class FullscreenActivity extends AppCompatActivity {
+//<editor-fold desc="Constants">
   private static final String TAG = "FullscreenActivity";
 
   private static final boolean AUTO_HIDE = true;
   private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
   private static final int UI_ANIMATION_DELAY = 300;
-
-  MqttAndroidClient mqttAndroidClient;
 
   final String serverUri = "tcp://192.168.0.6:1883";
 
@@ -55,8 +68,18 @@ public class FullscreenActivity extends AppCompatActivity {
   final String publishMessage = "blah blah blah";
   private static final String COLOR_SPLINE_TOPIC = "color_spline";
   private static final String COLOR_VALUE_TOPIC = "color_value";
+//</editor-fold>
 
+//<editor-fold desc="UI">
   private SurfaceView surf;
+
+  private DrawerLayout mDrawerLayout;
+  private ActionBarDrawerToggle mDrawerToggle;
+  private ListView mLeftDrawerView;
+  private ListView mRightDrawerView;
+//</editor-fold>
+
+  private MqttAndroidClient mqttAndroidClient;
 
   private final HistoryManager historyManager = new HistoryManager();
 
@@ -101,10 +124,111 @@ public class FullscreenActivity extends AppCompatActivity {
   };
 
   @Override
+  protected void onStart() {
+    super.onStart();
+
+    if(mDrawerLayout == null || mLeftDrawerView == null || mRightDrawerView == null || mDrawerToggle == null) {
+      // Configure navigation drawer
+      mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+      mLeftDrawerView = (ListView)findViewById(R.id.left_drawer);
+      mRightDrawerView = (ListView)findViewById(R.id.right_drawer);
+      mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
+
+        /** Called when a drawer has settled in a completely closed state. */
+        public void onDrawerClosed(View drawerView) {
+          if(drawerView.equals(mLeftDrawerView)) {
+            getSupportActionBar().setTitle(getTitle());
+            supportInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            mDrawerToggle.syncState();
+          }
+        }
+
+        /** Called when a drawer has settled in a completely open state. */
+        public void onDrawerOpened(View drawerView) {
+          if(drawerView.equals(mLeftDrawerView)) {
+            getSupportActionBar().setTitle(getString(R.string.app_name));
+            supportInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            mDrawerToggle.syncState();
+          }
+        }
+
+        @Override
+        public void onDrawerSlide(View drawerView, float slideOffset) {
+          // Avoid normal indicator glyph behaviour. This is to avoid glyph movement when opening the right drawer
+          //super.onDrawerSlide(drawerView, slideOffset);
+        }
+      };
+
+      mLeftDrawerView.setAdapter(new ArrayAdapter<String>(this,
+              android.R.layout.simple_list_item_single_choice, new String[]{"Pen", "Brush"}));
+      //TODO Set selected listener
+      /*
+      mLeftDrawerView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+          //TODO Brittle.
+          //TODO Check if already selected?  Can that happen?
+          switch (i) {
+            case 0:
+              historyManager.attach(new SetToolSMHN(new PenST()));
+              break;
+            case 1:
+              historyManager.attach(new SetToolSMHN(new BrushST()));
+              break;
+          }
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView) {
+
+        }
+      });
+      */
+
+      mLeftDrawerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+          //TODO Brittle.
+          //TODO Check if already selected?  Can that happen?
+          switch (i) {
+            case 0:
+              historyManager.attach(new SetToolSMHN(new PenST()));
+              break;
+            case 1:
+              historyManager.attach(new SetToolSMHN(new BrushST()));
+              break;
+          }
+        }
+      });
+
+      mRightDrawerView.setAdapter(new ArrayAdapter<String>(this,
+              android.R.layout.simple_list_item_1, new String[]{"Redo", "Undo"}));
+      mRightDrawerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+          //TODO Brittle.
+          switch (i) {
+            case 0:
+              break;
+            case 1:
+              break;
+          }
+        }
+      });
+
+      mDrawerLayout.addDrawerListener(mDrawerToggle); // Set the drawer toggle as the DrawerListener
+    }
+  }
+
+  @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
     setContentView(R.layout.activity_fullscreen);
+
+    //TODO Do we want this?
+    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    getSupportActionBar().setHomeButtonEnabled(true);
 
     //initMqtt();
 
@@ -207,16 +331,48 @@ public class FullscreenActivity extends AppCompatActivity {
     //c.drawText("" + lastPressure, 10, 10, paint);
   }
 
-
-
   @Override
   protected void onPostCreate(Bundle savedInstanceState) {
     super.onPostCreate(savedInstanceState);
 
+    mDrawerToggle.syncState();
     // Trigger the initial hide() shortly after the activity has been
     // created, to briefly hint to the user that UI controls
     // are available.
     delayedHide(100);
+  }
+
+  @Override
+  public void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+
+    mDrawerToggle.onConfigurationChanged(newConfig);
+  }
+
+  @Override
+  public boolean onPrepareOptionsMenu(Menu menu) {
+    //TODO What does this have to do with the left drawer?
+    // If the nav drawer is open, hide action items related to the content view
+    for(int i = 0; i< menu.size(); i++)
+      menu.getItem(i).setVisible(!mDrawerLayout.isDrawerOpen(mLeftDrawerView));
+
+    return super.onPrepareOptionsMenu(menu);
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    //TODO What does this have to do with the right drawer?
+    switch(item.getItemId()) {
+      case android.R.id.home:
+        mDrawerToggle.onOptionsItemSelected(item);
+
+        if(mDrawerLayout.isDrawerOpen(mRightDrawerView))
+          mDrawerLayout.closeDrawer(mRightDrawerView);
+
+        return true;
+    }
+
+    return super.onOptionsItemSelected(item);
   }
 
   //<editor-fold desc="MQTT">

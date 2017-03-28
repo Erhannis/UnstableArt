@@ -21,6 +21,7 @@ public class AddStrokePHN extends PaintAHN {
     if (state.iSelectedLayer instanceof StrokePL && state.tool instanceof StrokeTool) {
       ((StrokePL)state.iSelectedLayer).strokes.add(stroke);
       ((StrokePL)state.iSelectedLayer).colors.add(state.color);
+      ((StrokePL)state.iSelectedLayer).sizes.add(state.size);
       ((StrokePL)state.iSelectedLayer).tools.add((StrokeTool)state.tool);
     }
   }

@@ -12,7 +12,7 @@ import com.erhannis.unstableart.mechanics.color.DoublesColor;
  */
 public class BrushST extends StrokeTool {
   //TODO Hmm, tranforms?  Color bounds?  Contexts?  Paths?  Base thickness?
-  public void apply(Color color, Stroke stroke, Bitmap canvas) {
+  public void apply(Color color, double size, Stroke stroke, Bitmap canvas) {
     Paint paint = new Paint();
     //TODO Set color, alpha, width
     //TODO Should maybe Canvas be passed in?
@@ -23,7 +23,7 @@ public class BrushST extends StrokeTool {
       //TODO Inefficient?
       paint.setColor(new DoublesColor(color.getA() * pa.pressure, color.getR(), color.getG(), color.getB()).getARGBInt());
       //TODO Improve
-      paint.setStrokeWidth(pa.pressure * 10);
+      paint.setStrokeWidth((float)(pa.pressure * size));
       cCanvas.drawLine(pa.pos.x, pa.pos.y, pb.pos.x, pb.pos.y, paint);
     }
   }

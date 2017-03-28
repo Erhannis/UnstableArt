@@ -12,6 +12,9 @@ how to deal with selections?
 finish AddLayerHN
 ugh, SetLayerSettingsAHN
 Hmm, "normally" colors only mix on a given layer.  Should we, should we not?  Should there be an isolation-layer-wrapper?
+Distinguish between fingers and pen (optionize)
+Distinguish between tip and eraser
+Pinch/zoom/pan
 Figure out natural scale, system for relative scaling and translation of viewport
 
 
@@ -30,6 +33,10 @@ cache and optimize certain actions?  like compress 10 strokes into a bitmap unti
 functions on pressure, etc.
     functions on everything, in general
 time-finder: playback art until you find the spot you want to change it at.  Or time-slider?
+AlterColorwheelSMHN ?
+More sliding drawers
+Tilt/rotation support
+    General map-number support?
 
 
 Thinking on paper

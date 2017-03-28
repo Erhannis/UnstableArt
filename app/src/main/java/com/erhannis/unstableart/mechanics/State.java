@@ -10,6 +10,7 @@ import com.erhannis.unstableart.mechanics.stroke.Tool;
 public class State {
   public Tool tool;
   public Color color;
+  public double size;
   //TODO Note that this may not make sense for non-PaintLayers.
   //TODO Archetype or instantiation?
   // Instance, until proven otherwise

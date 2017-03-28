@@ -19,13 +19,14 @@ public class StrokePL extends PaintLayer {
   public transient ArrayList<Stroke> strokes;
   public transient ArrayList<StrokeTool> tools;
   public transient ArrayList<Color> colors;
+  public transient ArrayList<Double> sizes;
 
   @Override
   public void draw(ArtContext artContext, Bitmap canvas) {
     Canvas cCanvas = new Canvas(canvas);
     for (int i = 0; i < strokes.size(); i++) {
       //TODO Pass cCanvas in?
-      tools.get(i).apply(colors.get(i), strokes.get(i), canvas);
+      tools.get(i).apply(colors.get(i), sizes.get(i), strokes.get(i), canvas);
     }
   }
 
@@ -35,6 +36,7 @@ public class StrokePL extends PaintLayer {
     strokes = new ArrayList<Stroke>();
     tools = new ArrayList<StrokeTool>();
     colors = new ArrayList<Color>();
+    sizes = new ArrayList<Double>();
     return this;
   }
 

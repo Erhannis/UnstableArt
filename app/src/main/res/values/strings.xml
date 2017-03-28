@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">Unstable Art</string>
 
+    <string name="drawer_open">Open</string>
+    <string name="drawer_close">Close</string>
+
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>

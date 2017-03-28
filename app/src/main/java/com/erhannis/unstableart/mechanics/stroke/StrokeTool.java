@@ -11,5 +11,5 @@ import com.erhannis.unstableart.mechanics.color.Color;
  */
 public abstract class StrokeTool extends Tool {
   //TODO Canvas instead of Bitmap?
-  public abstract void apply(Color color, Stroke stroke, Bitmap canvas);
+  public abstract void apply(Color color, double size, Stroke stroke, Bitmap canvas);
 }

@@ -11,9 +11,10 @@ import com.erhannis.unstableart.mechanics.color.Color;
  */
 public class PenST extends StrokeTool {
   //TODO Hmm, tranforms?  Color bounds?  Contexts?  Paths?  Base thickness?
-  public void apply(Color color, Stroke stroke, Bitmap canvas) {
+  public void apply(Color color, double size, Stroke stroke, Bitmap canvas) {
     Paint paint = new Paint();
     //TODO Set color, alpha, width
+    // I'm thinking the Pen won't have a size; just a infinithin line.
     paint.setColor(color.getARGBInt());
     //TODO Should maybe Canvas be passed in?
     Canvas cCanvas = new Canvas(canvas);
