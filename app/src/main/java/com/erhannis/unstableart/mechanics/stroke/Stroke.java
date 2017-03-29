@@ -1,5 +1,6 @@
 package com.erhannis.unstableart.mechanics.stroke;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -7,7 +8,7 @@ import java.util.ArrayList;
  *
  * Created by erhannis on 3/18/17.
  */
-public class Stroke {
+public class Stroke implements Serializable {
   //TODO Make these final and immutable?
   public ArrayList<StrokePoint> points = new ArrayList<>();
 }

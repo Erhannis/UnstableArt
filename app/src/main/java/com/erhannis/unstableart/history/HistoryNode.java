@@ -1,5 +1,6 @@
 package com.erhannis.unstableart.history;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.LinkedHashSet;
 
@@ -10,7 +11,7 @@ import java.util.LinkedHashSet;
  *
  * Created by erhannis on 3/18/17.
  */
-public abstract class HistoryNode {
+public abstract class HistoryNode implements Serializable {
   public final Date creation;
   //TODO Would it make any sense to allow multiple inheritance?  cycles?
   //TODO Ech, do I or do I not make these final?

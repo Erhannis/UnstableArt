@@ -8,19 +8,20 @@ import com.erhannis.unstableart.mechanics.context.UACanvas;
 import com.erhannis.unstableart.mechanics.stroke.BrushST;
 import com.erhannis.unstableart.mechanics.stroke.Stroke;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
 /**
  * Created by erhannis on 3/18/17.
  */
-public class HistoryManager {
+public class HistoryManager implements Serializable {
   //TODO Consider finality
   protected final RootHN root;
   //TODO Hmm, how show chain?  Double-link?
   protected HistoryNode selected;
 
-  protected Stroke mCurStroke = null;
+  protected transient Stroke mCurStroke = null;
 
   public HistoryManager() {
     //TODO Consider

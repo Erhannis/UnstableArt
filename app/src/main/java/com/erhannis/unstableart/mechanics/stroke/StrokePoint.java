@@ -2,12 +2,14 @@ package com.erhannis.unstableart.mechanics.stroke;
 
 import android.graphics.PointF;
 
+import java.io.Serializable;
+
 /**
  * //TODO Color?
  *
  * Created by erhannis on 3/18/17.
  */
-public class StrokePoint {
+public class StrokePoint implements Serializable {
   public PointF pos;
   public float pressure;
 

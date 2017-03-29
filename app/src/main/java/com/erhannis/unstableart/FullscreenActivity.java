@@ -57,6 +57,14 @@ import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import java8.util.function.Consumer;
 
 /**
@@ -80,6 +88,14 @@ public class FullscreenActivity extends AppCompatActivity {
   final String publishMessage = "blah blah blah";
   private static final String COLOR_SPLINE_TOPIC = "color_spline";
   private static final String COLOR_VALUE_TOPIC = "color_value";
+
+  private static final String M_REDO = "Redo";
+  private static final String M_UNDO = "Undo";
+  private static final String M_COLOR = "Color";
+  private static final String M_SIZE = "Size";
+  private static final String M_SAVE = "Save...";
+  private static final String M_LOAD = "Load...";
+  private static final String[] ACTIONS_MENU = {M_REDO, M_UNDO, M_COLOR, M_SIZE, M_SAVE, M_LOAD};
 //</editor-fold>
 
 //<editor-fold desc="UI">
@@ -95,7 +111,8 @@ public class FullscreenActivity extends AppCompatActivity {
 
   private MqttAndroidClient mqttAndroidClient;
 
-  private final HistoryManager historyManager = new HistoryManager();
+  //TODO I kinda wanted this to be final, but now it's how we're saving/loading files
+  private HistoryManager historyManager = new HistoryManager();
 
   private final Handler mHideHandler = new Handler();
   private final Runnable mHidePart2Runnable = new Runnable() {
@@ -215,24 +232,26 @@ public class FullscreenActivity extends AppCompatActivity {
         }
       });
 
+      //TODO Add "Save" vs. "Save as..."
       mRightDrawerView.setAdapter(new ArrayAdapter<String>(this,
-              android.R.layout.simple_list_item_1, new String[]{"Redo", "Undo", "Color", "Size"}));
+              android.R.layout.simple_list_item_1, ACTIONS_MENU));
       mRightDrawerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
           //TODO Brittle.
-          switch (i) {
-            case 0: // Redo
+          String s = adapterView.getItemAtPosition(i).toString();
+          switch (s) {
+            case M_REDO:
               if (historyManager.tryRedo()) {
                 redraw();
               }
               break;
-            case 1: // Undo
+            case M_UNDO:
               if (historyManager.tryUndo()) {
                 redraw();
               }
               break;
-            case 2: // Color
+            case M_COLOR:
               getTextInput(FullscreenActivity.this, "8 digit hex color", new Consumer<String>() {
                 @Override
                 public void accept(String s) {
@@ -245,7 +264,7 @@ public class FullscreenActivity extends AppCompatActivity {
                 }
               });
               break;
-            case 3: // Size
+            case M_SIZE:
               getTextInput(FullscreenActivity.this, "Size, double-precision", new Consumer<String>() {
                 @Override
                 public void accept(String s) {
@@ -258,12 +277,91 @@ public class FullscreenActivity extends AppCompatActivity {
                 }
               });
               break;
+            case M_SAVE:
+              getTextInput(FullscreenActivity.this, "Save to filename", new Consumer<String>() {
+                @Override
+                public void accept(String s) {
+                  final File f = new File(s);
+                  if (f.exists()) {
+                    getYesNoCancelInput(FullscreenActivity.this, "File exists.  Overwrite?", new Consumer<Boolean>() {
+                      @Override
+                      public void accept(Boolean aBoolean) {
+                        try {
+                          saveTo(f);
+                        } catch (IOException e) {
+                          e.printStackTrace();
+                          showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
+                        }
+                      }
+                    });
+                  } else {
+                    if (f.getParentFile() != null) {
+                      f.getParentFile().mkdirs();
+                    }
+                    try {
+                      saveTo(f);
+                    } catch (IOException e) {
+                      e.printStackTrace();
+                      showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
+                    }
+                  }
+                }
+              });
+              break;
+            case M_LOAD:
+              getTextInput(FullscreenActivity.this, "Save to filename", new Consumer<String>() {
+                @Override
+                public void accept(String s) {
+                  final File f = new File(s);
+                  if (f.exists()) {
+                    //TODO Check if unsaved changes
+                    try {
+                      loadFrom(f);
+                    } catch (Exception e) {
+                      showToast(FullscreenActivity.this, "Couldn't load file, probably older version.\nErr message OR version string: " + e.getMessage());
+                    }
+                  } else {
+                    showToast(FullscreenActivity.this, "Can't find file!");
+                  }
+                }
+              });
+              break;
           }
         }
       });
 
       mDrawerLayout.addDrawerListener(mDrawerToggle); // Set the drawer toggle as the DrawerListener
     }
+  }
+
+  private void saveTo(File file) throws IOException {
+    FileOutputStream fos = new FileOutputStream(file);
+    ObjectOutputStream oos = new ObjectOutputStream(fos);
+    //TODO I reeeally want to find a way to tie the file version to my git commit hashes
+    oos.writeUTF("MAYBE PUT A GIT HASH HERE, IF POSSIBLE");
+    oos.writeObject(historyManager);
+    oos.flush();
+    oos.close();
+    fos.close();
+  }
+
+  private void loadFrom(File file) throws IOException, ClassNotFoundException {
+    FileInputStream fis = new FileInputStream(file);
+    ObjectInputStream ois = new ObjectInputStream(fis);
+    String versionString = ois.readUTF();
+    try {
+      historyManager = (HistoryManager) ois.readObject();
+    } catch (Exception e) { // Could make this more specific
+      e.printStackTrace();
+      try {
+        ois.close();
+        fis.close();
+      } catch (Exception e2) {
+      }
+      throw new RuntimeException(versionString, e);
+    }
+    ois.close();
+    fis.close();
   }
 
   @Override
@@ -431,8 +529,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
 // Set up the input
     final EditText input = new EditText(ctx);
-// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-    input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+    input.setInputType(InputType.TYPE_CLASS_TEXT);
     builder.setView(input);
 
 // Set up the buttons
@@ -450,6 +547,24 @@ public class FullscreenActivity extends AppCompatActivity {
     });
 
     builder.show();
+  }
+
+  public void getYesNoCancelInput(Context ctx, String title, final Consumer<Boolean> callback) {
+    new AlertDialog.Builder(this)
+            .setTitle(title)
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .setCancelable(true)
+            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+              public void onClick(DialogInterface dialog, int whichButton) {
+                callback.accept(true);
+              }})
+            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+
+              @Override
+              public void onClick(DialogInterface dialogInterface, int i) {
+                callback.accept(true);
+              }
+            } ).setNeutralButton(android.R.string.cancel, null).show();
   }
 
   public static void showToast(final Activity ctx, final String text) {
