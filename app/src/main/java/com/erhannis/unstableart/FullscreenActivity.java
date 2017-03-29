@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.text.InputType;
 import android.util.Log;
 import android.view.InputDevice;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -521,7 +522,27 @@ public class FullscreenActivity extends AppCompatActivity {
     return super.onOptionsItemSelected(item);
   }
 
-//<editor-fold desc="EXPORTABLE">
+  //TODO Allow mapping
+  @Override
+  public boolean onKeyDown(int keyCode, KeyEvent event) {
+    System.out.println("keycode " + keyCode);
+    switch (keyCode) {
+      case KeyEvent.KEYCODE_VOLUME_DOWN:
+        if (historyManager.tryUndo()) {
+          redraw();
+        }
+        return true;
+      case KeyEvent.KEYCODE_VOLUME_UP:
+        if (historyManager.tryRedo()) {
+          redraw();
+        }
+        return true;
+      default:
+        return super.onKeyUp(keyCode, event);
+    }
+  }
+
+  //<editor-fold desc="EXPORTABLE">
   // From http://stackoverflow.com/a/10904665/513038
   public static void getTextInput(Context ctx, String title, final Consumer<String> callback) {
     AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
