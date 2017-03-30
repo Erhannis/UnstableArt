@@ -16,6 +16,7 @@ Distinguish between fingers and pen (optionize)
 Distinguish between tip and eraser
 Pinch/zoom/pan
 Figure out natural scale, system for relative scaling and translation of viewport
+color picker
 
 
 Ideas/Things to do

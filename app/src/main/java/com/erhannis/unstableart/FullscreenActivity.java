@@ -47,6 +47,7 @@ import com.erhannis.unstableart.mechanics.stroke.BrushST;
 import com.erhannis.unstableart.mechanics.stroke.PenST;
 import com.erhannis.unstableart.mechanics.stroke.StrokePoint;
 import com.erhannis.unstableart.mechanics.stroke.Tool;
+import com.thoughtworks.xstream.XStream;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
@@ -114,6 +115,8 @@ public class FullscreenActivity extends AppCompatActivity {
 
   //TODO I kinda wanted this to be final, but now it's how we're saving/loading files
   private HistoryManager historyManager = new HistoryManager();
+
+  private XStream xstream = new XStream();
 
   private final Handler mHideHandler = new Handler();
   private final Runnable mHidePart2Runnable = new Runnable() {
@@ -337,7 +340,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
   private void saveTo(File file) throws IOException {
     FileOutputStream fos = new FileOutputStream(file);
-    ObjectOutputStream oos = new ObjectOutputStream(fos);
+    ObjectOutputStream oos = xstream.createObjectOutputStream(fos);
     //TODO I reeeally want to find a way to tie the file version to my git commit hashes
     oos.writeUTF("MAYBE PUT A GIT HASH HERE, IF POSSIBLE");
     oos.writeObject(historyManager);
@@ -348,7 +351,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
   private void loadFrom(File file) throws IOException, ClassNotFoundException {
     FileInputStream fis = new FileInputStream(file);
-    ObjectInputStream ois = new ObjectInputStream(fis);
+    ObjectInputStream ois = xstream.createObjectInputStream(fis);
     String versionString = ois.readUTF();
     try {
       historyManager = (HistoryManager) ois.readObject();
@@ -376,6 +379,8 @@ public class FullscreenActivity extends AppCompatActivity {
     getSupportActionBar().setHomeButtonEnabled(true);
 
     //initMqtt();
+
+    xstream.setMode(XStream.ID_REFERENCES);
 
     InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
     InputManager im = (InputManager) this.getSystemService(Context.INPUT_SERVICE);
@@ -525,6 +530,7 @@ public class FullscreenActivity extends AppCompatActivity {
   //TODO Allow mapping
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
+    //TODO Broke back button?
     System.out.println("keycode " + keyCode);
     switch (keyCode) {
       case KeyEvent.KEYCODE_VOLUME_DOWN:
@@ -538,7 +544,7 @@ public class FullscreenActivity extends AppCompatActivity {
         }
         return true;
       default:
-        return super.onKeyUp(keyCode, event);
+        return super.onKeyDown(keyCode, event);
     }
   }
 
