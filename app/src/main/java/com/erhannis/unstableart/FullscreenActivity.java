@@ -380,7 +380,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
     //initMqtt();
 
-    xstream.setMode(XStream.ID_REFERENCES);
+    //xstream.setMode(XStream.ID_REFERENCES);
 
     InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
     InputManager im = (InputManager) this.getSystemService(Context.INPUT_SERVICE);

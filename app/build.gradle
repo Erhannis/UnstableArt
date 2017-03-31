@@ -10,12 +10,19 @@ android {
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
+        jackOptions {
+            enabled true
+        }
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
@@ -36,9 +43,7 @@ dependencies {
     compile 'com.erhannis:MathNStuff:0.1.0-SNAPSHOT'
     compile 'com.android.support:design:25.3.0'
 
-    compile ('com.thoughtworks.xstream:xstream:1.4.7') {
-        exclude group: 'xmlpull'
-    }
+    compile 'com.thoughtworks.xstream:xstream:1.4.9'
 
     //TODO I wish I didn't have to use streamsupport!
     compile 'net.sourceforge.streamsupport:streamsupport:1.5.4'
