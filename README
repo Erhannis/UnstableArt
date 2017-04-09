@@ -2,6 +2,9 @@ Unstable Art!  Art program with experimental features.
 
 Undo-tree: mess with time; never draw on the wrong layer again.  Auto-redraw painting in higher-res.
 
+Building:
+*  You'll need to run `mvn clean install` on https://github.com/romix/kryo/tree/kryo-2.23-continuations - it's the only code I've found that will serialize my long history chains.
+
 Released under the MIT license.
 
 Note: you'll probably need to clone and `mvn clean install` my util project, MathNStuff.  ( https://github.com/Erhannis/MathNStuff )

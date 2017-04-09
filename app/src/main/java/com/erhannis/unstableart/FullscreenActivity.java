@@ -47,6 +47,9 @@ import com.erhannis.unstableart.mechanics.stroke.BrushST;
 import com.erhannis.unstableart.mechanics.stroke.PenST;
 import com.erhannis.unstableart.mechanics.stroke.StrokePoint;
 import com.erhannis.unstableart.mechanics.stroke.Tool;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
@@ -336,33 +339,23 @@ public class FullscreenActivity extends AppCompatActivity {
   }
 
   private void saveTo(File file) throws IOException {
-    FileOutputStream fos = new FileOutputStream(file);
-    ObjectOutputStream out = new ObjectOutputStream(fos);
+    //TODO Static Kryo?
+    Kryo kryo = new Kryo();
+    Output output = new Output(new FileOutputStream(file));
     //TODO Write git commit
-    out.writeUTF("MAYBE PUT A GIT HASH HERE, IF POSSIBLE");
-    out.writeObject( historyManager );
-    out.flush();
-    out.close();
-    fos.close();
+    output.writeString("MAYBE PUT A GIT HASH HERE, IF POSSIBLE");
+    kryo.writeObject(output, historyManager);
+    output.close();
   }
 
-  private void loadFrom(File file) throws IOException, ClassNotFoundException {
-    FileInputStream fis = new FileInputStream(file);
-    ObjectInputStream in = new ObjectInputStream(fis);
-    String versionString = in.readUTF();
-    try {
-      historyManager = (HistoryManager) in.readObject();
-    } catch (Exception e) {
-      e.printStackTrace();
-      try {
-        in.close();
-        fis.close();
-      } catch (Exception e2) {
-      }
-      throw new RuntimeException(versionString, e);
-    }
-    in.close();
-    fis.close();
+  private void loadFrom(File file) throws IOException {
+    //TODO Static Kryo?
+    Kryo kryo = new Kryo();
+    Input input = new Input(new FileInputStream("file.bin"));
+    String versionString = input.readString();
+    historyManager = kryo.readObject(input, HistoryManager.class);
+    input.close();
+    //TODO Throw error with version on fail?
   }
 
   @Override
