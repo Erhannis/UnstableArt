@@ -24,7 +24,7 @@ public class BrushST extends StrokeTool {
       paint.setColor(new DoublesColor(color.getA() * pa.pressure, color.getR(), color.getG(), color.getB()).getARGBInt());
       //TODO Improve
       paint.setStrokeWidth((float)(pa.pressure * size));
-      cCanvas.drawLine(pa.pos.x, pa.pos.y, pb.pos.x, pb.pos.y, paint);
+      cCanvas.drawLine((float)pa.x, (float)pa.y, (float)pb.x, (float)pb.y, paint);
     }
   }
 }

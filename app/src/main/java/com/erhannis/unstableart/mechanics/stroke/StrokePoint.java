@@ -10,11 +10,14 @@ import java.io.Serializable;
  * Created by erhannis on 3/18/17.
  */
 public class StrokePoint implements Serializable {
-  public PointF pos;
+  //TODO Could have a `landmarkX/Y`, then `localX/Y`, for super detail
+  public double x;
+  public double y;
   public float pressure;
 
-  public StrokePoint(PointF pos, float pressure) {
-    this.pos = pos;
+  public StrokePoint(double x, double y, float pressure) {
+    this.x = x;
+    this.y = y;
     this.pressure = pressure;
   }
 }

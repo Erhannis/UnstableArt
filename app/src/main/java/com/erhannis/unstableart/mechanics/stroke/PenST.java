@@ -21,7 +21,7 @@ public class PenST extends StrokeTool {
     for (int i = 0; i < stroke.points.size() - 1; i++) {
       StrokePoint pa = stroke.points.get(i);
       StrokePoint pb = stroke.points.get(i+1);
-      cCanvas.drawLine(pa.pos.x, pa.pos.y, pb.pos.x, pb.pos.y, paint);
+      cCanvas.drawLine((float)pa.x, (float)pa.y, (float)pb.x, (float)pb.y, paint);
     }
   }
 }

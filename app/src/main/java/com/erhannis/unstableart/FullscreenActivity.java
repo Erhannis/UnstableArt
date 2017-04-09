@@ -47,7 +47,6 @@ import com.erhannis.unstableart.mechanics.stroke.BrushST;
 import com.erhannis.unstableart.mechanics.stroke.PenST;
 import com.erhannis.unstableart.mechanics.stroke.StrokePoint;
 import com.erhannis.unstableart.mechanics.stroke.Tool;
-import com.thoughtworks.xstream.XStream;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
@@ -58,6 +57,8 @@ import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.nustaq.serialization.FSTObjectInput;
+import org.nustaq.serialization.FSTObjectOutput;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -115,8 +116,6 @@ public class FullscreenActivity extends AppCompatActivity {
 
   //TODO I kinda wanted this to be final, but now it's how we're saving/loading files
   private HistoryManager historyManager = new HistoryManager();
-
-  private XStream xstream = new XStream();
 
   private final Handler mHideHandler = new Handler();
   private final Runnable mHidePart2Runnable = new Runnable() {
@@ -340,31 +339,31 @@ public class FullscreenActivity extends AppCompatActivity {
 
   private void saveTo(File file) throws IOException {
     FileOutputStream fos = new FileOutputStream(file);
-    ObjectOutputStream oos = xstream.createObjectOutputStream(fos);
-    //TODO I reeeally want to find a way to tie the file version to my git commit hashes
-    oos.writeUTF("MAYBE PUT A GIT HASH HERE, IF POSSIBLE");
-    oos.writeObject(historyManager);
-    oos.flush();
-    oos.close();
+    FSTObjectOutput out = new FSTObjectOutput(fos);
+    //TODO Write git commit
+    out.writeUTF("MAYBE PUT A GIT HASH HERE, IF POSSIBLE");
+    out.writeObject( historyManager );
+    out.flush();
+    out.close();
     fos.close();
   }
 
   private void loadFrom(File file) throws IOException, ClassNotFoundException {
     FileInputStream fis = new FileInputStream(file);
-    ObjectInputStream ois = xstream.createObjectInputStream(fis);
-    String versionString = ois.readUTF();
+    FSTObjectInput in = new FSTObjectInput(fis);
+    String versionString = in.readUTF();
     try {
-      historyManager = (HistoryManager) ois.readObject();
-    } catch (Exception e) { // Could make this more specific
+      historyManager = (HistoryManager) in.readObject();
+    } catch (Exception e) {
       e.printStackTrace();
       try {
-        ois.close();
+        in.close();
         fis.close();
       } catch (Exception e2) {
       }
       throw new RuntimeException(versionString, e);
     }
-    ois.close();
+    in.close();
     fis.close();
   }
 
@@ -411,6 +410,7 @@ public class FullscreenActivity extends AppCompatActivity {
       @Override
       public boolean onTouch(View v, MotionEvent event) {
         //TODO Make SURE this thing gets all the processing it needs.  Do NOT drop points or strokes, so help me.
+        //TODO Transform
         float x = event.getX();
         float y = event.getY();
         float p = event.getPressure();
@@ -428,7 +428,7 @@ public class FullscreenActivity extends AppCompatActivity {
             historyManager.startStrokeTransaction(); // Continue into next case
           case MotionEvent.ACTION_MOVE: //TODO What about basically anything else?
             //TODO Check transaction?
-            historyManager.getCurStroke().points.add(new StrokePoint(new PointF(x, y), p));
+            historyManager.getCurStroke().points.add(new StrokePoint(x, y, p));
             return true; //TODO SHOULD draw?
           default:
             Log.d(TAG, "Unhandled action: " + event.getActionMasked());
