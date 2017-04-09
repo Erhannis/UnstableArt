@@ -46,8 +46,6 @@ dependencies {
     compile 'com.erhannis:MathNStuff:0.1.0-SNAPSHOT'
     compile 'com.android.support:design:25.3.0'
 
-    compile 'de.ruedigermoeller:fst:2.47'
-
     //TODO I wish I didn't have to use streamsupport!
     compile 'net.sourceforge.streamsupport:streamsupport:1.5.4'
     compile 'net.sourceforge.streamsupport:streamsupport-cfuture:1.5.4'

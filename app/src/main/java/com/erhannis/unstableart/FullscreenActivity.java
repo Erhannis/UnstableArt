@@ -57,8 +57,6 @@ import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.nustaq.serialization.FSTObjectInput;
-import org.nustaq.serialization.FSTObjectOutput;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -339,7 +337,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
   private void saveTo(File file) throws IOException {
     FileOutputStream fos = new FileOutputStream(file);
-    FSTObjectOutput out = new FSTObjectOutput(fos);
+    ObjectOutputStream out = new ObjectOutputStream(fos);
     //TODO Write git commit
     out.writeUTF("MAYBE PUT A GIT HASH HERE, IF POSSIBLE");
     out.writeObject( historyManager );
@@ -350,7 +348,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
   private void loadFrom(File file) throws IOException, ClassNotFoundException {
     FileInputStream fis = new FileInputStream(file);
-    FSTObjectInput in = new FSTObjectInput(fis);
+    ObjectInputStream in = new ObjectInputStream(fis);
     String versionString = in.readUTF();
     try {
       historyManager = (HistoryManager) in.readObject();
