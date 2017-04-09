@@ -12,6 +12,11 @@ public class AddLayerLMHN extends LayerModificationAHN {
   public final GroupLayer aParent;
   public final Layer aChild;
 
+  public AddLayerLMHN() {
+    aParent = null;
+    aChild = null;
+  }
+
   public AddLayerLMHN(GroupLayer aParent, Layer aChild) {
     if (!aParent.archetype || !aChild.archetype) {
       System.err.println("Don't save instantiated layers in the nodes!  Just archetypes!");

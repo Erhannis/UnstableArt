@@ -313,7 +313,7 @@ public class FullscreenActivity extends AppCompatActivity {
               });
               break;
             case M_LOAD:
-              getTextInput(FullscreenActivity.this, "Save to filename", new Consumer<String>() {
+              getTextInput(FullscreenActivity.this, "Load from filename", new Consumer<String>() {
                 @Override
                 public void accept(String s) {
                   final File f = new File(s);
@@ -351,7 +351,7 @@ public class FullscreenActivity extends AppCompatActivity {
   private void loadFrom(File file) throws IOException {
     //TODO Static Kryo?
     Kryo kryo = new Kryo();
-    Input input = new Input(new FileInputStream("file.bin"));
+    Input input = new Input(new FileInputStream(file));
     String versionString = input.readString();
     historyManager = kryo.readObject(input, HistoryManager.class);
     input.close();

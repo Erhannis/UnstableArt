@@ -10,6 +10,10 @@ import com.erhannis.mathnstuff.MeUtils;
 public class IntColor extends Color {
   public final int value;
 
+  public IntColor() {
+    value = 0;
+  }
+
   public IntColor(int argb) {
     this.value = argb;
   }
