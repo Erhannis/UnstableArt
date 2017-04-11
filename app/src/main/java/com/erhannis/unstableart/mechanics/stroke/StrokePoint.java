@@ -15,7 +15,7 @@ public class StrokePoint implements Serializable {
   public double y;
   public float pressure;
 
-  public StrokePoint() {
+  private StrokePoint() {
   }
 
   public StrokePoint(double x, double y, float pressure) {

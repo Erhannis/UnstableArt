@@ -10,7 +10,7 @@ import com.erhannis.mathnstuff.MeUtils;
 public class IntColor extends Color {
   public final int value;
 
-  public IntColor() {
+  private IntColor() {
     value = 0;
   }
 

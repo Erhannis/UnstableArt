@@ -12,7 +12,7 @@ public class AddLayerLMHN extends LayerModificationAHN {
   public final GroupLayer aParent;
   public final Layer aChild;
 
-  public AddLayerLMHN() {
+  private AddLayerLMHN() {
     aParent = null;
     aChild = null;
   }

@@ -12,7 +12,7 @@ import com.erhannis.unstableart.mechanics.stroke.Tool;
 public class SetToolSMHN extends StateModificationAHN {
   public final Tool tool;
 
-  public SetToolSMHN() {
+  private SetToolSMHN() {
     tool = null;
   }
 

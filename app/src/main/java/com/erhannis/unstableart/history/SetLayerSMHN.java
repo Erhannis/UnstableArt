@@ -10,7 +10,7 @@ import com.erhannis.unstableart.mechanics.context.UACanvas;
 public class SetLayerSMHN extends StateModificationAHN {
   public final Layer aLayer;
 
-  public SetLayerSMHN() {
+  private SetLayerSMHN() {
     aLayer = null;
   }
 

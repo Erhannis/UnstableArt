@@ -9,7 +9,7 @@ public class DoublesColor extends Color {
   // A, R, G, B; nominally from 0-1, but not necessarily.  Should be immutable, probably.
   public final double[] value;
 
-  public DoublesColor() {
+  private DoublesColor() {
     value = new double[4];
   }
 

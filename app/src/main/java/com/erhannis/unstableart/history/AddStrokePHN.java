@@ -12,7 +12,7 @@ import com.erhannis.unstableart.mechanics.stroke.StrokeTool;
 public class AddStrokePHN extends PaintAHN {
   public final Stroke stroke;
 
-  public AddStrokePHN() {
+  private AddStrokePHN() {
     stroke = null;
   }
 

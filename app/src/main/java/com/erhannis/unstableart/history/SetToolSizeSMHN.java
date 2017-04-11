@@ -10,7 +10,7 @@ import com.erhannis.unstableart.mechanics.context.UACanvas;
 public class SetToolSizeSMHN extends StateModificationAHN {
   public final double size;
 
-  public SetToolSizeSMHN() {
+  private SetToolSizeSMHN() {
     size = 10;
   }
 

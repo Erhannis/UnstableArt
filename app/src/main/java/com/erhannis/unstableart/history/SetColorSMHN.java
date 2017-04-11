@@ -14,7 +14,7 @@ import com.erhannis.unstableart.mechanics.context.UACanvas;
 public class SetColorSMHN extends StateModificationAHN {
   public final Color color;
 
-  public SetColorSMHN() {
+  private SetColorSMHN() {
     color = null;
   }
 
