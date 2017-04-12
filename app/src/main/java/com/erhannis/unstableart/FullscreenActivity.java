@@ -8,6 +8,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.PointF;
 import android.hardware.input.InputManager;
 import android.support.v4.widget.DrawerLayout;
@@ -402,9 +403,8 @@ public class FullscreenActivity extends AppCompatActivity {
       public boolean onTouch(View v, MotionEvent event) {
         //TODO Make SURE this thing gets all the processing it needs.  Do NOT drop points or strokes, so help me.
         //TODO Transform
-        float x = event.getX();
-        float y = event.getY();
-        float p = event.getPressure();
+        //TODO Pointers?
+        //TODO Get type, filter accordingly
         //System.out.println(event.getActionMasked());
 
         switch (event.getActionMasked()) {
@@ -419,7 +419,23 @@ public class FullscreenActivity extends AppCompatActivity {
             historyManager.startStrokeTransaction(); // Continue into next case
           case MotionEvent.ACTION_MOVE: //TODO What about basically anything else?
             //TODO Check transaction?
-            historyManager.getCurStroke().points.add(new StrokePoint(x, y, p));
+            float x = Float.NaN;
+            float y = Float.NaN;
+            float p = Float.NaN;
+            for (int i = 0; i < event.getHistorySize(); i++) {
+              x = event.getHistoricalX(i);
+              y = event.getHistoricalY(i);
+              p = event.getHistoricalPressure(i);
+              historyManager.getCurStroke().points.add(new StrokePoint(x, y, p));
+            }
+            if (event.getX() != x || event.getY() != y) {
+              //TODO Debatable
+              x = event.getX();
+              y = event.getY();
+              p = event.getPressure();
+              historyManager.getCurStroke().points.add(new StrokePoint(x, y, p));
+            }
+
             return true; //TODO SHOULD draw?
           default:
             Log.d(TAG, "Unhandled action: " + event.getActionMasked());
@@ -471,7 +487,7 @@ public class FullscreenActivity extends AppCompatActivity {
     Matrix viewMatrix = new Matrix();
     //TODO Paint?
     viewport.drawBitmap(bCanvas, viewMatrix, null);
-    //c.drawText("" + lastPressure, 10, 10, paint);
+    //viewport.drawText("" + debugInfo, 10, 10, new Paint());
   }
 
   @Override
