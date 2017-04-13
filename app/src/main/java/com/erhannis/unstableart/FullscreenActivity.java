@@ -49,6 +49,7 @@ import com.erhannis.unstableart.mechanics.stroke.PenST;
 import com.erhannis.unstableart.mechanics.stroke.StrokePoint;
 import com.erhannis.unstableart.mechanics.stroke.Tool;
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.KryoException;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
@@ -323,6 +324,7 @@ public class FullscreenActivity extends AppCompatActivity {
                     try {
                       loadFrom(f);
                     } catch (Exception e) {
+                      e.printStackTrace();
                       showToast(FullscreenActivity.this, "Couldn't load file, probably older version.\nErr message OR version string: " + e.getMessage());
                     }
                   } else {
@@ -337,6 +339,8 @@ public class FullscreenActivity extends AppCompatActivity {
 
       mDrawerLayout.addDrawerListener(mDrawerToggle); // Set the drawer toggle as the DrawerListener
     }
+
+    redraw();
   }
 
   private void saveTo(File file) throws IOException {
@@ -351,10 +355,25 @@ public class FullscreenActivity extends AppCompatActivity {
   private void loadFrom(File file) throws IOException {
     //TODO Static Kryo?
     Kryo kryo = new Kryo();
-    Input input = new Input(new FileInputStream(file));
-    String versionString = input.readString();
-    historyManager = kryo.readObject(input, HistoryManager.class);
-    input.close();
+    String versionString = null;
+    Input input = null;
+    try {
+      input = new Input(new FileInputStream(file));
+      versionString = input.readString();
+      historyManager = kryo.readObject(input, HistoryManager.class);
+      input.close();
+    } catch (KryoException e) {
+      e.printStackTrace();
+      try {
+        input.close();
+      } catch (Exception e2) {
+      }
+      if (versionString != null) {
+        throw new RuntimeException(versionString, e);
+      } else {
+        throw e;
+      }
+    }
     //TODO Throw error with version on fail?
   }
 
