@@ -15,6 +15,13 @@ public class GroupLayer extends Layer {
   // Low=back
   public transient ArrayList<Layer> iLayers;
 
+  public GroupLayer() {
+  }
+
+  protected GroupLayer(Layer uuidParent) {
+    super(uuidParent);
+  }
+
   public void addLayer(Layer iLayer) {
     iLayers.add(iLayer);
     //TODO Notify anyone?
@@ -42,6 +49,6 @@ public class GroupLayer extends Layer {
 
   @Override
   public GroupLayer instantiate() {
-    return (GroupLayer) new GroupLayer().init();
+    return (GroupLayer) new GroupLayer(this).init();
   }
 }

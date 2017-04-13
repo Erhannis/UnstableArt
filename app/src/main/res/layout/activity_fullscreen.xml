@@ -20,7 +20,7 @@ tools:context="com.erhannis.unstableart.FullscreenActivity">
             android:layout_alignParentEnd="true"/>
     </LinearLayout>
     <ListView android:id="@+id/left_drawer"
-              android:layout_width="240dp"
+              android:layout_width="500dp"
               android:layout_height="match_parent"
               android:layout_gravity="left"
               android:choiceMode="singleChoice"

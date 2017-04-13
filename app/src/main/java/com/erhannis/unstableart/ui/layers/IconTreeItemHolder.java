@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.erhannis.unstableart.R;
+import com.erhannis.unstableart.mechanics.context.Layer;
 import com.github.johnkil.print.PrintView;
 import com.unnamed.b.atv.model.TreeNode;
 
@@ -32,20 +33,27 @@ public class IconTreeItemHolder extends TreeNode.BaseNodeViewHolder<IconTreeItem
 
         arrowView = (PrintView) view.findViewById(R.id.arrow_icon);
 
+        //TODO Do?
+        /*
         view.findViewById(R.id.btn_addFolder).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TreeNode newFolder = new TreeNode(new IconTreeItem(R.string.ic_folder, "New Folder"));
+                //TODO Add layer?
+                TreeNode newFolder = new TreeNode(new IconTreeItem(R.string.ic_folder, null, "New Folder"));
                 getTreeView().addNode(node, newFolder);
             }
         });
+        */
 
+        //TODO Allow?
+        /*
         view.findViewById(R.id.btn_delete).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getTreeView().removeNode(node);
             }
         });
+        */
 
         //if My computer
         if (node.getLevel() == 1) {
@@ -61,11 +69,22 @@ public class IconTreeItemHolder extends TreeNode.BaseNodeViewHolder<IconTreeItem
     }
 
     public static class IconTreeItem {
+        //TODO Do?
+        /*
+        public static interface IconTreeItemInterface {
+            public void onClickAdd(IconTreeItem item);
+            public void onClickDelete(IconTreeItem item);
+        }
+        */
+
         public int icon;
+        public Layer layer;
         public String text;
 
-        public IconTreeItem(int icon, String text) {
+
+        public IconTreeItem(int icon, Layer layer, String text) {
             this.icon = icon;
+            this.layer = layer;
             this.text = text;
         }
     }

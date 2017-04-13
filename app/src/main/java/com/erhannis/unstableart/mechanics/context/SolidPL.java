@@ -12,6 +12,13 @@ public class SolidPL extends PaintLayer {
   //TODO Initialize?
   public transient Color color;
 
+  public SolidPL() {
+  }
+
+  protected SolidPL(Layer uuidParent) {
+    super(uuidParent);
+  }
+
   @Override
   public void draw(ArtContext artContext, Bitmap canvas) {
     Canvas cCanvas = new Canvas(canvas);
@@ -27,6 +34,6 @@ public class SolidPL extends PaintLayer {
   //TODO Pass in color?
   @Override
   public StrokePL instantiate() {
-    return (StrokePL)new StrokePL().init();
+    return (StrokePL)new StrokePL(this).init();
   }
 }

@@ -3,6 +3,8 @@ package com.erhannis.unstableart.history;
 import com.erhannis.unstableart.mechanics.State;
 import com.erhannis.unstableart.mechanics.color.DoublesColor;
 import com.erhannis.unstableart.mechanics.context.BlurEL;
+import com.erhannis.unstableart.mechanics.context.GroupLayer;
+import com.erhannis.unstableart.mechanics.context.Layer;
 import com.erhannis.unstableart.mechanics.context.StrokePL;
 import com.erhannis.unstableart.mechanics.context.UACanvas;
 import com.erhannis.unstableart.mechanics.stroke.BrushST;
@@ -11,6 +13,8 @@ import com.erhannis.unstableart.mechanics.stroke.Stroke;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
 
 /**
  * Created by erhannis on 3/18/17.
@@ -117,6 +121,54 @@ public class HistoryManager implements Serializable {
   public synchronized void rollbackStrokeTransaction() {
     //TODO Throw error if not in correct state?
     mCurStroke = null;
+  }
+
+  //TODO Check transaction?
+  public synchronized void executeCreateLayer(String parentUuid, Layer child) {
+    Layer layer = findLayerByUuid(root, parentUuid);
+    if (layer != null && layer instanceof GroupLayer) {
+      attach(new AddLayerLMHN((GroupLayer)layer, child));
+    } else {
+      System.err.println("HM.executeCreateLayer error");
+    }
+  }
+
+  //TODO Check transaction?
+  public synchronized void executeSelectLayer(String layerUuid) {
+    Layer layer = findLayerByUuid(root, layerUuid);
+    if (layer != null) {
+      attach(new SetLayerSMHN(layer));
+    } else {
+      System.err.println("HM.executeSelectLayer error");
+    }
+  }
+
+  protected static Layer findLayerByUuid(HistoryNode root, String layerUuid) {
+    // Assuming here that RootHN occurs first or not at all
+    if (root instanceof RootHN && layerUuid.equals(((RootHN)root).aCanvas.uuid)) {
+      return ((RootHN)root).aCanvas;
+    }
+    LinkedList<HistoryNode> toSearch = new LinkedList<>();
+    HashSet<HistoryNode> searched = new HashSet<>();
+    toSearch.offer(root);
+    while (!toSearch.isEmpty()) {
+      HistoryNode node = toSearch.poll();
+      searched.add(node);
+      //TODO It's POSSIBLE that we might have other kinds of nodes that introduce new layers.
+      //TODO We might also consider having a different way of tracking layers.
+      if (node instanceof AddLayerLMHN) {
+        if (layerUuid.equals(((AddLayerLMHN)node).aChild.uuid)) {
+          return ((AddLayerLMHN)node).aChild;
+        }
+      }
+      for (HistoryNode child : node.children) {
+        // Just in case we ever allow cycles
+        if (!searched.contains(child)) {
+          toSearch.offer(child);
+        }
+      }
+    }
+    return null;
   }
 
   public UACanvas rebuild() {

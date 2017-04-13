@@ -15,6 +15,13 @@ public class BlurEL extends EffectLayer {
   //TODO Double?
   public transient int radius;
 
+  public BlurEL() {
+  }
+
+  protected BlurEL(Layer uuidParent) {
+    super(uuidParent);
+  }
+
   @Override
   public void draw(ArtContext artContext, Bitmap bCanvas) {
     Bitmap bCanvas2 = Bitmap.createBitmap(bCanvas.getWidth(), bCanvas.getHeight(), bCanvas.getConfig());
@@ -61,6 +68,6 @@ public class BlurEL extends EffectLayer {
 
   @Override
   public BlurEL instantiate() {
-    return (BlurEL)new BlurEL().init();
+    return (BlurEL)new BlurEL(this).init();
   }
 }

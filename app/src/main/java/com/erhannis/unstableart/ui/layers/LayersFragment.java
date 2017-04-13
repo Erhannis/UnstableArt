@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.erhannis.unstableart.R;
 import com.erhannis.unstableart.mechanics.context.GroupLayer;
 import com.erhannis.unstableart.mechanics.context.Layer;
+import com.erhannis.unstableart.mechanics.context.StrokePL;
 import com.unnamed.b.atv.model.TreeNode;
 import com.unnamed.b.atv.view.AndroidTreeView;
 
@@ -91,26 +92,42 @@ public class LayersFragment extends Fragment {
       llView.removeAllViews();
       TreeNode root = constructTree(mGroupLayer);
 
-      root = new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_folder, "node 0"));
+      /*
+      root = new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_folder, null, "node 0"));
       root.setSelectable(false);
-      root.addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_folder, "node 0.0")){{
-        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, "node 0.0.0")));
-        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, "node 0.0.1")));
-        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, "node 0.0.2")));
+      root.addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_folder, null, "node 0.0")){{
+        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, null, "node 0.0.0")));
+        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, null, "node 0.0.1")));
+        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, null, "node 0.0.2")));
       }});
-      root.addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_folder, "node 0.1")){{
-        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, "node 0.1.0")));
-        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, "node 0.1.1")));
-        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, "node 0.1.2")));
+      root.addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_folder, null, "node 0.1")){{
+        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, null, "node 0.1.0")));
+        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, null, "node 0.1.1")));
+        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, null, "node 0.1.2")));
       }});
+      */
 
       AndroidTreeView tView = new AndroidTreeView(getActivity(), root);
       tView.setDefaultContainerStyle(R.style.TreeNodeStyleCustom);
       tView.setDefaultViewHolder(IconTreeItemHolder.class);
+      /*
+      tView.setDefaultNodeClickListener(new TreeNode.TreeNodeClickListener() {
+        @Override
+        public void onClick(TreeNode node, Object value) {
+          selectLayer(((IconTreeItemHolder.IconTreeItem)value).layer);
+        }
+      });
+      */
       tView.setDefaultNodeLongClickListener(new TreeNode.TreeNodeLongClickListener() {
         @Override
         public boolean onLongClick(TreeNode node, Object value) {
-
+          Layer parent = ((IconTreeItemHolder.IconTreeItem)value).layer;
+          if (parent instanceof GroupLayer) {
+            Layer child = new StrokePL();
+            createLayer((GroupLayer)parent, child);
+          } else {
+            selectLayer(parent);
+          }
           return true;
         }
       });
@@ -126,10 +143,15 @@ public class LayersFragment extends Fragment {
     return textView;
   }
 
-  // TODO: Rename method, update argument and hook method into UI event
-  public void onButtonPressed(Uri uri) {
+  private void createLayer(GroupLayer parent, Layer child) {
     if (mListener != null) {
-      mListener.onFragmentInteraction(uri);
+      mListener.onCreateLayer(parent.uuid, child);
+    }
+  }
+
+  private void selectLayer(Layer layer) {
+    if (mListener != null) {
+      mListener.onSelectLayer(layer.uuid);
     }
   }
 
@@ -162,24 +184,28 @@ public class LayersFragment extends Fragment {
    */
   public interface OnLayersFragmentInteractionListener {
     // TODO: Update argument type and name
-    void onFragmentInteraction(Uri uri);
+    void onCreateLayer(String parentUuid, Layer child);
+    void onSelectLayer(String layerUuid);
   }
 
   protected TreeNode constructTree(GroupLayer rootLayer) {
     // I've started to become wary of recursive functions
     LinkedList<TreeNode> toProcess = new LinkedList<>();
 
-    TreeNode root = new TreeNode(rootLayer);
+
+    TreeNode root = new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_folder, null, "root"));
     root.setSelectable(false);
-    toProcess.offer(root);
+    TreeNode newRoot = new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_folder, rootLayer, rootLayer.toString()));
+    root.addChild(newRoot);
+    toProcess.offer(newRoot);
 
     while (!toProcess.isEmpty()) {
       TreeNode node = toProcess.poll();
-      Layer layer = (Layer)node.getValue();
+      Layer layer = ((IconTreeItemHolder.IconTreeItem)node.getValue()).layer;
       //TODO Set text, image, etc.?
       if (layer instanceof GroupLayer) {
         for (Layer childLayer : ((GroupLayer)layer).iLayers) {
-          TreeNode childNode = new TreeNode(childLayer);
+          TreeNode childNode = new TreeNode(new IconTreeItemHolder.IconTreeItem((childLayer instanceof GroupLayer) ? R.string.ic_folder : R.string.ic_drive_file, childLayer, childLayer.toString()));
           node.addChild(childNode);
           toProcess.offer(childNode);
         }

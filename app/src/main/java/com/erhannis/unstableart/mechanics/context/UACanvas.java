@@ -9,6 +9,13 @@ public class UACanvas extends GroupLayer {
   //TODO Methods?
   public HashMap<Layer, Layer> archetypeToInstantiation;
 
+  public UACanvas() {
+  }
+
+  protected UACanvas(Layer uuidParent) {
+    super(uuidParent);
+  }
+
   @Override
   protected Layer init() {
     super.init();
@@ -18,6 +25,6 @@ public class UACanvas extends GroupLayer {
 
   @Override
   public UACanvas instantiate() {
-    return (UACanvas) new UACanvas().init();
+    return (UACanvas) new UACanvas(this).init();
   }
 }

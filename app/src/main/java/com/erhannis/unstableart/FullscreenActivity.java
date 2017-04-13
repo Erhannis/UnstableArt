@@ -49,6 +49,7 @@ import com.erhannis.unstableart.history.SetToolSizeSMHN;
 import com.erhannis.unstableart.mechanics.color.DoublesColor;
 import com.erhannis.unstableart.mechanics.color.IntColor;
 import com.erhannis.unstableart.mechanics.context.ArtContext;
+import com.erhannis.unstableart.mechanics.context.Layer;
 import com.erhannis.unstableart.mechanics.context.UACanvas;
 import com.erhannis.unstableart.mechanics.stroke.BrushST;
 import com.erhannis.unstableart.mechanics.stroke.PenST;
@@ -215,7 +216,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   }
 
   protected void initToolDrawer() {
-    /*
+    /**/
     LinearLayout rowLayout = new LinearLayout(this);
     rowLayout.setId(View.generateViewId());
 
@@ -232,7 +233,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     fragTransaction.commit();
 
     if (1==1) return;
-    */
+    /**/
     mLeftDrawerView.setAdapter(new ArrayAdapter<String>(this,
             android.R.layout.simple_list_item_single_choice, new String[]{"Pen", "Brush", "test"}));
     //TODO Set selected listener
@@ -834,7 +835,14 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   //</editor-fold>
 
   @Override
-  public void onFragmentInteraction(Uri uri) {
-    //TODO Do eventually
+  public void onCreateLayer(String parentUuid, Layer child) {
+    historyManager.executeCreateLayer(parentUuid, child);
+    redraw();
+  }
+
+  @Override
+  public void onSelectLayer(String layerUuid) {
+    historyManager.executeSelectLayer(layerUuid);
+    redraw();
   }
 }

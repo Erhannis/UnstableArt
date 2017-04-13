@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * Let's see; a layer needs...
@@ -21,6 +22,9 @@ public abstract class Layer implements Serializable {
   //TODO I feel like this ought to be transient, too, but I'm not sure
   public boolean archetype = true;
 
+  // I have mixed feelings about using UUIDs for identification, buuuuut....
+  public final String uuid;
+
   public transient double opacity = 1.0; //TODO Technically initialization
 
   /**
@@ -35,6 +39,14 @@ public abstract class Layer implements Serializable {
    * @param canvas
    */
   public abstract void draw(ArtContext artContext, Bitmap canvas);
+
+  public Layer() {
+    this.uuid = UUID.randomUUID().toString();
+  }
+
+  protected Layer(Layer uuidParent) {
+    this.uuid = uuidParent.uuid;
+  }
 
   protected void copyOntoWithOpacity(Bitmap bIn, Bitmap bOut) {
     Canvas cCanvas = new Canvas(bOut);
@@ -57,6 +69,6 @@ public abstract class Layer implements Serializable {
     return this;
   }
 
-  // I strongly suggest this be written: return (LayerSubclass)new LayerSubclass().init();
+  // I strongly suggest this be written: return (LayerSubclass)new LayerSubclass(this).init();
   public abstract Layer instantiate();
 }

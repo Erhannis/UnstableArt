@@ -21,6 +21,13 @@ public class StrokePL extends PaintLayer {
   public transient ArrayList<Color> colors;
   public transient ArrayList<Double> sizes;
 
+  public StrokePL() {
+  }
+
+  protected StrokePL(Layer uuidParent) {
+    super(uuidParent);
+  }
+
   @Override
   public void draw(ArtContext artContext, Bitmap canvas) {
     Canvas cCanvas = new Canvas(canvas);
@@ -42,6 +49,6 @@ public class StrokePL extends PaintLayer {
 
   @Override
   public StrokePL instantiate() {
-    return (StrokePL)new StrokePL().init();
+    return (StrokePL)new StrokePL(this).init();
   }
 }

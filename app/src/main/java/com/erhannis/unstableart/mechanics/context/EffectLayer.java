@@ -4,6 +4,13 @@ package com.erhannis.unstableart.mechanics.context;
  * Created by erhannis on 3/23/17.
  */
 public abstract class EffectLayer extends Layer {
+  public EffectLayer() {
+  }
+
+  protected EffectLayer(Layer uuidParent) {
+    super(uuidParent);
+  }
+
   @Override
   protected Layer init() {
     super.init();

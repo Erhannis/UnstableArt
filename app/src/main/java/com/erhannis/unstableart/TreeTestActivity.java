@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 
 import com.erhannis.unstableart.history.HistoryManager;
+import com.erhannis.unstableart.mechanics.context.Layer;
 import com.erhannis.unstableart.ui.layers.LayersFragment;
 
 public class TreeTestActivity extends AppCompatActivity implements LayersFragment.OnLayersFragmentInteractionListener {
@@ -32,7 +33,12 @@ public class TreeTestActivity extends AppCompatActivity implements LayersFragmen
   }
 
   @Override
-  public void onFragmentInteraction(Uri uri) {
+  public void onCreateLayer(String parentUuid, Layer child) {
+
+  }
+
+  @Override
+  public void onSelectLayer(String layerUuid) {
 
   }
 }
