@@ -17,6 +17,7 @@ Distinguish between tip and eraser
 Pinch/zoom/pan
 Figure out natural scale, system for relative scaling and translation of viewport
 color picker
+keymapping
 
 
 Ideas/Things to do

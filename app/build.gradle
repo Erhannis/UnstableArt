@@ -58,6 +58,7 @@ dependencies {
     compile 'com.android.support:design:25.3.0'
 
     compile 'com.esotericsoftware.kryo:kryo:2.23-SNAPSHOT'
+    compile 'com.github.bmelnychuk:atv:1.2.+'
 
     //TODO I wish I didn't have to use streamsupport!
     compile 'net.sourceforge.streamsupport:streamsupport:1.5.4'

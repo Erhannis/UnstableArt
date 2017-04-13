@@ -18,7 +18,7 @@ import java.util.Collections;
 public class HistoryManager implements Serializable {
   //TODO Consider finality
   protected final RootHN root;
-  //TODO Hmm, how show chain?  Double-link?
+  //TODO Split into view and edit?
   protected HistoryNode selected;
 
   protected transient Stroke mCurStroke = null;
