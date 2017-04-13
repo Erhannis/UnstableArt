@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -11,6 +12,10 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.hardware.input.InputManager;
+import android.net.Uri;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -32,6 +37,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -48,6 +54,7 @@ import com.erhannis.unstableart.mechanics.stroke.BrushST;
 import com.erhannis.unstableart.mechanics.stroke.PenST;
 import com.erhannis.unstableart.mechanics.stroke.StrokePoint;
 import com.erhannis.unstableart.mechanics.stroke.Tool;
+import com.erhannis.unstableart.ui.layers.LayersFragment;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.KryoException;
 import com.esotericsoftware.kryo.io.Input;
@@ -78,7 +85,7 @@ import java8.util.function.Consumer;
  * http://stackoverflow.com/questions/17861755
  *
  */
-public class FullscreenActivity extends AppCompatActivity {
+public class FullscreenActivity extends AppCompatActivity implements LayersFragment.OnLayersFragmentInteractionListener {
 //<editor-fold desc="Constants">
   private static final String TAG = "FullscreenActivity";
 
@@ -113,6 +120,8 @@ public class FullscreenActivity extends AppCompatActivity {
   private ActionBarDrawerToggle mDrawerToggle;
   private ListView mLeftDrawerView;
   private ListView mRightDrawerView;
+
+  private LayersFragment layersFragment;
 //</editor-fold>
 
   private MqttAndroidClient mqttAndroidClient;
@@ -196,9 +205,37 @@ public class FullscreenActivity extends AppCompatActivity {
         }
       };
 
-      mLeftDrawerView.setAdapter(new ArrayAdapter<String>(this,
-              android.R.layout.simple_list_item_single_choice, new String[]{"Pen", "Brush"}));
-      //TODO Set selected listener
+      initToolDrawer();
+      initActionDrawer();
+
+      mDrawerLayout.addDrawerListener(mDrawerToggle); // Set the drawer toggle as the DrawerListener
+    }
+
+    redraw();
+  }
+
+  protected void initToolDrawer() {
+    /*
+    LinearLayout rowLayout = new LinearLayout(this);
+    rowLayout.setId(View.generateViewId());
+
+    mLeftDrawerView.addHeaderView(LayersFragment.textView(this, "test test"));
+    mLeftDrawerView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice, new String[]{}));
+    mLeftDrawerView.addFooterView(rowLayout);
+
+    FragmentManager fragMan = getSupportFragmentManager();
+    FragmentTransaction fragTransaction = fragMan.beginTransaction();
+
+    layersFragment = new LayersFragment();
+    layersFragment.setGroupLayer(historyManager.rebuild());
+    fragTransaction.add(rowLayout.getId(), layersFragment, "LayersFragment");
+    fragTransaction.commit();
+
+    if (1==1) return;
+    */
+    mLeftDrawerView.setAdapter(new ArrayAdapter<String>(this,
+            android.R.layout.simple_list_item_single_choice, new String[]{"Pen", "Brush", "test"}));
+    //TODO Set selected listener
       /*
       mLeftDrawerView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
         @Override
@@ -222,125 +259,126 @@ public class FullscreenActivity extends AppCompatActivity {
       });
       */
 
-      mLeftDrawerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-          //TODO Brittle.
-          //TODO Check if already selected?  Can that happen?
-          switch (i) {
-            case 0:
-              historyManager.attach(new SetToolSMHN(new PenST()));
-              break;
-            case 1:
-              historyManager.attach(new SetToolSMHN(new BrushST()));
-              break;
-          }
+    mLeftDrawerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+      @Override
+      public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        //TODO Brittle.
+        //TODO Check if already selected?  Can that happen?
+        switch (i) {
+          case 0:
+            historyManager.attach(new SetToolSMHN(new PenST()));
+            break;
+          case 1:
+            historyManager.attach(new SetToolSMHN(new BrushST()));
+            break;
+          case 2:
+            Intent intent = new Intent(getApplicationContext(), TreeTestActivity.class);
+            startActivity(intent);
+            break;
         }
-      });
+      }
+    });
+  }
 
-      //TODO Add "Save" vs. "Save as..."
-      mRightDrawerView.setAdapter(new ArrayAdapter<String>(this,
-              android.R.layout.simple_list_item_1, ACTIONS_MENU));
-      mRightDrawerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-          //TODO Brittle.
-          String s = adapterView.getItemAtPosition(i).toString();
-          switch (s) {
-            case M_REDO:
-              if (historyManager.tryRedo()) {
-                redraw();
-              }
-              break;
-            case M_UNDO:
-              if (historyManager.tryUndo()) {
-                redraw();
-              }
-              break;
-            case M_COLOR:
-              getTextInput(FullscreenActivity.this, "8 digit hex color", new Consumer<String>() {
-                @Override
-                public void accept(String s) {
-                  try {
-                    int intARGB = (int)Long.parseLong(s, 16); //LOSS
-                    historyManager.attach(new SetColorSMHN(new IntColor(intARGB)));
-                  } catch (NumberFormatException nfe) {
-                    showToast(FullscreenActivity.this, "Invalid hex string; use 0-9 and A-F");
-                  }
+  protected void initActionDrawer() {
+    //TODO Add "Save" vs. "Save as..."
+    mRightDrawerView.setAdapter(new ArrayAdapter<String>(this,
+            android.R.layout.simple_list_item_1, ACTIONS_MENU));
+    mRightDrawerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+      @Override
+      public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        //TODO Brittle.
+        String s = adapterView.getItemAtPosition(i).toString();
+        switch (s) {
+          case M_REDO:
+            if (historyManager.tryRedo()) {
+              redraw();
+            }
+            break;
+          case M_UNDO:
+            if (historyManager.tryUndo()) {
+              redraw();
+            }
+            break;
+          case M_COLOR:
+            getTextInput(FullscreenActivity.this, "8 digit hex color", new Consumer<String>() {
+              @Override
+              public void accept(String s) {
+                try {
+                  int intARGB = (int)Long.parseLong(s, 16); //LOSS
+                  historyManager.attach(new SetColorSMHN(new IntColor(intARGB)));
+                } catch (NumberFormatException nfe) {
+                  showToast(FullscreenActivity.this, "Invalid hex string; use 0-9 and A-F");
                 }
-              });
-              break;
-            case M_SIZE:
-              getTextInput(FullscreenActivity.this, "Size, double-precision", new Consumer<String>() {
-                @Override
-                public void accept(String s) {
-                  try {
-                    double size = Double.parseDouble(s);
-                    historyManager.attach(new SetToolSizeSMHN(size));
-                  } catch (NumberFormatException nfe) {
-                    showToast(FullscreenActivity.this, "Invalid double, decimal numbers only");
-                  }
+              }
+            });
+            break;
+          case M_SIZE:
+            getTextInput(FullscreenActivity.this, "Size, double-precision", new Consumer<String>() {
+              @Override
+              public void accept(String s) {
+                try {
+                  double size = Double.parseDouble(s);
+                  historyManager.attach(new SetToolSizeSMHN(size));
+                } catch (NumberFormatException nfe) {
+                  showToast(FullscreenActivity.this, "Invalid double, decimal numbers only");
                 }
-              });
-              break;
-            case M_SAVE:
-              getTextInput(FullscreenActivity.this, "Save to filename", new Consumer<String>() {
-                @Override
-                public void accept(String s) {
-                  final File f = new File(s);
-                  if (f.exists()) {
-                    getYesNoCancelInput(FullscreenActivity.this, "File exists.  Overwrite?", new Consumer<Boolean>() {
-                      @Override
-                      public void accept(Boolean aBoolean) {
-                        try {
-                          saveTo(f);
-                        } catch (IOException e) {
-                          e.printStackTrace();
-                          showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
-                        }
+              }
+            });
+            break;
+          case M_SAVE:
+            getTextInput(FullscreenActivity.this, "Save to filename", new Consumer<String>() {
+              @Override
+              public void accept(String s) {
+                final File f = new File(s);
+                if (f.exists()) {
+                  getYesNoCancelInput(FullscreenActivity.this, "File exists.  Overwrite?", new Consumer<Boolean>() {
+                    @Override
+                    public void accept(Boolean aBoolean) {
+                      try {
+                        saveTo(f);
+                      } catch (IOException e) {
+                        e.printStackTrace();
+                        showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
                       }
-                    });
-                  } else {
-                    if (f.getParentFile() != null) {
-                      f.getParentFile().mkdirs();
                     }
-                    try {
-                      saveTo(f);
-                    } catch (IOException e) {
-                      e.printStackTrace();
-                      showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
-                    }
+                  });
+                } else {
+                  if (f.getParentFile() != null) {
+                    f.getParentFile().mkdirs();
+                  }
+                  try {
+                    saveTo(f);
+                  } catch (IOException e) {
+                    e.printStackTrace();
+                    showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
                   }
                 }
-              });
-              break;
-            case M_LOAD:
-              getTextInput(FullscreenActivity.this, "Load from filename", new Consumer<String>() {
-                @Override
-                public void accept(String s) {
-                  final File f = new File(s);
-                  if (f.exists()) {
-                    //TODO Check if unsaved changes
-                    try {
-                      loadFrom(f);
-                    } catch (Exception e) {
-                      e.printStackTrace();
-                      showToast(FullscreenActivity.this, "Couldn't load file, probably older version.\nErr message OR version string: " + e.getMessage());
-                    }
-                  } else {
-                    showToast(FullscreenActivity.this, "Can't find file!");
+              }
+            });
+            break;
+          case M_LOAD:
+            getTextInput(FullscreenActivity.this, "Load from filename", new Consumer<String>() {
+              @Override
+              public void accept(String s) {
+                final File f = new File(s);
+                if (f.exists()) {
+                  //TODO Check if unsaved changes
+                  try {
+                    loadFrom(f);
+                  } catch (Exception e) {
+                    e.printStackTrace();
+                    showToast(FullscreenActivity.this, "Couldn't load file, probably older version.\nErr message OR version string: " + e.getMessage());
                   }
+                } else {
+                  showToast(FullscreenActivity.this, "Can't find file!");
                 }
-              });
-              break;
-          }
+              }
+            });
+            break;
         }
-      });
-
-      mDrawerLayout.addDrawerListener(mDrawerToggle); // Set the drawer toggle as the DrawerListener
-    }
-
-    redraw();
+      }
+    });
   }
 
   private void saveTo(File file) throws IOException {
@@ -500,6 +538,11 @@ public class FullscreenActivity extends AppCompatActivity {
     //TODO INEFFICIENT, DON'T KEEP
     UACanvas iCanvas = historyManager.rebuild();
     iCanvas.draw(artContext, bCanvas);
+
+    //TODO Seems fishy here
+    if (layersFragment != null) {
+      layersFragment.setGroupLayer(iCanvas);
+    }
 
     //TODO Save/keep/etc. matrix
     Matrix viewMatrix = new Matrix();
@@ -789,4 +832,9 @@ public class FullscreenActivity extends AppCompatActivity {
     mHideHandler.postDelayed(mHideRunnable, delayMillis);
   }
   //</editor-fold>
+
+  @Override
+  public void onFragmentInteraction(Uri uri) {
+    //TODO Do eventually
+  }
 }
