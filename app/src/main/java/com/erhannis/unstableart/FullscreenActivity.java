@@ -343,8 +343,7 @@ public class FullscreenActivity extends AppCompatActivity {
     //TODO Static Kryo?
     Kryo kryo = new Kryo();
     Output output = new Output(new FileOutputStream(file));
-    //TODO Write git commit
-    output.writeString("MAYBE PUT A GIT HASH HERE, IF POSSIBLE");
+    output.writeString(BuildConfig.GIT_HASH);
     kryo.writeObject(output, historyManager);
     output.close();
   }
