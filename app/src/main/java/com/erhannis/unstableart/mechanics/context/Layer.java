@@ -71,4 +71,9 @@ public abstract class Layer implements Serializable {
 
   // I strongly suggest this be written: return (LayerSubclass)new LayerSubclass(this).init();
   public abstract Layer instantiate();
+
+  public String toString() {
+    //TODO Consider
+    return this.getClass().getSimpleName() + ":" + uuid.subSequence(0, 8);
+  }
 }
