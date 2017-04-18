@@ -17,6 +17,7 @@ import com.erhannis.unstableart.mechanics.context.StrokePL;
 import com.unnamed.b.atv.model.TreeNode;
 import com.unnamed.b.atv.view.AndroidTreeView;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -204,7 +205,9 @@ public class LayersFragment extends Fragment {
       Layer layer = ((IconTreeItemHolder.IconTreeItem)node.getValue()).layer;
       //TODO Set text, image, etc.?
       if (layer instanceof GroupLayer) {
-        for (Layer childLayer : ((GroupLayer)layer).iLayers) {
+        ArrayList<Layer> childLayers = ((GroupLayer)layer).iLayers;
+        for (int i = childLayers.size() - 1; i >= 0; i--) {
+          Layer childLayer = childLayers.get(i);
           TreeNode childNode = new TreeNode(new IconTreeItemHolder.IconTreeItem((childLayer instanceof GroupLayer) ? R.string.ic_folder : R.string.ic_drive_file, childLayer, childLayer.toString()));
           node.addChild(childNode);
           toProcess.offer(childNode);
