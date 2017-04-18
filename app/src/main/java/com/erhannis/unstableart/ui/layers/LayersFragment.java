@@ -1,21 +1,24 @@
 package com.erhannis.unstableart.ui.layers;
 
 import android.content.Context;
+import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.erhannis.unstableart.R;
 import com.erhannis.unstableart.mechanics.context.GroupLayer;
 import com.erhannis.unstableart.mechanics.context.Layer;
 import com.erhannis.unstableart.mechanics.context.StrokePL;
-import com.unnamed.b.atv.model.TreeNode;
-import com.unnamed.b.atv.view.AndroidTreeView;
+import com.terlici.dragndroplist.DragNDropCursorAdapter;
+import com.terlici.dragndroplist.DragNDropListView;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -77,6 +80,7 @@ public class LayersFragment extends Fragment {
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     // Inflate the layout for this fragment
     llView = (LinearLayout)inflater.inflate(R.layout.fragment_layers, container, false);
+    test();
     updateView();
     return llView;
   }
@@ -88,37 +92,50 @@ public class LayersFragment extends Fragment {
     updateView();
   }
 
+  public void test() {
+    if (llView != null) {
+      String[] columns = new String[] { "_id", "text" };
+
+      //TODO Folder end-marks?
+
+      MatrixCursor matrixCursor= new MatrixCursor(columns);
+      matrixCursor.addRow(new Object[] { 1, "blah1" });
+      matrixCursor.addRow(new Object[] { 2, "blah2" });
+      matrixCursor.addRow(new Object[] { 3, "blah3" });
+      matrixCursor.addRow(new Object[] { 4, "blah4" });
+
+      DragNDropListView list = (DragNDropListView)llView.findViewById(android.R.id.list);
+
+      DragNDropCursorAdapter adapter = new DragNDropCursorAdapter(getContext(),
+              R.layout.layers_row,
+              matrixCursor,
+              new String[]{"text"},
+              new int[]{R.id.text},
+              R.id.handler);
+
+      list.setDragNDropAdapter(adapter);
+
+
+    }
+  }
+
   public void updateView() {
     if (llView != null && mGroupLayer != null) {
       llView.removeAllViews();
-      TreeNode root = constructTree(mGroupLayer);
-
       /*
-      root = new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_folder, null, "node 0"));
-      root.setSelectable(false);
-      root.addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_folder, null, "node 0.0")){{
-        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, null, "node 0.0.0")));
-        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, null, "node 0.0.1")));
-        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, null, "node 0.0.2")));
-      }});
-      root.addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_folder, null, "node 0.1")){{
-        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, null, "node 0.1.0")));
-        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, null, "node 0.1.1")));
-        addChild(new TreeNode(new IconTreeItemHolder.IconTreeItem(R.string.ic_drive_file, null, "node 0.1.2")));
-      }});
-      */
+      TreeNode root = constructTree(mGroupLayer);
 
       AndroidTreeView tView = new AndroidTreeView(getActivity(), root);
       tView.setDefaultContainerStyle(R.style.TreeNodeStyleCustom);
       tView.setDefaultViewHolder(IconTreeItemHolder.class);
-      /*
+
       tView.setDefaultNodeClickListener(new TreeNode.TreeNodeClickListener() {
         @Override
         public void onClick(TreeNode node, Object value) {
           selectLayer(((IconTreeItemHolder.IconTreeItem)value).layer);
         }
       });
-      */
+
       tView.setDefaultNodeLongClickListener(new TreeNode.TreeNodeLongClickListener() {
         @Override
         public boolean onLongClick(TreeNode node, Object value) {
@@ -135,6 +152,7 @@ public class LayersFragment extends Fragment {
       llView.addView(textView(getActivity(), "before"));
       llView.addView(tView.getView());
       llView.addView(textView(getActivity(), "after"));
+      */
     }
   }
 
@@ -189,6 +207,7 @@ public class LayersFragment extends Fragment {
     void onSelectLayer(String layerUuid);
   }
 
+  /*
   protected TreeNode constructTree(GroupLayer rootLayer) {
     // I've started to become wary of recursive functions
     LinkedList<TreeNode> toProcess = new LinkedList<>();
@@ -217,4 +236,5 @@ public class LayersFragment extends Fragment {
 
     return root;
   }
+  */
 }

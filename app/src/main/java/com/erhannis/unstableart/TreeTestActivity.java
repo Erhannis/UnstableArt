@@ -22,6 +22,7 @@ public class TreeTestActivity extends AppCompatActivity implements LayersFragmen
 
     LinearLayout llView = (LinearLayout)findViewById(R.id.activity_tree_test);
 
+    /*
     FragmentManager fragMan = getSupportFragmentManager();
     FragmentTransaction fragTransaction = fragMan.beginTransaction();
 
@@ -30,6 +31,7 @@ public class TreeTestActivity extends AppCompatActivity implements LayersFragmen
     fragTransaction.commit();
 
     layersFragment.setGroupLayer(new HistoryManager().rebuild());
+    */
   }
 
   @Override

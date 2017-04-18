@@ -216,7 +216,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   }
 
   protected void initToolDrawer() {
-    /**/
+    /*/
     LinearLayout rowLayout = new LinearLayout(this);
     rowLayout.setId(View.generateViewId());
 

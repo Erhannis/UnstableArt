@@ -9,4 +9,11 @@
     android:id="@+id/activity_tree_test"
     tools:context="com.erhannis.unstableart.TreeTestActivity">
 
+
+    <fragment
+        android:id="@+id/fragment"
+        android:name="com.erhannis.unstableart.ui.layers.LayersFragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:layout="@layout/fragment_layers"/>
 </LinearLayout>
