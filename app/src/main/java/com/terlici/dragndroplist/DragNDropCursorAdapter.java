@@ -18,17 +18,39 @@ package com.terlici.dragndroplist;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.support.v4.widget.SimpleCursorAdapter;
+import android.support.v4.widget.CursorAdapter;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
-public class DragNDropCursorAdapter extends SimpleCursorAdapter implements DragNDropAdapter {
+import com.erhannis.unstableart.R;
+
+public class DragNDropCursorAdapter extends CursorAdapter implements DragNDropAdapter {
+	public static enum RowType {
+		BEGIN, END, NODE
+	}
+
 	int mPosition[];
 	int mHandler;
-	
-	public DragNDropCursorAdapter(Context context, int layout, Cursor cursor, String[] from, int[] to, int handler) {
-		super(context, layout, cursor, from, to, 0);
-		
+	int mLayout;
+	String[] mFromText;
+	int[] mToText;
+	String mFromRowType;
+	String mFromLevel;
+
+	protected LayoutInflater mCursorInflater;
+
+	public DragNDropCursorAdapter(Context context, int layout, Cursor cursor, String[] fromText, int[] toText, String fromRowType, String fromLevel, int handler) {
+		super(context, cursor, 0);
+
+		mCursorInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+		mLayout = layout;
+		mFromText = fromText;
+		mToText = toText;
+		mFromRowType = fromRowType;
+		mFromLevel = fromLevel;
 		mHandler = handler;
 		setup();
 	}
@@ -57,7 +79,51 @@ public class DragNDropCursorAdapter extends SimpleCursorAdapter implements DragN
 	public View getDropDownView(int position, View view, ViewGroup group) {
 		return super.getDropDownView(mPosition[position], view, group);
 	}
-	
+
+	@Override
+	public View newView(Context context, Cursor cursor, ViewGroup parent) {
+		return mCursorInflater.inflate(mLayout, parent, false);
+	}
+
+	@Override
+	public void bindView(View view, Context context, Cursor cursor) {
+		for (int i = 0; i < mFromText.length; i++) {
+			TextView textViewTitle = (TextView) view.findViewById(mToText[i]);
+			String title = cursor.getString(cursor.getColumnIndex(mFromText[i]));
+			textViewTitle.setText(title);
+		}
+		View handler = view.findViewById(mHandler);
+		TextView tvSpace = (TextView)view.findViewById(R.id.tvSpace);
+		if (mFromRowType != null) {
+			String type = cursor.getString(cursor.getColumnIndex(mFromRowType));
+			switch (RowType.valueOf(type)) {
+				case BEGIN:
+					//TODO Could be weird
+					handler.setVisibility(View.VISIBLE);
+					break;
+				case END:
+					// Invisible?
+					handler.setVisibility(View.GONE);
+					break;
+				case NODE:
+					handler.setVisibility(View.VISIBLE);
+					break;
+			}
+		}
+		if (mFromLevel != null) {
+			int level = cursor.getInt(cursor.getColumnIndex(mFromLevel));
+			//tvSpace.setWidth(level * 8);
+			StringBuilder sb = new StringBuilder();
+			if (level > 0) {
+				sb.append("+-");
+			}
+			for (int i = 1; i < level; i++) {
+				sb.append("--");
+			}
+			tvSpace.setText(sb.toString());
+		}
+	}
+
 	@Override
 	public Object getItem(int position) {
 		return super.getItem(mPosition[position]);
@@ -85,7 +151,7 @@ public class DragNDropCursorAdapter extends SimpleCursorAdapter implements DragN
 
 	@Override
 	public void onItemDrag(DragNDropListView parent, View view, int position, long id) {
-		
+
 	}
 
 	@Override

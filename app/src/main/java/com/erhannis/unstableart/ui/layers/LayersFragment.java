@@ -18,6 +18,7 @@ import com.erhannis.unstableart.mechanics.context.GroupLayer;
 import com.erhannis.unstableart.mechanics.context.Layer;
 import com.erhannis.unstableart.mechanics.context.StrokePL;
 import com.terlici.dragndroplist.DragNDropCursorAdapter;
+import com.terlici.dragndroplist.DragNDropCursorAdapter.RowType;
 import com.terlici.dragndroplist.DragNDropListView;
 
 import java.util.ArrayList;
@@ -94,15 +95,21 @@ public class LayersFragment extends Fragment {
 
   public void test() {
     if (llView != null) {
-      String[] columns = new String[] { "_id", "text" };
+      String[] columns = new String[] { "_id", "type", "level", "text" };
 
       //TODO Folder end-marks?
 
-      MatrixCursor matrixCursor= new MatrixCursor(columns);
-      matrixCursor.addRow(new Object[] { 1, "blah1" });
-      matrixCursor.addRow(new Object[] { 2, "blah2" });
-      matrixCursor.addRow(new Object[] { 3, "blah3" });
-      matrixCursor.addRow(new Object[] { 4, "blah4" });
+      MatrixCursor matrixCursor = new MatrixCursor(columns);
+      matrixCursor.addRow(new Object[] { 1, RowType.BEGIN, 0, "a" });
+      matrixCursor.addRow(new Object[] { 5, RowType.NODE, 1, "aa" });
+      matrixCursor.addRow(new Object[] { 6, RowType.BEGIN, 1, "ab" });
+      matrixCursor.addRow(new Object[] { 9, RowType.NODE, 2, "aba" });
+      matrixCursor.addRow(new Object[] { 10, RowType.NODE, 2, "abb" });
+      matrixCursor.addRow(new Object[] { 8, RowType.END, 1, "/ab" });
+      matrixCursor.addRow(new Object[] { 7, RowType.NODE, 1, "ac" });
+      matrixCursor.addRow(new Object[] { 2, RowType.END, 0, "/a" });
+      matrixCursor.addRow(new Object[] { 3, RowType.NODE, 0, "b" });
+      matrixCursor.addRow(new Object[] { 4, RowType.NODE, 0, "c" });
 
       DragNDropListView list = (DragNDropListView)llView.findViewById(android.R.id.list);
 
@@ -111,6 +118,8 @@ public class LayersFragment extends Fragment {
               matrixCursor,
               new String[]{"text"},
               new int[]{R.id.text},
+              "type",
+              "level",
               R.id.handler);
 
       list.setDragNDropAdapter(adapter);
