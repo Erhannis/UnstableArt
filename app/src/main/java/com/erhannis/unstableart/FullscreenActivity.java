@@ -107,9 +107,10 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   private static final String M_UNDO = "Undo";
   private static final String M_COLOR = "Color";
   private static final String M_SIZE = "Size";
-  private static final String M_SAVE = "Save...";
+  private static final String M_SAVE = "Save";
+  private static final String M_SAVE_AS = "Save as...";
   private static final String M_LOAD = "Load...";
-  private static final String[] ACTIONS_MENU = {M_REDO, M_UNDO, M_COLOR, M_SIZE, M_SAVE, M_LOAD};
+  private static final String[] ACTIONS_MENU = {M_REDO, M_UNDO, M_COLOR, M_SIZE, M_SAVE, M_SAVE_AS, M_LOAD};
 //</editor-fold>
 
 //<editor-fold desc="UI">
@@ -129,6 +130,8 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
 
   //TODO I kinda wanted this to be final, but now it's how we're saving/loading files
   private HistoryManager historyManager = new HistoryManager();
+
+  private File mLastSave = null;
 
   private final Handler mHideHandler = new Handler();
   private final Runnable mHidePart2Runnable = new Runnable() {
@@ -328,6 +331,16 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
             });
             break;
           case M_SAVE:
+            if (mLastSave != null) {
+              try {
+                saveTo(mLastSave);
+              } catch (IOException e) {
+                e.printStackTrace();
+                showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
+              }
+              break;
+            }
+          case M_SAVE_AS:
             getTextInput(FullscreenActivity.this, "Save to filename", new Consumer<String>() {
               @Override
               public void accept(String s) {
