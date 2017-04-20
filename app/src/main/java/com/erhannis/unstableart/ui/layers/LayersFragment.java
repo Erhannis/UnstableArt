@@ -4,6 +4,8 @@ import android.content.Context;
 import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.LayoutInflater;
@@ -12,7 +14,9 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.erhannis.unstableart.FullscreenActivity;
 import com.erhannis.unstableart.R;
 import com.erhannis.unstableart.mechanics.context.GroupLayer;
 import com.erhannis.unstableart.mechanics.context.Layer;
@@ -20,9 +24,15 @@ import com.erhannis.unstableart.mechanics.context.StrokePL;
 import com.terlici.dragndroplist.DragNDropCursorAdapter;
 import com.terlici.dragndroplist.DragNDropCursorAdapter.RowType;
 import com.terlici.dragndroplist.DragNDropListView;
+import com.terlici.dragndroplist.IDd;
+import com.terlici.dragndroplist.Tree;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Stack;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -86,10 +96,15 @@ public class LayersFragment extends Fragment {
     return llView;
   }
 
-  private GroupLayer mGroupLayer = null;
+  // This is annoying
+  private static interface IDdTree extends Tree, IDd {
+  }
 
-  public void setGroupLayer(GroupLayer layer) {
-    mGroupLayer = layer;
+  //TODO AAAARGH
+  private Tree mTree = null;
+
+  public <T extends Tree & IDd> void setTree(T tree) {
+    mTree = (IDd & Tree)tree;
     updateView();
   }
 
@@ -97,9 +112,9 @@ public class LayersFragment extends Fragment {
     if (llView != null) {
       String[] columns = new String[] { "_id", "type", "level", "text" };
 
-      //TODO Folder end-marks?
-
       MatrixCursor matrixCursor = new MatrixCursor(columns);
+
+
       matrixCursor.addRow(new Object[] { 1, RowType.BEGIN, 0, "a" });
       matrixCursor.addRow(new Object[] { 5, RowType.NODE, 1, "aa" });
       matrixCursor.addRow(new Object[] { 6, RowType.BEGIN, 1, "ab" });
@@ -122,47 +137,156 @@ public class LayersFragment extends Fragment {
               "level",
               R.id.handler);
 
+      list.setOnItemDragNDropListener(new DragNDropListView.OnItemDragNDropListener() {
+        @Override
+        public void onItemDrag(DragNDropListView parent, View view, int position, long id) {
+          System.out.println("dragging item");
+        }
+
+        @Override
+        public void onItemDrop(DragNDropListView parent, View view, int startPosition, int endPosition, long id) {
+          showToast("dropped item " + startPosition + " -> " + endPosition);
+
+          // Find parent
+          //TODO Disallow put bag in bag
+          ((MatrixCursor)list.getItemAtPosition(endPosition)).getString(3);
+          //System.out.println();
+        }
+      });
+
       list.setDragNDropAdapter(adapter);
+    }
+  }
 
+  private static class TestIDd implements IDd<String> {
+    private String id;
 
+    public TestIDd(String id) {
+      this.id = id;
+    }
+
+    @Override
+    public String toString() {
+      return getId();
+    }
+
+    @Override
+    public String getId() {
+      return id;
+    }
+  }
+
+  private static class TestTree implements Tree, IDd<String> {
+    private String id;
+    private ArrayList<IDd> children = new ArrayList<IDd>();
+
+    public TestTree(String id) {
+      this.id = id;
+    }
+
+    @Override
+    public String getId() {
+      return id;
+    }
+
+    @Override
+    public String toString() {
+      return getId();
+    }
+
+    @Override
+    public List getChildren() {
+      return children;
+    }
+
+    public void addChild(IDd child) {
+      children.add(child);
     }
   }
 
   public void updateView() {
-    if (llView != null && mGroupLayer != null) {
-      llView.removeAllViews();
-      /*
-      TreeNode root = constructTree(mGroupLayer);
+    if (llView != null && mTree != null) {
+      //TODO ...SHOULDN'T THIS ERROR????
+      //MatrixCursor matrixCursor2 = getCursorFromTree(mTree);
+      // Still testing
+      MatrixCursor matrixCursor = getCursorFromTree(new TestTree("a") {{
+        addChild(new TestTree("aa"){{
+          addChild(new TestIDd("aaa"));
+          addChild(new TestIDd("aab"));
+        }});
+        addChild(new TestIDd("ab"));
+        addChild(new TestTree("ac"){{
+          addChild(new TestIDd("aca"));
+          addChild(new TestIDd("acb"));
+          addChild(new TestIDd("acc"));
+        }});
+      }});
 
-      AndroidTreeView tView = new AndroidTreeView(getActivity(), root);
-      tView.setDefaultContainerStyle(R.style.TreeNodeStyleCustom);
-      tView.setDefaultViewHolder(IconTreeItemHolder.class);
 
-      tView.setDefaultNodeClickListener(new TreeNode.TreeNodeClickListener() {
+      DragNDropListView list = (DragNDropListView)llView.findViewById(android.R.id.list);
+
+      DragNDropCursorAdapter adapter = new DragNDropCursorAdapter(getContext(),
+              R.layout.layers_row,
+              matrixCursor,
+              new String[]{"text"},
+              new int[]{R.id.text},
+              "type",
+              "level",
+              R.id.handler);
+
+      list.setOnItemDragNDropListener(new DragNDropListView.OnItemDragNDropListener() {
         @Override
-        public void onClick(TreeNode node, Object value) {
-          selectLayer(((IconTreeItemHolder.IconTreeItem)value).layer);
+        public void onItemDrag(DragNDropListView parent, View view, int position, long id) {
+          System.out.println("dragging item");
+        }
+
+        @Override
+        public void onItemDrop(DragNDropListView parent, View view, int startPosition, int endPosition, long id) {
+          showToast("dropped item " + startPosition + " -> " + endPosition);
+
+          // Find parent
+          //TODO Disallow put bag in bag
+          ((MatrixCursor)list.getItemAtPosition(endPosition)).getString(3);
+          //System.out.println();
         }
       });
 
-      tView.setDefaultNodeLongClickListener(new TreeNode.TreeNodeLongClickListener() {
-        @Override
-        public boolean onLongClick(TreeNode node, Object value) {
-          Layer parent = ((IconTreeItemHolder.IconTreeItem)value).layer;
-          if (parent instanceof GroupLayer) {
-            Layer child = new StrokePL();
-            createLayer((GroupLayer)parent, child);
-          } else {
-            selectLayer(parent);
-          }
-          return true;
-        }
-      });
-      llView.addView(textView(getActivity(), "before"));
-      llView.addView(tView.getView());
-      llView.addView(textView(getActivity(), "after"));
-      */
+      list.setDragNDropAdapter(adapter);
     }
+  }
+
+  protected static <T extends Tree & IDd> MatrixCursor getCursorFromTree(T tree) {
+    String[] columns = new String[]{"_id", "uuid", "type", "level", "text"};
+    MatrixCursor matrixCursor = new MatrixCursor(columns);
+
+    Stack<Iterator> childStack = new Stack<>();
+    Stack<Object[]> endStack = new Stack<>();
+
+    long rowId = 1L;
+
+    matrixCursor.addRow(new Object[]{rowId++, tree.getId(), RowType.BEGIN, childStack.size(), tree.toString()});
+    endStack.push(new Object[]{rowId++, tree.getId(), RowType.END, childStack.size(), tree.toString()});
+    childStack.push(tree.getChildren().iterator());
+    stackLoop: while (!childStack.isEmpty()) {
+      Iterator children = childStack.pop();
+
+      while (children.hasNext()) {
+        //TODO Maybe catch possible exception?
+        IDd child = (IDd) children.next();
+        if (child instanceof Tree) {
+          matrixCursor.addRow(new Object[]{rowId++, child.getId(), RowType.BEGIN, childStack.size() + 1, child.toString()});
+          endStack.push(new Object[]{rowId++, child.getId(), RowType.END, childStack.size() + 1, child.toString()});
+          childStack.push(children);
+          childStack.push(((Tree)child).getChildren().iterator());
+          continue stackLoop;
+        } else {
+          matrixCursor.addRow(new Object[]{rowId++, child.getId(), RowType.NODE, childStack.size() + 1, child.toString()});
+        }
+      }
+      matrixCursor.addRow(endStack.pop());
+    }
+
+    return matrixCursor;
   }
 
   public static TextView textView(Context context, String text) {
@@ -246,4 +370,13 @@ public class LayersFragment extends Fragment {
     return root;
   }
   */
+
+  public void showToast(String text) {
+    new Handler(Looper.getMainLooper()).post(new Runnable() {
+      @Override
+      public void run() {
+        Toast.makeText(LayersFragment.this.getContext(), text, Toast.LENGTH_LONG).show();
+      }
+    });
+  }
 }

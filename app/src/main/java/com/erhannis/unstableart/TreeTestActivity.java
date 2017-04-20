@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 
 import com.erhannis.unstableart.history.HistoryManager;
+import com.erhannis.unstableart.mechanics.context.GroupLayer;
 import com.erhannis.unstableart.mechanics.context.Layer;
 import com.erhannis.unstableart.ui.layers.LayersFragment;
 
@@ -22,6 +23,8 @@ public class TreeTestActivity extends AppCompatActivity implements LayersFragmen
 
     LinearLayout llView = (LinearLayout)findViewById(R.id.activity_tree_test);
 
+    LayersFragment myFragment = (LayersFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
+    myFragment.setTree(new GroupLayer());
     /*
     FragmentManager fragMan = getSupportFragmentManager();
     FragmentTransaction fragTransaction = fragMan.beginTransaction();

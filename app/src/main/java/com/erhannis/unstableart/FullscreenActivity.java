@@ -13,6 +13,7 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.hardware.input.InputManager;
 import android.net.Uri;
+import android.os.Looper;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -559,7 +560,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
 
     //TODO Seems fishy here
     if (layersFragment != null) {
-      layersFragment.setGroupLayer(iCanvas);
+      layersFragment.setTree(iCanvas);
     }
 
     //TODO Save/keep/etc. matrix
@@ -861,5 +862,14 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   public void onSelectLayer(String layerUuid) {
     historyManager.executeSelectLayer(layerUuid);
     redraw();
+  }
+
+  public void showToast(String text) {
+    new Handler(Looper.getMainLooper()).post(new Runnable() {
+      @Override
+      public void run() {
+        Toast.makeText(FullscreenActivity.this.getBaseContext(), text, Toast.LENGTH_LONG).show();
+      }
+    });
   }
 }

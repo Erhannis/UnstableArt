@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
+import com.terlici.dragndroplist.IDd;
+
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -18,7 +20,7 @@ import java.util.UUID;
  *
  * Created by erhannis on 3/22/17.
  */
-public abstract class Layer implements Serializable {
+public abstract class Layer implements Serializable, IDd<String> {
   //TODO I feel like this ought to be transient, too, but I'm not sure
   public boolean archetype = true;
 
@@ -26,6 +28,10 @@ public abstract class Layer implements Serializable {
   public final String uuid;
 
   public transient double opacity = 1.0; //TODO Technically initialization
+
+  public String getId() {
+    return uuid;
+  }
 
   /**
    * Here's the recommended idea for this.
