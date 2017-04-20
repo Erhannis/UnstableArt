@@ -351,6 +351,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
                     public void accept(Boolean aBoolean) {
                       try {
                         saveTo(f);
+                        mLastSave = f;
                       } catch (IOException e) {
                         e.printStackTrace();
                         showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
@@ -363,6 +364,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
                   }
                   try {
                     saveTo(f);
+                    mLastSave = f;
                   } catch (IOException e) {
                     e.printStackTrace();
                     showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
