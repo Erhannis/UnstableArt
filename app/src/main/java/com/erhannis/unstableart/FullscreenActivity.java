@@ -381,7 +381,9 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
                 if (f.exists()) {
                   //TODO Check if unsaved changes
                   try {
+                    mLastSave = null; // May result in undesired behavior, but better than what MIGHT result from the alternative.
                     loadFrom(f);
+                    mLastSave = f;
                   } catch (Exception e) {
                     e.printStackTrace();
                     showToast(FullscreenActivity.this, "Couldn't load file, probably older version.\nErr message OR version string: " + e.getMessage());
