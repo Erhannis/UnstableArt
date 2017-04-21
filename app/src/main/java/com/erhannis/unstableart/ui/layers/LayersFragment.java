@@ -16,6 +16,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.erhannis.mathnstuff.FactoryHashMap;
+import com.erhannis.mathnstuff.utils.Factory;
 import com.erhannis.unstableart.FullscreenActivity;
 import com.erhannis.unstableart.R;
 import com.erhannis.unstableart.mechanics.context.GroupLayer;
@@ -158,7 +160,8 @@ public class LayersFragment extends Fragment {
     }
   }
 
-  private static class TestIDd implements IDd<String> {
+  //TODO Remove
+  public static class TestIDd implements IDd<String> {
     private String id;
 
     public TestIDd(String id) {
@@ -176,7 +179,8 @@ public class LayersFragment extends Fragment {
     }
   }
 
-  private static class TestTree implements Tree, IDd<String> {
+  //TODO Remove
+  public static class TestTree implements Tree, IDd<String> {
     private String id;
     private ArrayList<IDd> children = new ArrayList<IDd>();
 
@@ -206,22 +210,8 @@ public class LayersFragment extends Fragment {
 
   public void updateView() {
     if (llView != null && mTree != null) {
-      //TODO ...SHOULDN'T THIS ERROR????
-      //MatrixCursor matrixCursor2 = getCursorFromTree(mTree);
+      MatrixCursor matrixCursor = getCursorFromTree((Tree & IDd)mTree);
       // Still testing
-      MatrixCursor matrixCursor = getCursorFromTree(new TestTree("a") {{
-        addChild(new TestTree("aa"){{
-          addChild(new TestIDd("aaa"));
-          addChild(new TestIDd("aab"));
-        }});
-        addChild(new TestIDd("ab"));
-        addChild(new TestTree("ac"){{
-          addChild(new TestIDd("aca"));
-          addChild(new TestIDd("acb"));
-          addChild(new TestIDd("acc"));
-        }});
-      }});
-
 
       DragNDropListView list = (DragNDropListView)llView.findViewById(android.R.id.list);
 
@@ -242,17 +232,121 @@ public class LayersFragment extends Fragment {
 
         @Override
         public void onItemDrop(DragNDropListView parent, View view, int startPosition, int endPosition, long id) {
+          // Note: occurs before item has moved.
           showToast("dropped item " + startPosition + " -> " + endPosition);
 
+          FactoryHashMap<String, Integer> positions = new FactoryHashMap<String, Integer>(new Factory<Integer>() {
+            @Override
+            public Integer construct() {
+              return 0;
+            }
+          });
+
           // Find parent
+          //findParent();
           //TODO Disallow put bag in bag
-          ((MatrixCursor)list.getItemAtPosition(endPosition)).getString(3);
-          //System.out.println();
+          Stack<String> parentUuids = new Stack<>();
+          int target = (startPosition < endPosition) ? endPosition + 1 : endPosition;
+          String curParentUuid = null;
+          for (int i = 0; i < target; i++) {
+            //TODO Seems maybe kinda inefficient
+            //"_id", "uuid", "type", "level", "text";
+            MatrixCursor cursor = ((MatrixCursor)list.getItemAtPosition(i));
+            String uuid = cursor.getString(1);
+            RowType type = RowType.valueOf(cursor.getString(2));
+            int level = cursor.getInt(3);
+            switch (type) {
+              case BEGIN:
+                positions.put(curParentUuid, positions.get(curParentUuid) + 1);
+                parentUuids.push(uuid);
+                curParentUuid = uuid;
+                break;
+              case NODE:
+                positions.put(curParentUuid, positions.get(curParentUuid) + 1);
+                break;
+              case END:
+                parentUuids.pop();
+                curParentUuid = parentUuids.peek();
+                break;
+              default:
+                throw new IllegalArgumentException("Unhandled row type " + type);
+            }
+          }
+          //TODO Maybe rely on end to block illegal?
+          if (parentUuids.isEmpty()) {
+            invalid();
+          }
+          String movingUuid = ((MatrixCursor)list.getItemAtPosition(startPosition)).getString(1);
+          String newParentUuid = parentUuids.peek();
+          while (!parentUuids.isEmpty()) {
+            String uuid = parentUuids.pop();
+            if (uuid.equals(movingUuid)) {
+              invalid();
+            }
+          }
+          moveLayer(movingUuid, newParentUuid, positions.get(newParentUuid));
         }
       });
 
       list.setDragNDropAdapter(adapter);
     }
+  }
+
+  //TODO Remove
+  private void invalid() {
+    new Handler(Looper.getMainLooper()).post(new Runnable() {
+      @Override
+      public void run() {
+        setTree((Tree & IDd)mTree);
+      }
+    });
+  }
+
+  //TODO Remove
+  private void moveLayer(String uuid, String parentUuid, int childPosition) {
+    new Handler(Looper.getMainLooper()).post(new Runnable() {
+      @Override
+      public void run() {
+        IDd movingNode = null;
+        Tree parentTree = null;
+
+        Stack<Iterator> childStack = new Stack<>();
+
+        //TODO Check no bag-in-bag
+
+        childStack.push(mTree.getChildren().iterator());
+        stackLoop: while (!childStack.isEmpty()) {
+          Iterator children = childStack.pop();
+
+          while (children.hasNext()) {
+            //TODO Maybe catch possible exception?
+            IDd child = (IDd) children.next();
+            if (uuid.equals(child.getId())) {
+              children.remove();
+              movingNode = child;
+              if (movingNode != null && parentTree != null) {
+                break stackLoop;
+              }
+            }
+            if (child instanceof Tree) {
+              if (parentUuid.equals(child.getId())) {
+                parentTree = (Tree)child;
+                if (movingNode != null && parentTree != null) {
+                  break stackLoop;
+                }
+              }
+
+              childStack.push(children);
+              childStack.push(((Tree)child).getChildren().iterator());
+              continue stackLoop;
+            }
+          }
+        }
+        what if rearranged?
+        parentTree.getChildren().add(childPosition, movingNode);
+        setTree((Tree & IDd)mTree);
+      }
+    });
   }
 
   protected static <T extends Tree & IDd> MatrixCursor getCursorFromTree(T tree) {
@@ -336,8 +430,9 @@ public class LayersFragment extends Fragment {
    */
   public interface OnLayersFragmentInteractionListener {
     // TODO: Update argument type and name
-    void onCreateLayer(String parentUuid, Layer child);
-    void onSelectLayer(String layerUuid);
+    public void onCreateLayer(String parentUuid, Layer child);
+    public void onSelectLayer(String layerUuid);
+    public void onMoveLayer(String layerUuid, String newParentUuid, int newPosition);
   }
 
   /*

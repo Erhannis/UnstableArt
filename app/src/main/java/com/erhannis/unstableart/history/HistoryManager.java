@@ -129,6 +129,7 @@ public class HistoryManager implements Serializable {
     if (layer != null && layer instanceof GroupLayer) {
       attach(new AddLayerLMHN((GroupLayer)layer, child));
     } else {
+      //TODO Toast?
       System.err.println("HM.executeCreateLayer error");
     }
   }
@@ -139,7 +140,20 @@ public class HistoryManager implements Serializable {
     if (layer != null) {
       attach(new SetLayerSMHN(layer));
     } else {
+      //TODO Toast?
       System.err.println("HM.executeSelectLayer error");
+    }
+  }
+
+  //TODO Check transaction?
+  public synchronized void executeMoveLayer(String layerUuid, String newParentUuid, int newPosition) {
+    Layer aChild = findLayerByUuid(root, layerUuid);
+    Layer aParent = findLayerByUuid(root, newParentUuid);
+    if (aChild != null && aParent != null && aParent instanceof GroupLayer) {
+      attach(new MoveLayerLMHN(aChild, (GroupLayer)aParent, newPosition));
+    } else {
+      //TODO Toast?
+      System.err.println("HM.executeMoveLayer error");
     }
   }
 

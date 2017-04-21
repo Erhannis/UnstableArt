@@ -1,5 +1,6 @@
 package com.erhannis.unstableart;
 
+import android.database.MatrixCursor;
 import android.net.Uri;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -24,7 +25,18 @@ public class TreeTestActivity extends AppCompatActivity implements LayersFragmen
     LinearLayout llView = (LinearLayout)findViewById(R.id.activity_tree_test);
 
     LayersFragment myFragment = (LayersFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
-    myFragment.setTree(new GroupLayer());
+    myFragment.setTree(new LayersFragment.TestTree("a") {{
+      addChild(new LayersFragment.TestTree("aa"){{
+        addChild(new LayersFragment.TestIDd("aaa"));
+        addChild(new LayersFragment.TestIDd("aab"));
+      }});
+      addChild(new LayersFragment.TestIDd("ab"));
+      addChild(new LayersFragment.TestTree("ac"){{
+        addChild(new LayersFragment.TestIDd("aca"));
+        addChild(new LayersFragment.TestIDd("acb"));
+        addChild(new LayersFragment.TestIDd("acc"));
+      }});
+    }});
     /*
     FragmentManager fragMan = getSupportFragmentManager();
     FragmentTransaction fragTransaction = fragMan.beginTransaction();

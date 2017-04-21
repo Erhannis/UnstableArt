@@ -864,6 +864,12 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     redraw();
   }
 
+  @Override
+  public void onMoveLayer(String layerUuid, String newParentUuid, int newPosition) {
+    historyManager.executeMoveLayer(layerUuid, newParentUuid, newPosition);
+    redraw();
+  }
+
   public void showToast(String text) {
     new Handler(Looper.getMainLooper()).post(new Runnable() {
       @Override
