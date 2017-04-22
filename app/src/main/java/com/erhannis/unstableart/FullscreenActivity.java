@@ -51,6 +51,7 @@ import com.erhannis.unstableart.history.SetToolSizeSMHN;
 import com.erhannis.unstableart.mechanics.color.DoublesColor;
 import com.erhannis.unstableart.mechanics.color.IntColor;
 import com.erhannis.unstableart.mechanics.context.ArtContext;
+import com.erhannis.unstableart.mechanics.context.GroupLayer;
 import com.erhannis.unstableart.mechanics.context.Layer;
 import com.erhannis.unstableart.mechanics.context.StrokePL;
 import com.erhannis.unstableart.mechanics.context.UACanvas;
@@ -123,7 +124,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
 
   private DrawerLayout mDrawerLayout;
   private ActionBarDrawerToggle mDrawerToggle;
-  private ListView mLeftDrawerView;
+  private LinearLayout mLeftDrawerView;
   private ListView mRightDrawerView;
 
   private LayersFragment layersFragment;
@@ -183,7 +184,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     if(mDrawerLayout == null || mLeftDrawerView == null || mRightDrawerView == null || mDrawerToggle == null) {
       // Configure navigation drawer
       mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-      mLeftDrawerView = (ListView)findViewById(R.id.left_drawer);
+      mLeftDrawerView = (LinearLayout)findViewById(R.id.left_drawer);
       mRightDrawerView = (ListView)findViewById(R.id.right_drawer);
       mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
 
@@ -223,66 +224,46 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
 
   protected void initToolDrawer() {
     /**/
-    LinearLayout rowLayout = new LinearLayout(this);
-    rowLayout.setOrientation(LinearLayout.VERTICAL);
-    rowLayout.setId(View.generateViewId());
-
-    mLeftDrawerView.addHeaderView(LayersFragment.textView(this, "test test"));
-    mLeftDrawerView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice, new String[]{}));
-    mLeftDrawerView.addFooterView(rowLayout);
-
     FragmentManager fragMan = getSupportFragmentManager();
     FragmentTransaction fragTransaction = fragMan.beginTransaction();
 
     layersFragment = new LayersFragment();
     layersFragment.setTree(historyManager.rebuild());
-    fragTransaction.add(rowLayout.getId(), layersFragment, "LayersFragment");
+    fragTransaction.add(mLeftDrawerView.getId(), layersFragment, "LayersFragment");
     fragTransaction.commit();
 
-    Button button = new Button(this);
-    button.setText("Add test layers");
-    button.setOnClickListener(new View.OnClickListener() {
+    Button btnAddStrokeLayer = new Button(this);
+    btnAddStrokeLayer.setText("Add stroke layer");
+    btnAddStrokeLayer.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
         //TODO There should probably be a better way of getting a uuid
         String uuid = historyManager.rebuild().getId();
         historyManager.executeCreateLayer(uuid, new StrokePL());
-        historyManager.executeCreateLayer(uuid, new StrokePL());
-        historyManager.executeCreateLayer(uuid, new StrokePL());
-        historyManager.executeCreateLayer(uuid, new StrokePL());
-        historyManager.executeCreateLayer(uuid, new StrokePL());
         redraw();
       }
     });
-    rowLayout.addView(button);
+    mLeftDrawerView.addView(btnAddStrokeLayer);
+
+    Button btnAddGroupLayer = new Button(this);
+    btnAddGroupLayer.setText("Add group layer");
+    btnAddGroupLayer.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        //TODO There should probably be a better way of getting a uuid
+        String uuid = historyManager.rebuild().getId();
+        historyManager.executeCreateLayer(uuid, new GroupLayer());
+        redraw();
+      }
+    });
+    mLeftDrawerView.addView(btnAddGroupLayer);
 
     if (1==1) return;
     /**/
-    mLeftDrawerView.setAdapter(new ArrayAdapter<String>(this,
-            android.R.layout.simple_list_item_single_choice, new String[]{"Pen", "Brush", "test"}));
+
+    /*
+    mLeftDrawerView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice, new String[]{"Pen", "Brush", "test"}));
     //TODO Set selected listener
-      /*
-      mLeftDrawerView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-        @Override
-        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-          //TODO Brittle.
-          //TODO Check if already selected?  Can that happen?
-          switch (i) {
-            case 0:
-              historyManager.attach(new SetToolSMHN(new PenST()));
-              break;
-            case 1:
-              historyManager.attach(new SetToolSMHN(new BrushST()));
-              break;
-          }
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> adapterView) {
-
-        }
-      });
-      */
 
     mLeftDrawerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
       @Override
@@ -303,6 +284,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
         }
       }
     });
+    */
   }
 
   protected void initActionDrawer() {

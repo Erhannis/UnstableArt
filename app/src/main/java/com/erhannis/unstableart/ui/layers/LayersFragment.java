@@ -11,6 +11,7 @@ import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -137,7 +138,7 @@ public class LayersFragment extends Fragment {
         @Override
         public void onItemDrop(DragNDropListView parent, View view, int startPosition, int endPosition, long id) {
           // Note: occurs before item has moved.
-          showToast("dropped item " + startPosition + " -> " + endPosition);
+          //showToast("dropped item " + startPosition + " -> " + endPosition);
 
           FactoryHashMap<String, Integer> unused = new FactoryHashMap<String, Integer>(new Factory<Integer>() {
             @Override
@@ -163,7 +164,7 @@ public class LayersFragment extends Fragment {
             invalid();
             return;
           }
-          String movingUuid = ((MatrixCursor)list.getItemAtPosition(startPosition)).getString(1);
+          String movingUuid = ((MatrixCursor)list.getItemAtPosition(startPosition)).getString(COL_UUID);
           /* // Uncomment to check bag-in-bag
           while (!parentUuids.isEmpty()) {
             String uuid = parentUuids.pop();
@@ -179,6 +180,17 @@ public class LayersFragment extends Fragment {
           }
           moveLayer(movingUuid, newParentUuid, newPosition);
           return;
+        }
+      });
+
+      list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+          //TODO Show which one selected
+          String uuid = ((MatrixCursor)list.getItemAtPosition(position)).getString(COL_UUID);
+          if (uuid != null) {
+            selectLayer(uuid);
+          }
         }
       });
 
@@ -255,12 +267,12 @@ public class LayersFragment extends Fragment {
     });
   }
 
-  private void selectLayer(Layer layer) {
+  private void selectLayer(String layerUuid) {
     new Handler(Looper.getMainLooper()).post(new Runnable() {
       @Override
       public void run() {
         if (mListener != null) {
-          mListener.onSelectLayer(layer.uuid);
+          mListener.onSelectLayer(layerUuid);
         }
       }
     });

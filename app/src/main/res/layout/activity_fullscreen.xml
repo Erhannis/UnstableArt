@@ -19,11 +19,11 @@ tools:context="com.erhannis.unstableart.FullscreenActivity">
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"/>
     </LinearLayout>
-    <ListView android:id="@+id/left_drawer"
+    <LinearLayout android:id="@+id/left_drawer"
               android:layout_width="500dp"
               android:layout_height="match_parent"
               android:layout_gravity="left"
-              android:choiceMode="singleChoice"
+              android:orientation="vertical"
               android:divider="@android:color/transparent"
               android:dividerHeight="0dp"
               android:background="#777"/> <!-- TODO what's with the color scheme? -->
