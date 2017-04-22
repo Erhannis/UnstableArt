@@ -42,6 +42,7 @@ Tilt/rotation support
 Art training mode/tools?
 Symbolic-link layer?
 Tooltips?
+Allow text commands, like shell?  "mv a523ed 51ea6a 3"
 
 
 Thinking on paper

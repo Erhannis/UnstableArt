@@ -37,6 +37,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
@@ -51,6 +52,7 @@ import com.erhannis.unstableart.mechanics.color.DoublesColor;
 import com.erhannis.unstableart.mechanics.color.IntColor;
 import com.erhannis.unstableart.mechanics.context.ArtContext;
 import com.erhannis.unstableart.mechanics.context.Layer;
+import com.erhannis.unstableart.mechanics.context.StrokePL;
 import com.erhannis.unstableart.mechanics.context.UACanvas;
 import com.erhannis.unstableart.mechanics.stroke.BrushST;
 import com.erhannis.unstableart.mechanics.stroke.PenST;
@@ -220,8 +222,9 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   }
 
   protected void initToolDrawer() {
-    /*/
+    /**/
     LinearLayout rowLayout = new LinearLayout(this);
+    rowLayout.setOrientation(LinearLayout.VERTICAL);
     rowLayout.setId(View.generateViewId());
 
     mLeftDrawerView.addHeaderView(LayersFragment.textView(this, "test test"));
@@ -232,9 +235,26 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     FragmentTransaction fragTransaction = fragMan.beginTransaction();
 
     layersFragment = new LayersFragment();
-    layersFragment.setGroupLayer(historyManager.rebuild());
+    layersFragment.setTree(historyManager.rebuild());
     fragTransaction.add(rowLayout.getId(), layersFragment, "LayersFragment");
     fragTransaction.commit();
+
+    Button button = new Button(this);
+    button.setText("Add test layers");
+    button.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        //TODO There should probably be a better way of getting a uuid
+        String uuid = historyManager.rebuild().getId();
+        historyManager.executeCreateLayer(uuid, new StrokePL());
+        historyManager.executeCreateLayer(uuid, new StrokePL());
+        historyManager.executeCreateLayer(uuid, new StrokePL());
+        historyManager.executeCreateLayer(uuid, new StrokePL());
+        historyManager.executeCreateLayer(uuid, new StrokePL());
+        redraw();
+      }
+    });
+    rowLayout.addView(button);
 
     if (1==1) return;
     /**/

@@ -4,10 +4,17 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
+import com.erhannis.unstableart.history.AddLayerLMHN;
+import com.erhannis.unstableart.history.HistoryNode;
+import com.terlici.dragndroplist.IDd;
 import com.terlici.dragndroplist.Tree;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * //TODO I'm tempted for this to replace UACanvas
@@ -59,4 +66,62 @@ public class GroupLayer extends Layer implements Tree<Layer> {
   public GroupLayer instantiate() {
     return (GroupLayer) new GroupLayer(this).init();
   }
+
+  //<editor-fold desc="Group methods">
+  public static GroupLayer findIParent(GroupLayer iRoot, Layer iChild) {
+    LinkedList<GroupLayer> toSearch = new LinkedList<>();
+    HashSet<GroupLayer> searched = new HashSet<>();
+    toSearch.offer(iRoot);
+    while (!toSearch.isEmpty()) {
+      GroupLayer iLayer = toSearch.poll();
+      searched.add(iLayer);
+      for (Layer i : iLayer.getChildren()) {
+        if (i == iChild) {
+          return iLayer;
+        }
+        if (i instanceof GroupLayer) {
+          // Just in case we ever allow cycles
+          //TODO Though, if we do...uh, I dunno.
+          if (!searched.contains(i)) {
+            toSearch.offer((GroupLayer)i);
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Checks to see if moving iNewChild into iNewParent would be like putting a bag into itself.
+   * Ie., checks to see if iNewChild is an ancestor to iNewParent.
+   * @param iNewChild
+   * @param iNewParent
+   * @return
+   */
+  public static boolean hasCycle(Layer iNewChild, GroupLayer iNewParent) {
+    if (!(iNewChild instanceof GroupLayer)) {
+      return false;
+    }
+    LinkedList<GroupLayer> toSearch = new LinkedList<>();
+    HashSet<GroupLayer> searched = new HashSet<>();
+    toSearch.offer((GroupLayer)iNewChild);
+    while (!toSearch.isEmpty()) {
+      GroupLayer iLayer = toSearch.poll();
+      searched.add(iLayer);
+      if (iLayer == iNewParent) {
+        return true;
+      }
+      for (Layer i : iLayer.getChildren()) {
+        if (i instanceof GroupLayer) {
+          // Just in case we ever allow cycles
+          //TODO Though, if we do...uh, I dunno.
+          if (!searched.contains(i)) {
+            toSearch.offer((GroupLayer)i);
+          }
+        }
+      }
+    }
+    return false;
+  }
+  //</editor-fold>
 }

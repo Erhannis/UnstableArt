@@ -25,6 +25,7 @@ public class TreeTestActivity extends AppCompatActivity implements LayersFragmen
     LinearLayout llView = (LinearLayout)findViewById(R.id.activity_tree_test);
 
     LayersFragment myFragment = (LayersFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
+    /*
     myFragment.setTree(new LayersFragment.TestTree("a") {{
       addChild(new LayersFragment.TestTree("aa"){{
         addChild(new LayersFragment.TestIDd("aaa"));
@@ -37,6 +38,7 @@ public class TreeTestActivity extends AppCompatActivity implements LayersFragmen
         addChild(new LayersFragment.TestIDd("acc"));
       }});
     }});
+    */
     /*
     FragmentManager fragMan = getSupportFragmentManager();
     FragmentTransaction fragTransaction = fragMan.beginTransaction();
@@ -56,6 +58,11 @@ public class TreeTestActivity extends AppCompatActivity implements LayersFragmen
 
   @Override
   public void onSelectLayer(String layerUuid) {
+
+  }
+
+  @Override
+  public void onMoveLayer(String layerUuid, String newParentUuid, int newPosition) {
 
   }
 }
