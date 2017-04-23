@@ -46,12 +46,13 @@ import java.util.jar.Pack200;
  * Use the {@link LayersFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class LayersFragment extends Fragment {
-  private static final String[] COLUMNS = new String[]{"_id", "uuid", "type", "level", "text"};
+public class LayersFragment<ID> extends Fragment {
+  private static final String[] COLUMNS = new String[]{"_id", "uuid", "type", "level", "text", "selected"};
   private static final int COL_UUID = 1;
   private static final int COL_TYPE = 2;
   private static final int COL_LEVEL = 3;
   private static final int COL_TEXT = 4;
+  private static final int COL_SELECTED = 5;
 
   // TODO: Rename parameter arguments, choose names that match
   // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -107,15 +108,17 @@ public class LayersFragment extends Fragment {
 
   //TODO AAAARGH
   private Tree mTree = null;
+  private ID mSelectedId = null;
 
-  public <T extends Tree & IDd> void setTree(T tree) {
-    mTree = (IDd & Tree)tree;
+  public <T extends Tree & IDd<ID>> void setTree(T tree, ID selectedId) {
+    mTree = (IDd<ID> & Tree)tree;
+    mSelectedId = selectedId;
     updateView();
   }
 
   public void updateView() {
     if (llView != null && mTree != null) {
-      MatrixCursor matrixCursor = getCursorFromTree((Tree & IDd)mTree);
+      MatrixCursor matrixCursor = getCursorFromTree((Tree & IDd<ID>)mTree, mSelectedId);
       // Still testing
 
       DragNDropListView list = (DragNDropListView)llView.findViewById(android.R.id.list);
@@ -127,7 +130,10 @@ public class LayersFragment extends Fragment {
               new int[]{R.id.text},
               "type",
               "level",
-              R.id.handler);
+              R.id.handler,
+              "selected",
+              R.id.selected
+              );
 
       list.setOnItemDragNDropListener(new DragNDropListView.OnItemDragNDropListener() {
         @Override
@@ -240,7 +246,7 @@ public class LayersFragment extends Fragment {
     new Handler(Looper.getMainLooper()).post(new Runnable() {
       @Override
       public void run() {
-        setTree((Tree & IDd)mTree);
+        setTree((Tree & IDd<ID>)mTree, mSelectedId);
       }
     });
   }
@@ -278,7 +284,7 @@ public class LayersFragment extends Fragment {
     });
   }
 
-  protected static <T extends Tree & IDd> MatrixCursor getCursorFromTree(T tree) {
+  protected static <ID, T extends Tree & IDd<ID>> MatrixCursor getCursorFromTree(T tree, ID selectedId) {
     String[] columns = COLUMNS;
     MatrixCursor matrixCursor = new MatrixCursor(columns);
 
@@ -287,23 +293,23 @@ public class LayersFragment extends Fragment {
 
     long rowId = 1L;
 
-    matrixCursor.addRow(new Object[]{rowId++, tree.getId(), RowType.BEGIN, childStack.size(), tree.toString()});
-    endStack.push(new Object[]{rowId++, tree.getId(), RowType.END, childStack.size(), tree.toString()});
+    matrixCursor.addRow(new Object[]{rowId++, tree.getId(), RowType.BEGIN, childStack.size(), tree.toString(), tree.getId().equals(selectedId)});
+    endStack.push(new Object[]{rowId++, tree.getId(), RowType.END, childStack.size(), tree.toString(), false});
     childStack.push(tree.getChildren().iterator());
     stackLoop: while (!childStack.isEmpty()) {
       Iterator children = childStack.pop();
 
       while (children.hasNext()) {
         //TODO Maybe catch possible exception?
-        IDd child = (IDd) children.next();
+        IDd<ID> child = (IDd<ID>) children.next();
         if (child instanceof Tree) {
-          matrixCursor.addRow(new Object[]{rowId++, child.getId(), RowType.BEGIN, childStack.size() + 1, child.toString()});
-          endStack.push(new Object[]{rowId++, child.getId(), RowType.END, childStack.size() + 1, child.toString()});
+          matrixCursor.addRow(new Object[]{rowId++, child.getId(), RowType.BEGIN, childStack.size() + 1, child.toString(), child.getId().equals(selectedId)});
+          endStack.push(new Object[]{rowId++, child.getId(), RowType.END, childStack.size() + 1, child.toString(), false});
           childStack.push(children);
           childStack.push(((Tree)child).getChildren().iterator());
           continue stackLoop;
         } else {
-          matrixCursor.addRow(new Object[]{rowId++, child.getId(), RowType.NODE, childStack.size() + 1, child.toString()});
+          matrixCursor.addRow(new Object[]{rowId++, child.getId(), RowType.NODE, childStack.size() + 1, child.toString(), child.getId().equals(selectedId)});
         }
       }
       matrixCursor.addRow(endStack.pop());

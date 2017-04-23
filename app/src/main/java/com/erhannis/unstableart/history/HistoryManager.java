@@ -1,5 +1,6 @@
 package com.erhannis.unstableart.history;
 
+import com.erhannis.unstableart.mechanics.FullState;
 import com.erhannis.unstableart.mechanics.State;
 import com.erhannis.unstableart.mechanics.color.DoublesColor;
 import com.erhannis.unstableart.mechanics.context.BlurEL;
@@ -185,7 +186,7 @@ public class HistoryManager implements Serializable {
     return null;
   }
 
-  public UACanvas rebuild() {
+  public FullState rebuild() {
     HistoryNode curr = selected;
     ArrayList<HistoryNode> chain = new ArrayList<HistoryNode>();
     while (curr != null) {
@@ -213,6 +214,6 @@ public class HistoryManager implements Serializable {
       }
       //TODO Account for all node types?
     }
-    return iCanvas;
+    return new FullState(state, iCanvas);
   }
 }

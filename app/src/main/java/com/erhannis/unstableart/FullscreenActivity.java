@@ -48,6 +48,7 @@ import com.erhannis.unstableart.history.HistoryManager;
 import com.erhannis.unstableart.history.SetColorSMHN;
 import com.erhannis.unstableart.history.SetToolSMHN;
 import com.erhannis.unstableart.history.SetToolSizeSMHN;
+import com.erhannis.unstableart.mechanics.FullState;
 import com.erhannis.unstableart.mechanics.color.DoublesColor;
 import com.erhannis.unstableart.mechanics.color.IntColor;
 import com.erhannis.unstableart.mechanics.context.ArtContext;
@@ -127,7 +128,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   private LinearLayout mLeftDrawerView;
   private ListView mRightDrawerView;
 
-  private LayersFragment layersFragment;
+  private LayersFragment<String> layersFragment;
 //</editor-fold>
 
   private MqttAndroidClient mqttAndroidClient;
@@ -227,8 +228,9 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     FragmentManager fragMan = getSupportFragmentManager();
     FragmentTransaction fragTransaction = fragMan.beginTransaction();
 
-    layersFragment = new LayersFragment();
-    layersFragment.setTree(historyManager.rebuild());
+    layersFragment = new LayersFragment<String>();
+    FullState fullState = historyManager.rebuild();
+    layersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
     fragTransaction.add(mLeftDrawerView.getId(), layersFragment, "LayersFragment");
     fragTransaction.commit();
 
@@ -238,7 +240,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
       @Override
       public void onClick(View v) {
         //TODO There should probably be a better way of getting a uuid
-        String uuid = historyManager.rebuild().getId();
+        String uuid = historyManager.rebuild().iCanvas.getId();
         historyManager.executeCreateLayer(uuid, new StrokePL());
         redraw();
       }
@@ -251,7 +253,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
       @Override
       public void onClick(View v) {
         //TODO There should probably be a better way of getting a uuid
-        String uuid = historyManager.rebuild().getId();
+        String uuid = historyManager.rebuild().iCanvas.getId();
         historyManager.executeCreateLayer(uuid, new GroupLayer());
         redraw();
       }
@@ -557,12 +559,12 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     //Canvas cCanvas = new Canvas(bCanvas);
     //cCanvas.drawARGB(0xFF, 0x00, 0xFF, 0xFF);
     //TODO INEFFICIENT, DON'T KEEP
-    UACanvas iCanvas = historyManager.rebuild();
-    iCanvas.draw(artContext, bCanvas);
+    FullState fullState = historyManager.rebuild();
+    fullState.iCanvas.draw(artContext, bCanvas);
 
     //TODO Seems fishy here
     if (layersFragment != null) {
-      layersFragment.setTree(iCanvas);
+      layersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
     }
 
     //TODO Save/keep/etc. matrix

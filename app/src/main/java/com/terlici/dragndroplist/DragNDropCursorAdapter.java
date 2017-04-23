@@ -34,14 +34,16 @@ public class DragNDropCursorAdapter extends CursorAdapter implements DragNDropAd
 	int mPosition[];
 	int mHandler;
 	int mLayout;
+	int mSelected;
 	String[] mFromText;
 	int[] mToText;
 	String mFromRowType;
 	String mFromLevel;
+	String mFromSelected;
 
 	protected LayoutInflater mCursorInflater;
 
-	public DragNDropCursorAdapter(Context context, int layout, Cursor cursor, String[] fromText, int[] toText, String fromRowType, String fromLevel, int handler) {
+	public DragNDropCursorAdapter(Context context, int layout, Cursor cursor, String[] fromText, int[] toText, String fromRowType, String fromLevel, int handler, String fromSelected, int selected) {
 		super(context, cursor, 0);
 
 		mCursorInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -52,6 +54,8 @@ public class DragNDropCursorAdapter extends CursorAdapter implements DragNDropAd
 		mFromRowType = fromRowType;
 		mFromLevel = fromLevel;
 		mHandler = handler;
+		mFromSelected = fromSelected;
+		mSelected = selected;
 		setup();
 	}
 	
@@ -93,6 +97,12 @@ public class DragNDropCursorAdapter extends CursorAdapter implements DragNDropAd
 			textViewTitle.setText(title);
 		}
 		View handler = view.findViewById(mHandler);
+		View selectedIndicator = view.findViewById(mSelected);
+		if ("true".equalsIgnoreCase(cursor.getString(cursor.getColumnIndex(mFromSelected)))) {
+			selectedIndicator.setVisibility(View.VISIBLE);
+		} else {
+			selectedIndicator.setVisibility(View.INVISIBLE);
+		}
 		TextView tvSpace = (TextView)view.findViewById(R.id.tvSpace);
 		if (mFromRowType != null) {
 			String type = cursor.getString(cursor.getColumnIndex(mFromRowType));
