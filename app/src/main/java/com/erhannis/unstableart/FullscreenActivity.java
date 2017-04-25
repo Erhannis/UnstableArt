@@ -473,7 +473,8 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
         //TODO Make SURE this thing gets all the processing it needs.  Do NOT drop points or strokes, so help me.
         //TODO Transform
         //TODO Pointers?
-        //TODO Get type, filter accordingly
+        //TODO Buttons?
+        //TODO TOOL_TYPE_ERASER TOOL_TYPE_STYLUS TOOL_TYPE_FINGER
         if (InputMapper.getMapper().deviceDraws(event.getDevice())) {
           switch (event.getActionMasked()) {
             case MotionEvent.ACTION_CANCEL:
