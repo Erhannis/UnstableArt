@@ -8,12 +8,16 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.PointF;
 import android.hardware.input.InputManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.GestureDetectorCompat;
+import android.support.v4.view.ScaleGestureDetectorCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -21,11 +25,13 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -117,6 +123,9 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   private ListView mRightDrawerView;
 
   private LayersFragment<String> layersFragment;
+
+  private Matrix mViewportMatrix = new Matrix();
+  private Matrix mViewportMatrixInverse = new Matrix();
 //</editor-fold>
 
   private MqttAndroidClient mqttAndroidClient;
@@ -467,6 +476,51 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
 
     mSurfaceHolder = surf.getHolder();
 
+    //TODO Export some of this view stuff?
+
+    // http://stackoverflow.com/a/19545542/513038
+    final ScaleGestureDetector mScaleGestureDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.OnScaleGestureListener() {
+      private float lastFocusX;
+      private float lastFocusY;
+
+      @Override
+      public boolean onScaleBegin(ScaleGestureDetector detector) {
+        lastFocusX = detector.getFocusX();
+        lastFocusY = detector.getFocusY();
+        return true;
+      }
+
+      @Override
+      public boolean onScale(ScaleGestureDetector detector) {
+        Matrix transformationMatrix = new Matrix();
+        float focusX = detector.getFocusX();
+        float focusY = detector.getFocusY();
+
+        //Zoom focus is where the fingers are centered,
+        transformationMatrix.postTranslate(-focusX, -focusY);
+
+        transformationMatrix.postScale(detector.getScaleFactor(), detector.getScaleFactor());
+
+/* Adding focus shift to allow for scrolling with two pointers down. Remove it to skip this functionality. This could be done in fewer lines, but for clarity I do it this way here */
+        //Edited after comment by chochim
+        float focusShiftX = focusX - lastFocusX;
+        float focusShiftY = focusY - lastFocusY;
+        transformationMatrix.postTranslate(focusX + focusShiftX, focusY + focusShiftY);
+        mViewportMatrix.postConcat(transformationMatrix);
+        if (!mViewportMatrix.invert(mViewportMatrixInverse)) {
+          throw new IllegalStateException("Viewport matrix non-invertible!");
+        }
+        lastFocusX = focusX;
+        lastFocusY = focusY;
+        redraw();
+        return true;
+      }
+
+      @Override
+      public void onScaleEnd(ScaleGestureDetector detector) {
+      }
+    });
+
     surf.setOnTouchListener(new View.OnTouchListener() {
       @Override
       public boolean onTouch(View v, MotionEvent event) {
@@ -488,6 +542,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
               historyManager.startStrokeTransaction(); // Continue into next case
             case MotionEvent.ACTION_MOVE: //TODO What about basically anything else?
               //TODO Check transaction?
+              float[] xy = new float[]{Float.NaN, Float.NaN};
               float x = Float.NaN;
               float y = Float.NaN;
               float p = Float.NaN;
@@ -495,14 +550,20 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
                 x = event.getHistoricalX(i);
                 y = event.getHistoricalY(i);
                 p = event.getHistoricalPressure(i);
-                historyManager.getCurStroke().points.add(new StrokePoint(x, y, p));
+                xy[0] = x;
+                xy[1] = y;
+                mViewportMatrixInverse.mapPoints(xy);
+                historyManager.getCurStroke().points.add(new StrokePoint(xy[0], xy[1], p));
               }
               if (event.getX() != x || event.getY() != y) {
                 //TODO Debatable
                 x = event.getX();
                 y = event.getY();
                 p = event.getPressure();
-                historyManager.getCurStroke().points.add(new StrokePoint(x, y, p));
+                xy[0] = x;
+                xy[1] = y;
+                mViewportMatrixInverse.mapPoints(xy);
+                historyManager.getCurStroke().points.add(new StrokePoint(xy[0], xy[1], p));
               }
 
               return true; //TODO SHOULD draw?
@@ -513,28 +574,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
           redraw();
           return true;
         } else if (InputMapper.getMapper().deviceMoves(event.getDevice())) {
-          switch (event.getActionMasked()) {
-            case MotionEvent.ACTION_CANCEL:
-              return true; //TODO Still redraw?
-            case MotionEvent.ACTION_UP:
-              break;
-            case MotionEvent.ACTION_DOWN:
-              // Continue into next case
-            case MotionEvent.ACTION_MOVE: //TODO What about basically anything else?
-              float x = event.getX();
-              float y = event.getY();
-              float p = event.getPressure(); // Probably not used
-
-              // I dunno, scroll or zoom or something
-              //TODO How deal with gestures?
-
-              return true; //TODO SHOULD draw?
-            default:
-              Log.d(TAG, "Unhandled action: " + event.getActionMasked());
-              break;
-          }
-          redraw();
-          return true;
+          return mScaleGestureDetector.onTouchEvent(event);
         } else {
           // Dunno
           return false;
@@ -584,10 +624,8 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
       layersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
     }
 
-    //TODO Save/keep/etc. matrix
-    Matrix viewMatrix = new Matrix();
     //TODO Paint?
-    viewport.drawBitmap(bCanvas, viewMatrix, null);
+    viewport.drawBitmap(bCanvas, mViewportMatrix, null);
     //viewport.drawText("" + debugInfo, 10, 10, new Paint());
   }
 
@@ -790,7 +828,16 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     }
     return sourcesSet;
   }
-//</editor-fold>
+
+  public void showToast(String text) {
+    new Handler(Looper.getMainLooper()).post(new Runnable() {
+      @Override
+      public void run() {
+        Toast.makeText(FullscreenActivity.this.getBaseContext(), text, Toast.LENGTH_LONG).show();
+      }
+    });
+  }
+  //</editor-fold>
 
   //<editor-fold desc="MQTT">
   private void initMqtt() {
@@ -953,6 +1000,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   }
   //</editor-fold>
 
+  //<editor-fold desc="FRAGMENT INTERACTIONS">
   @Override
   public void onCreateLayer(String parentUuid, Layer child) {
     historyManager.executeCreateLayer(parentUuid, child);
@@ -970,13 +1018,5 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     historyManager.executeMoveLayer(layerUuid, newParentUuid, newPosition);
     redraw();
   }
-
-  public void showToast(String text) {
-    new Handler(Looper.getMainLooper()).post(new Runnable() {
-      @Override
-      public void run() {
-        Toast.makeText(FullscreenActivity.this.getBaseContext(), text, Toast.LENGTH_LONG).show();
-      }
-    });
-  }
+  //</editor-fold>
 }
