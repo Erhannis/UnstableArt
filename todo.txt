@@ -18,6 +18,14 @@ Pinch/zoom/pan
 Figure out natural scale, system for relative scaling and translation of viewport
 color picker
 keymapping
+Show layer thumbnails
+Allow more generic tree-list mapping
+      component visibility
+      component tap, long press handler
+      (fix hastiness of before)
+Figure out how to not open drawers with pen (or arbitrary tool)
+Proper fullscreen
+"New" button
 
 
 Ideas/Things to do
@@ -28,8 +36,8 @@ blur/hue/function/script layers
 COLOR MATRIX
 also non-orderable layers?
 allow collapse of certain nodes?  (e.g., moving a layer twice)
-preferred child, for undo/redo ease?
 hide similar nodes, for clarity?  (imagine 100 stroke nodes....)
+     hide similar SIBLINGS? (especially leaves...undo-redo cycles)
 user-defined constants, variables, colors, equations?  For supporting the symbolic re-caluclation
 cache and optimize certain actions?  like compress 10 strokes into a bitmap until res changes, maybe?
 functions on pressure, etc.
@@ -37,15 +45,33 @@ functions on pressure, etc.
 time-finder: playback art until you find the spot you want to change it at.  Or time-slider?
 AlterColorwheelSMHN ?
 More sliding drawers
+     tabbed etc. drawers?
 Tilt/rotation support
     General map-number support?
 Art training mode/tools?
 Symbolic-link layer?
 Tooltips?
 Allow text commands, like shell?  "mv a523ed 51ea6a 3"
+      Just parse into a history node
+      	   Maybe they have assigned abbreviations?
+	   Or it just requires it can find exactly one possible match
+Fix canvas spatials OR have it match viewport
+Allow name layers
+
 
 
 Thinking on paper
 -----------------
 1.  What to do about layers?  Is a layer responsible for drawing over input, or does its parent pass it a clear canvas and composite the output?  Or both?  On the side of child, it'd make more sense for a child to apply its own opacity, etc., rather than making the parent do it.  On the side of parent, consider clipping masks - once the child composites its output with the existing stuff, the parent can no longer clip it.  And what about, say, a blur layer?  It would require the existing stuff, to function.  How would you clip that, anyway?  
 2.  Layers are transient.  I think.  It's the tree that canonically defines the state of the art.
+
+
+Lower priority
+--------------
+Allow collapse group layers
+Improve file dialogs
+
+
+Done
+----
+preferred child, for undo/redo ease?
