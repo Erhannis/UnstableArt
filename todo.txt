@@ -57,6 +57,7 @@ Allow text commands, like shell?  "mv a523ed 51ea6a 3"
 	   Or it just requires it can find exactly one possible match
 Fix canvas spatials OR have it match viewport
 Allow name layers
+Lock opacity
 
 
 

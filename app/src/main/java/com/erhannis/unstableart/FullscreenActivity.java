@@ -83,6 +83,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.HashSet;
+import java.util.Set;
 
 import java8.util.function.Consumer;
 
@@ -484,8 +486,6 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
         //TODO Transform
         //TODO Pointers?
         //TODO Get type, filter accordingly
-        //System.out.println(event.getActionMasked());
-
         switch (event.getActionMasked()) {
           case MotionEvent.ACTION_CANCEL:
             //TODO DO I want to rollback?
@@ -667,8 +667,8 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     builder.show();
   }
 
-  public void getYesNoCancelInput(Context ctx, String title, final Consumer<Boolean> callback) {
-    new AlertDialog.Builder(this)
+  public static void getYesNoCancelInput(Context ctx, String title, final Consumer<Boolean> callback) {
+    new AlertDialog.Builder(ctx)
             .setTitle(title)
             .setIcon(android.R.drawable.ic_dialog_alert)
             .setCancelable(true)
@@ -692,6 +692,87 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
         Toast.makeText(ctx, text, Toast.LENGTH_LONG).show();
       }
     });
+  }
+
+  public static Set<String> getDeviceSources(InputDevice inputDevice) {
+    int sourcesInt = inputDevice.getSources();
+    HashSet<String> sourcesSet = new HashSet<>();
+    if (0 < (sourcesInt & InputDevice.SOURCE_ANY)) {
+      sourcesSet.add("SOURCE_ANY");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_BLUETOOTH_STYLUS)) {
+      sourcesSet.add("SOURCE_BLUETOOTH_STYLUS");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_CLASS_BUTTON)) {
+      sourcesSet.add("SOURCE_CLASS_BUTTON");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_CLASS_JOYSTICK)) {
+      sourcesSet.add("SOURCE_CLASS_JOYSTICK");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_CLASS_MASK)) {
+      sourcesSet.add("SOURCE_CLASS_MASK");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_CLASS_NONE)) {
+      sourcesSet.add("SOURCE_CLASS_NONE");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_CLASS_POINTER)) {
+      sourcesSet.add("SOURCE_CLASS_POINTER");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_CLASS_POSITION)) {
+      sourcesSet.add("SOURCE_CLASS_POSITION");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_CLASS_POINTER)) {
+      sourcesSet.add("SOURCE_CLASS_POINTER");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_CLASS_TRACKBALL)) {
+      sourcesSet.add("SOURCE_CLASS_TRACKBALL");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_DPAD)) {
+      sourcesSet.add("SOURCE_DPAD");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_GAMEPAD)) {
+      sourcesSet.add("SOURCE_GAMEPAD");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_HDMI)) {
+      sourcesSet.add("SOURCE_HDMI");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_JOYSTICK)) {
+      sourcesSet.add("SOURCE_JOYSTICK");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_KEYBOARD)) {
+      sourcesSet.add("SOURCE_KEYBOARD");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_MOUSE)) {
+      sourcesSet.add("SOURCE_MOUSE");
+    }
+//    if (0 < (sourcesInt & InputDevice.SOURCE_MOUSE_RELATIVE)) {
+//      sourcesSet.add("SOURCE_MOUSE_RELATIVE");
+//    }
+//    if (0 < (sourcesInt & InputDevice.SOURCE_ROTARY_ENCODER)) {
+//      sourcesSet.add("SOURCE_ROTARY_ENCODER");
+//    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_STYLUS)) {
+      sourcesSet.add("SOURCE_STYLUS");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_TOUCHPAD)) {
+      sourcesSet.add("SOURCE_TOUCHPAD");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_TOUCHSCREEN)) {
+      sourcesSet.add("SOURCE_TOUCHSCREEN");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_TOUCHSCREEN)) {
+      sourcesSet.add("SOURCE_TOUCHSCREEN");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_TOUCH_NAVIGATION)) {
+      sourcesSet.add("SOURCE_TOUCH_NAVIGATION");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_TRACKBALL)) {
+      sourcesSet.add("SOURCE_TRACKBALL");
+    }
+    if (0 < (sourcesInt & InputDevice.SOURCE_UNKNOWN)) {
+      sourcesSet.add("SOURCE_UNKNOWN");
+    }
+    return sourcesSet;
   }
 //</editor-fold>
 
