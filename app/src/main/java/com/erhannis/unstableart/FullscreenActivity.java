@@ -4,26 +4,21 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.PointF;
 import android.hardware.input.InputManager;
-import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.os.Handler;
 import android.text.InputType;
 import android.util.Log;
 import android.view.InputDevice;
@@ -40,26 +35,20 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.erhannis.unstableart.history.HistoryManager;
 import com.erhannis.unstableart.history.SetColorSMHN;
-import com.erhannis.unstableart.history.SetToolSMHN;
 import com.erhannis.unstableart.history.SetToolSizeSMHN;
 import com.erhannis.unstableart.mechanics.FullState;
-import com.erhannis.unstableart.mechanics.color.DoublesColor;
 import com.erhannis.unstableart.mechanics.color.IntColor;
 import com.erhannis.unstableart.mechanics.context.ArtContext;
 import com.erhannis.unstableart.mechanics.context.GroupLayer;
 import com.erhannis.unstableart.mechanics.context.Layer;
 import com.erhannis.unstableart.mechanics.context.StrokePL;
-import com.erhannis.unstableart.mechanics.context.UACanvas;
-import com.erhannis.unstableart.mechanics.stroke.BrushST;
-import com.erhannis.unstableart.mechanics.stroke.PenST;
 import com.erhannis.unstableart.mechanics.stroke.StrokePoint;
-import com.erhannis.unstableart.mechanics.stroke.Tool;
+import com.erhannis.unstableart.settings.InputMapper;
 import com.erhannis.unstableart.ui.layers.LayersFragment;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.KryoException;
@@ -78,11 +67,8 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -311,28 +297,22 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
             }
             break;
           case M_COLOR:
-            getTextInput(FullscreenActivity.this, "8 digit hex color", new Consumer<String>() {
-              @Override
-              public void accept(String s) {
-                try {
-                  int intARGB = (int)Long.parseLong(s, 16); //LOSS
-                  historyManager.attach(new SetColorSMHN(new IntColor(intARGB)));
-                } catch (NumberFormatException nfe) {
-                  showToast(FullscreenActivity.this, "Invalid hex string; use 0-9 and A-F");
-                }
+            getTextInput(FullscreenActivity.this, "8 digit hex color", (str) -> {
+              try {
+                int intARGB = (int)Long.parseLong(str, 16); //LOSS
+                historyManager.attach(new SetColorSMHN(new IntColor(intARGB)));
+              } catch (NumberFormatException nfe) {
+                showToast(FullscreenActivity.this, "Invalid hex string; use 0-9 and A-F");
               }
             });
             break;
           case M_SIZE:
-            getTextInput(FullscreenActivity.this, "Size, double-precision", new Consumer<String>() {
-              @Override
-              public void accept(String s) {
-                try {
-                  double size = Double.parseDouble(s);
-                  historyManager.attach(new SetToolSizeSMHN(size));
-                } catch (NumberFormatException nfe) {
-                  showToast(FullscreenActivity.this, "Invalid double, decimal numbers only");
-                }
+            getTextInput(FullscreenActivity.this, "Size, double-precision", (str) -> {
+              try {
+                double size = Double.parseDouble(str);
+                historyManager.attach(new SetToolSizeSMHN(size));
+              } catch (NumberFormatException nfe) {
+                showToast(FullscreenActivity.this, "Invalid double, decimal numbers only");
               }
             });
             break;
@@ -347,34 +327,30 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
               break;
             }
           case M_SAVE_AS:
-            getTextInput(FullscreenActivity.this, "Save to filename", new Consumer<String>() {
-              @Override
-              public void accept(String s) {
-                final File f = new File(s);
-                if (f.exists()) {
-                  getYesNoCancelInput(FullscreenActivity.this, "File exists.  Overwrite?", new Consumer<Boolean>() {
-                    @Override
-                    public void accept(Boolean aBoolean) {
-                      try {
-                        saveTo(f);
-                        mLastSave = f;
-                      } catch (IOException e) {
-                        e.printStackTrace();
-                        showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
-                      }
+            getTextInput(FullscreenActivity.this, "Save to filename", (str) -> {
+              final File f = new File(str);
+              if (f.exists()) {
+                getYesNoCancelInput(FullscreenActivity.this, "File exists.  Overwrite?", overwrite -> {
+                  if (overwrite) {
+                    try {
+                      saveTo(f);
+                      mLastSave = f;
+                    } catch (IOException e) {
+                      e.printStackTrace();
+                      showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
                     }
-                  });
-                } else {
-                  if (f.getParentFile() != null) {
-                    f.getParentFile().mkdirs();
                   }
-                  try {
-                    saveTo(f);
-                    mLastSave = f;
-                  } catch (IOException e) {
-                    e.printStackTrace();
-                    showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
-                  }
+                });
+              } else {
+                if (f.getParentFile() != null) {
+                  f.getParentFile().mkdirs();
+                }
+                try {
+                  saveTo(f);
+                  mLastSave = f;
+                } catch (IOException e) {
+                  e.printStackTrace();
+                  showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
                 }
               }
             });
@@ -443,6 +419,13 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
+    Consumer<String> test = (s) -> {
+      System.out.println("test " + s);
+    };
+    test.accept("tttttteeeesssssttttt");
+    test.accept("something");
+    test.accept("eggs and bacon");
+
     setContentView(R.layout.activity_fullscreen);
 
     //TODO Do we want this?
@@ -485,42 +468,70 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
         //TODO Transform
         //TODO Pointers?
         //TODO Get type, filter accordingly
-        switch (event.getActionMasked()) {
-          case MotionEvent.ACTION_CANCEL:
-            //TODO DO I want to rollback?
-            historyManager.rollbackStrokeTransaction();
-            return true; //TODO Still redraw?
-          case MotionEvent.ACTION_UP:
-            historyManager.commitStrokeTransaction();
-            break;
-          case MotionEvent.ACTION_DOWN:
-            historyManager.startStrokeTransaction(); // Continue into next case
-          case MotionEvent.ACTION_MOVE: //TODO What about basically anything else?
-            //TODO Check transaction?
-            float x = Float.NaN;
-            float y = Float.NaN;
-            float p = Float.NaN;
-            for (int i = 0; i < event.getHistorySize(); i++) {
-              x = event.getHistoricalX(i);
-              y = event.getHistoricalY(i);
-              p = event.getHistoricalPressure(i);
-              historyManager.getCurStroke().points.add(new StrokePoint(x, y, p));
-            }
-            if (event.getX() != x || event.getY() != y) {
-              //TODO Debatable
-              x = event.getX();
-              y = event.getY();
-              p = event.getPressure();
-              historyManager.getCurStroke().points.add(new StrokePoint(x, y, p));
-            }
+        if (InputMapper.getMapper().deviceDraws(event.getDevice())) {
+          switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_CANCEL:
+              //TODO DO I want to rollback?
+              historyManager.rollbackStrokeTransaction();
+              return true; //TODO Still redraw?
+            case MotionEvent.ACTION_UP:
+              historyManager.commitStrokeTransaction();
+              break;
+            case MotionEvent.ACTION_DOWN:
+              historyManager.startStrokeTransaction(); // Continue into next case
+            case MotionEvent.ACTION_MOVE: //TODO What about basically anything else?
+              //TODO Check transaction?
+              float x = Float.NaN;
+              float y = Float.NaN;
+              float p = Float.NaN;
+              for (int i = 0; i < event.getHistorySize(); i++) {
+                x = event.getHistoricalX(i);
+                y = event.getHistoricalY(i);
+                p = event.getHistoricalPressure(i);
+                historyManager.getCurStroke().points.add(new StrokePoint(x, y, p));
+              }
+              if (event.getX() != x || event.getY() != y) {
+                //TODO Debatable
+                x = event.getX();
+                y = event.getY();
+                p = event.getPressure();
+                historyManager.getCurStroke().points.add(new StrokePoint(x, y, p));
+              }
 
-            return true; //TODO SHOULD draw?
-          default:
-            Log.d(TAG, "Unhandled action: " + event.getActionMasked());
-            break;
+              return true; //TODO SHOULD draw?
+            default:
+              Log.d(TAG, "Unhandled action: " + event.getActionMasked());
+              break;
+          }
+          redraw();
+          return true;
+        } else if (InputMapper.getMapper().deviceMoves(event.getDevice())) {
+          switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_CANCEL:
+              return true; //TODO Still redraw?
+            case MotionEvent.ACTION_UP:
+              break;
+            case MotionEvent.ACTION_DOWN:
+              // Continue into next case
+            case MotionEvent.ACTION_MOVE: //TODO What about basically anything else?
+              float x = event.getX();
+              float y = event.getY();
+              float p = event.getPressure(); // Probably not used
+
+              // I dunno, scroll or zoom or something
+              //TODO How deal with gestures?
+
+              return true; //TODO SHOULD draw?
+            default:
+              Log.d(TAG, "Unhandled action: " + event.getActionMasked());
+              break;
+          }
+          redraw();
+          return true;
+        } else {
+          // Dunno
+          return false;
         }
-        redraw();
-        return true;
       }
     });
 
@@ -671,17 +682,9 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
             .setTitle(title)
             .setIcon(android.R.drawable.ic_dialog_alert)
             .setCancelable(true)
-            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-              public void onClick(DialogInterface dialog, int whichButton) {
-                callback.accept(true);
-              }})
-            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-
-              @Override
-              public void onClick(DialogInterface dialogInterface, int i) {
-                callback.accept(true);
-              }
-            } ).setNeutralButton(android.R.string.cancel, null).show();
+            .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> callback.accept(true))
+            .setNegativeButton(android.R.string.no, (dialogInterface, i) -> callback.accept(false))
+            .setNeutralButton(android.R.string.cancel, null).show();
   }
 
   public static void showToast(final Activity ctx, final String text) {

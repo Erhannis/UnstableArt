@@ -50,7 +50,6 @@ repositories {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
-    //TODO I wish I didn't have to use streamsupport!
     compile 'com.android.support:appcompat-v7:25.3.0'
     compile 'com.android.support:support-v4:25.3.0'
     compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
@@ -59,9 +58,6 @@ dependencies {
     compile 'com.android.support:design:25.3.0'
     compile 'com.esotericsoftware.kryo:kryo:2.23-SNAPSHOT'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-
-    compile 'com.google.dagger:dagger:2.11-rc1'
-    annotationProcessor 'com.google.dagger:dagger-compiler:2.11-rc1'
 
     testCompile 'junit:junit:4.12'
 }

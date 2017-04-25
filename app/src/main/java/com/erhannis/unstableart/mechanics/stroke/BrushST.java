@@ -14,6 +14,8 @@ public class BrushST extends StrokeTool {
   //TODO Hmm, tranforms?  Color bounds?  Contexts?  Paths?  Base thickness?
   public void apply(Color color, double size, Stroke stroke, Bitmap canvas) {
     Paint paint = new Paint();
+    paint.setStrokeCap(Paint.Cap.ROUND);
+    paint.setStrokeJoin(Paint.Join.ROUND);
     //TODO Set color, alpha, width
     //TODO Should maybe Canvas be passed in?
     Canvas cCanvas = new Canvas(canvas);
