@@ -71,7 +71,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Consumer;
+
+import java8.util.function.Consumer;
 
 /**
  * The double-drawer functionality was taken from the question and answers at
@@ -297,22 +298,28 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
             }
             break;
           case M_COLOR:
-            getTextInput(FullscreenActivity.this, "8 digit hex color", (str) -> {
-              try {
-                int intARGB = (int)Long.parseLong(str, 16); //LOSS
-                historyManager.attach(new SetColorSMHN(new IntColor(intARGB)));
-              } catch (NumberFormatException nfe) {
-                showToast(FullscreenActivity.this, "Invalid hex string; use 0-9 and A-F");
+            getTextInput(FullscreenActivity.this, "8 digit hex color", new Consumer<String>() {
+              @Override
+              public void accept(String s) {
+                try {
+                  int intARGB = (int)Long.parseLong(s, 16); //LOSS
+                  historyManager.attach(new SetColorSMHN(new IntColor(intARGB)));
+                } catch (NumberFormatException nfe) {
+                  showToast(FullscreenActivity.this, "Invalid hex string; use 0-9 and A-F");
+                }
               }
             });
             break;
           case M_SIZE:
-            getTextInput(FullscreenActivity.this, "Size, double-precision", (str) -> {
-              try {
-                double size = Double.parseDouble(str);
-                historyManager.attach(new SetToolSizeSMHN(size));
-              } catch (NumberFormatException nfe) {
-                showToast(FullscreenActivity.this, "Invalid double, decimal numbers only");
+            getTextInput(FullscreenActivity.this, "Size, double-precision", new Consumer<String>() {
+              @Override
+              public void accept(String s) {
+                try {
+                  double size = Double.parseDouble(s);
+                  historyManager.attach(new SetToolSizeSMHN(size));
+                } catch (NumberFormatException nfe) {
+                  showToast(FullscreenActivity.this, "Invalid double, decimal numbers only");
+                }
               }
             });
             break;
@@ -327,30 +334,34 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
               break;
             }
           case M_SAVE_AS:
-            getTextInput(FullscreenActivity.this, "Save to filename", (str) -> {
-              final File f = new File(str);
-              if (f.exists()) {
-                getYesNoCancelInput(FullscreenActivity.this, "File exists.  Overwrite?", overwrite -> {
-                  if (overwrite) {
-                    try {
-                      saveTo(f);
-                      mLastSave = f;
-                    } catch (IOException e) {
-                      e.printStackTrace();
-                      showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
+            getTextInput(FullscreenActivity.this, "Save to filename", new Consumer<String>() {
+              @Override
+              public void accept(String s) {
+                final File f = new File(s);
+                if (f.exists()) {
+                  getYesNoCancelInput(FullscreenActivity.this, "File exists.  Overwrite?", new Consumer<Boolean>() {
+                    @Override
+                    public void accept(Boolean aBoolean) {
+                      try {
+                        saveTo(f);
+                        mLastSave = f;
+                      } catch (IOException e) {
+                        e.printStackTrace();
+                        showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
+                      }
                     }
+                  });
+                } else {
+                  if (f.getParentFile() != null) {
+                    f.getParentFile().mkdirs();
                   }
-                });
-              } else {
-                if (f.getParentFile() != null) {
-                  f.getParentFile().mkdirs();
-                }
-                try {
-                  saveTo(f);
-                  mLastSave = f;
-                } catch (IOException e) {
-                  e.printStackTrace();
-                  showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
+                  try {
+                    saveTo(f);
+                    mLastSave = f;
+                  } catch (IOException e) {
+                    e.printStackTrace();
+                    showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
+                  }
                 }
               }
             });
@@ -418,13 +429,6 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-
-    Consumer<String> test = (s) -> {
-      System.out.println("test " + s);
-    };
-    test.accept("tttttteeeesssssttttt");
-    test.accept("something");
-    test.accept("eggs and bacon");
 
     setContentView(R.layout.activity_fullscreen);
 
@@ -682,9 +686,17 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
             .setTitle(title)
             .setIcon(android.R.drawable.ic_dialog_alert)
             .setCancelable(true)
-            .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> callback.accept(true))
-            .setNegativeButton(android.R.string.no, (dialogInterface, i) -> callback.accept(false))
-            .setNeutralButton(android.R.string.cancel, null).show();
+            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+              public void onClick(DialogInterface dialog, int whichButton) {
+                callback.accept(true);
+              }})
+            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+
+              @Override
+              public void onClick(DialogInterface dialogInterface, int i) {
+                callback.accept(true);
+              }
+            } ).setNeutralButton(android.R.string.cancel, null).show();
   }
 
   public static void showToast(final Activity ctx, final String text) {
