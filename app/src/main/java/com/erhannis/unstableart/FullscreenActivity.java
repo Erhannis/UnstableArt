@@ -85,8 +85,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashSet;
 import java.util.Set;
-
-import java8.util.function.Consumer;
+import java.util.function.Consumer;
 
 /**
  * The double-drawer functionality was taken from the question and answers at
