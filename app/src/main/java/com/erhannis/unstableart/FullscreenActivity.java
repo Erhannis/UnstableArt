@@ -341,13 +341,15 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
                 if (f.exists()) {
                   getYesNoCancelInput(FullscreenActivity.this, "File exists.  Overwrite?", new Consumer<Boolean>() {
                     @Override
-                    public void accept(Boolean aBoolean) {
-                      try {
-                        saveTo(f);
-                        mLastSave = f;
-                      } catch (IOException e) {
-                        e.printStackTrace();
-                        showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
+                    public void accept(Boolean overwrite) {
+                      if (overwrite) {
+                        try {
+                          saveTo(f);
+                          mLastSave = f;
+                        } catch (IOException e) {
+                          e.printStackTrace();
+                          showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
+                        }
                       }
                     }
                   });
@@ -691,10 +693,9 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
                 callback.accept(true);
               }})
             .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-
               @Override
               public void onClick(DialogInterface dialogInterface, int i) {
-                callback.accept(true);
+                callback.accept(false);
               }
             } ).setNeutralButton(android.R.string.cancel, null).show();
   }
