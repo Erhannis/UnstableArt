@@ -478,6 +478,72 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
 
     //TODO Export some of this view stuff?
 
+    final GestureDetectorCompat mGestureDetector = new GestureDetectorCompat(this, new GestureDetector.OnGestureListener() {
+      @Override
+      public boolean onDown(MotionEvent e) {
+        return false;
+      }
+
+      @Override
+      public void onShowPress(MotionEvent e) {
+      }
+
+      @Override
+      public boolean onSingleTapUp(MotionEvent e) {
+        //TODO Map?
+        showToast("Tap up");
+        return false;
+      }
+
+      @Override
+      public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        mViewportMatrix.postTranslate(-distanceX, -distanceY);
+        if (!mViewportMatrix.invert(mViewportMatrixInverse)) {
+          throw new IllegalStateException("Viewport matrix non-invertible!");
+        }
+        redraw();
+        return true;
+      }
+
+      @Override
+      public void onLongPress(MotionEvent e) {
+        //TODO Map
+        mViewportMatrix.reset();
+        mViewportMatrixInverse.reset();
+        redraw();
+      }
+
+      @Override
+      public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        return false;
+      }
+    });
+
+    mGestureDetector.setOnDoubleTapListener(new GestureDetector.OnDoubleTapListener() {
+      @Override
+      public boolean onSingleTapConfirmed(MotionEvent e) {
+        //TODO Map
+        showToast("Single tap confirmed");
+        return false;
+      }
+
+      @Override
+      public boolean onDoubleTap(MotionEvent e) {
+        //TODO Map
+        showToast("Double tap");
+        return false;
+      }
+
+      @Override
+      public boolean onDoubleTapEvent(MotionEvent e) {
+        //TODO Map?
+        showToast("Double tap event");
+        return false;
+      }
+    });
+
+    //TODO Context click?
+
     // http://stackoverflow.com/a/19545542/513038
     final ScaleGestureDetector mScaleGestureDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.OnScaleGestureListener() {
       private float lastFocusX;
@@ -574,10 +640,14 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
           redraw();
           return true;
         } else if (InputMapper.getMapper().deviceMoves(event.getDevice())) {
-          return mScaleGestureDetector.onTouchEvent(event);
+          boolean retVal = mScaleGestureDetector.onTouchEvent(event);
+          if (!mScaleGestureDetector.isInProgress()) {
+            retVal = mGestureDetector.onTouchEvent(event) || retVal;
+          }
+          return retVal || FullscreenActivity.super.onTouchEvent(event);
         } else {
           // Dunno
-          return false;
+          return FullscreenActivity.super.onTouchEvent(event);
         }
       }
     });
@@ -599,6 +669,8 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   }
 
   private void drawCanvas(Canvas viewport) {
+    //TODO Fixed vs. Viewport canvas mode
+
     //TODO BACKGROUND background?
     viewport.drawARGB(0xFF, 0xFF, 0xFF, 0xFF);
     ArtContext artContext = new ArtContext();
@@ -830,12 +902,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   }
 
   public void showToast(String text) {
-    new Handler(Looper.getMainLooper()).post(new Runnable() {
-      @Override
-      public void run() {
-        Toast.makeText(FullscreenActivity.this.getBaseContext(), text, Toast.LENGTH_LONG).show();
-      }
-    });
+    showToast(this, text);
   }
   //</editor-fold>
 

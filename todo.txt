@@ -58,6 +58,7 @@ Allow text commands, like shell?  "mv a523ed 51ea6a 3"
 Fix canvas spatials OR have it match viewport
 Allow name layers
 Lock opacity
+Fixed vs. Viewport canvas mode
 
 
 
