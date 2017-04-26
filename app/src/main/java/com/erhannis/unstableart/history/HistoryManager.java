@@ -44,6 +44,7 @@ public class HistoryManager implements Serializable {
     attach(new SetToolSMHN(new BrushST()));
     attach(new SetColorSMHN(new DoublesColor(1, 0, 0.9, 0.5)));
     attach(new SetToolSizeSMHN(10.0));
+    attach(new SetCanvasModeSMHN(State.CanvasMode.FOLLOW_VIEWPORT));
     //BlurEL blurLayer = new BlurEL();
     //attach(new AddLayerLMHN(root.aCanvas, blurLayer));
   }

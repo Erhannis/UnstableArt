@@ -45,9 +45,11 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.erhannis.unstableart.history.HistoryManager;
+import com.erhannis.unstableart.history.SetCanvasModeSMHN;
 import com.erhannis.unstableart.history.SetColorSMHN;
 import com.erhannis.unstableart.history.SetToolSizeSMHN;
 import com.erhannis.unstableart.mechanics.FullState;
+import com.erhannis.unstableart.mechanics.State;
 import com.erhannis.unstableart.mechanics.color.IntColor;
 import com.erhannis.unstableart.mechanics.context.ArtContext;
 import com.erhannis.unstableart.mechanics.context.GroupLayer;
@@ -106,6 +108,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   private static final String M_UNDO = "Undo";
   private static final String M_COLOR = "Color";
   private static final String M_SIZE = "Size";
+  private static final String M_CANVAS_MODE = "Toggle canvas mode";
   private static final String M_SAVE = "Save";
   private static final String M_SAVE_AS = "Save as...";
   private static final String M_LOAD = "Load...";
@@ -331,6 +334,21 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
                 }
               }
             });
+            break;
+          case M_CANVAS_MODE:
+            //TODO C'mon, there's gotta be a better way
+            State.CanvasMode curMode = historyManager.rebuild().state.canvasMode;
+            switch (curMode) {
+              case FIXED:
+                historyManager.attach(new SetCanvasModeSMHN(State.CanvasMode.FOLLOW_VIEWPORT));
+                break;
+              case FOLLOW_VIEWPORT:
+                historyManager.attach(new SetCanvasModeSMHN(State.CanvasMode.FIXED));
+                break;
+              default:
+                throw new IllegalStateException("Invalid current mode: " + curMode);
+            }
+            redraw();
             break;
           case M_SAVE:
             if (mLastSave != null) {
@@ -673,10 +691,24 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
 
     //TODO BACKGROUND background?
     viewport.drawARGB(0xFF, 0xFF, 0xFF, 0xFF);
+
+    //TODO INEFFICIENT, DON'T KEEP ...?
+    FullState fullState = historyManager.rebuild();
     ArtContext artContext = new ArtContext();
+    /*
+    switch (fullState.state.canvasMode) {
+      case FIXED:
+        break;
+      case FOLLOW_VIEWPORT:
+        allow canvas move, make follow;
+        break;
+      default:
+        throw new IllegalStateException("Unrecognized canvas mode: " + fullState.state.canvasMode);
+    }
+    */
     // Don't forget; graphics origin is in the top left corner.  ... :/
-    int cHPix = 1500; //NOTE Canvas render width
-    int cVPix = 900; //NOTE Canvas render height
+    int cHPix = 1920; //NOTE Canvas render width
+    int cVPix = 1007; //NOTE Canvas render height
     //NOTE Canvas target
     artContext.spatialBounds.left = 0;
     artContext.spatialBounds.right = artContext.spatialBounds.left + cHPix;
@@ -685,10 +717,6 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     //TODO Inefficient?  Keep canvas?
     Bitmap bCanvas = Bitmap.createBitmap(cHPix, cVPix, Bitmap.Config.ARGB_8888);
 
-    //Canvas cCanvas = new Canvas(bCanvas);
-    //cCanvas.drawARGB(0xFF, 0x00, 0xFF, 0xFF);
-    //TODO INEFFICIENT, DON'T KEEP
-    FullState fullState = historyManager.rebuild();
     fullState.iCanvas.draw(artContext, bCanvas);
 
     //TODO Seems fishy here

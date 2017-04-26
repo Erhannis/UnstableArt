@@ -8,6 +8,10 @@ import com.erhannis.unstableart.mechanics.stroke.Tool;
  * Created by erhannis on 3/23/17.
  */
 public class State {
+  public static enum CanvasMode {
+    FIXED, FOLLOW_VIEWPORT
+  }
+
   public Tool tool;
   public Color color;
   public double size;
@@ -15,4 +19,5 @@ public class State {
   //TODO Archetype or instantiation?
   // Instance, until proven otherwise
   public Layer iSelectedLayer;
+  public CanvasMode canvasMode;
 }
