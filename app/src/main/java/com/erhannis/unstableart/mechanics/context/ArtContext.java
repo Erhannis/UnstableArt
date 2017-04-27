@@ -1,5 +1,6 @@
 package com.erhannis.unstableart.mechanics.context;
 
+import android.graphics.Matrix;
 import android.graphics.RectF;
 
 /**
@@ -12,4 +13,5 @@ import android.graphics.RectF;
 public class ArtContext {
   //TODO I might prefer doubles
   public final RectF spatialBounds = new RectF();
+  public final Matrix transform = new Matrix();
 }

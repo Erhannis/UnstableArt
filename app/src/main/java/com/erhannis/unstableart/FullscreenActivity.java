@@ -711,9 +711,19 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     int cVPix = 1007; //NOTE Canvas render height
     //NOTE Canvas target
     artContext.spatialBounds.left = 0;
-    artContext.spatialBounds.right = artContext.spatialBounds.left + cHPix;
+    artContext.spatialBounds.right = artContext.spatialBounds.left + (cHPix * 4);
     artContext.spatialBounds.top = 0;
-    artContext.spatialBounds.bottom = artContext.spatialBounds.top + cVPix;
+    artContext.spatialBounds.bottom = artContext.spatialBounds.top + (cVPix * 4);
+    //Matrix canvasMatrix = new Matrix();
+    //canvasMatrix.preScale((artContext.spatialBounds.right - artContext.spatialBounds.left) / cHPix, (artContext.spatialBounds.bottom - artContext.spatialBounds.top) / cVPix);
+    //canvasMatrix.preTranslate(artContext.spatialBounds.left, artContext.spatialBounds.top);
+    //TODO Rotate?
+    //Matrix canvasMatrixInverse = new Matrix();
+    //artContext.transform.invert(canvasMatrixInverse);
+
+    //TODO This is for testing.  This should be separated out when we actually do the two modes.
+    artContext.transform.set(mViewportMatrix);
+
     //TODO Inefficient?  Keep canvas?
     Bitmap bCanvas = Bitmap.createBitmap(cHPix, cVPix, Bitmap.Config.ARGB_8888);
 
@@ -724,8 +734,10 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
       layersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
     }
 
+    //TODO This step could introduce extra rounding error when not needed for FOLLOW_VIEWPORT
+    //viewport.concat(canvasMatrixInverse);
     //TODO Paint?
-    viewport.drawBitmap(bCanvas, mViewportMatrix, null);
+    viewport.drawBitmap(bCanvas, 0, 0, null);
     //viewport.drawText("" + debugInfo, 10, 10, new Paint());
   }
 

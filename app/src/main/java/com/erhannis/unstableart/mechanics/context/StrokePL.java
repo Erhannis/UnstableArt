@@ -33,7 +33,7 @@ public class StrokePL extends PaintLayer {
     Canvas cCanvas = new Canvas(canvas);
     for (int i = 0; i < strokes.size(); i++) {
       //TODO Pass cCanvas in?
-      tools.get(i).apply(colors.get(i), sizes.get(i), strokes.get(i), canvas);
+      tools.get(i).apply(artContext, colors.get(i), sizes.get(i), strokes.get(i), canvas);
     }
   }
 
