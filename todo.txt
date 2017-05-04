@@ -59,6 +59,7 @@ Fix canvas spatials OR have it match viewport
 Allow name layers
 Lock opacity
 Fixed vs. Viewport canvas mode
+Info "pen" (show x,y; color...layers?  dunno)
 
 
 

@@ -112,7 +112,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   private static final String M_SAVE = "Save";
   private static final String M_SAVE_AS = "Save as...";
   private static final String M_LOAD = "Load...";
-  private static final String[] ACTIONS_MENU = {M_REDO, M_UNDO, M_COLOR, M_SIZE, M_SAVE, M_SAVE_AS, M_LOAD};
+  private static final String[] ACTIONS_MENU = {M_REDO, M_UNDO, M_COLOR, M_SIZE, M_CANVAS_MODE, M_SAVE, M_SAVE_AS, M_LOAD};
 //</editor-fold>
 
 //<editor-fold desc="UI">
@@ -695,49 +695,72 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     //TODO INEFFICIENT, DON'T KEEP ...?
     FullState fullState = historyManager.rebuild();
     ArtContext artContext = new ArtContext();
-    /*
     switch (fullState.state.canvasMode) {
-      case FIXED:
+      case FIXED: {
+        // Don't forget; graphics origin is in the top left corner.  ... :/
+        int cHPix = 1920; //NOTE Canvas render width
+        int cVPix = 1007; //NOTE Canvas render height
+        //NOTE Canvas target
+        artContext.spatialBounds.left = 400;
+        artContext.spatialBounds.right = artContext.spatialBounds.left + (cHPix * 4);
+        artContext.spatialBounds.top = 400;
+        artContext.spatialBounds.bottom = artContext.spatialBounds.top + (cVPix * 4);
+        Matrix canvasMatrix = new Matrix();
+        canvasMatrix.preTranslate(artContext.spatialBounds.left, artContext.spatialBounds.top);
+        canvasMatrix.preScale((artContext.spatialBounds.right - artContext.spatialBounds.left) / cHPix, (artContext.spatialBounds.bottom - artContext.spatialBounds.top) / cVPix);
+        //TODO Rotate?
+        Matrix canvasMatrixInverse = new Matrix();
+        canvasMatrix.invert(canvasMatrixInverse);
+
+        //TODO This is for testing.  This should be separated out when we actually do the two modes.
+        artContext.transform.set(canvasMatrixInverse);
+
+        //TODO Inefficient?  Keep canvas?
+        Bitmap bCanvas = Bitmap.createBitmap(cHPix, cVPix, Bitmap.Config.ARGB_8888);
+
+        fullState.iCanvas.draw(artContext, bCanvas);
+
+        //TODO Seems fishy here
+        if (layersFragment != null) {
+          layersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
+        }
+
+        //TODO This step could introduce extra rounding error?
+        viewport.concat(mViewportMatrix);
+        //TODO Paint?
+        viewport.drawBitmap(bCanvas, canvasMatrix, null);
+        //viewport.drawText("" + debugInfo, 10, 10, new Paint());
         break;
-      case FOLLOW_VIEWPORT:
-        allow canvas move, make follow;
+      }
+      case FOLLOW_VIEWPORT: {
+        // Don't forget; graphics origin is in the top left corner.  ... :/
+        int cHPix = surf.getWidth();
+        int cVPix = surf.getHeight();
+        artContext.spatialBounds.left = 0;
+        artContext.spatialBounds.right = artContext.spatialBounds.left + cHPix;
+        artContext.spatialBounds.top = 0;
+        artContext.spatialBounds.bottom = artContext.spatialBounds.top + cVPix;
+
+        //TODO This is for testing.  This should be separated out when we actually do the two modes.
+        artContext.transform.set(mViewportMatrix);
+
+        //TODO Inefficient?  Keep canvas?
+        Bitmap bCanvas = Bitmap.createBitmap(cHPix, cVPix, Bitmap.Config.ARGB_8888);
+
+        fullState.iCanvas.draw(artContext, bCanvas);
+
+        //TODO Seems fishy here
+        if (layersFragment != null) {
+          layersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
+        }
+
+        //TODO Paint?
+        viewport.drawBitmap(bCanvas, 0, 0, null);
         break;
+      }
       default:
         throw new IllegalStateException("Unrecognized canvas mode: " + fullState.state.canvasMode);
     }
-    */
-    // Don't forget; graphics origin is in the top left corner.  ... :/
-    int cHPix = 1920; //NOTE Canvas render width
-    int cVPix = 1007; //NOTE Canvas render height
-    //NOTE Canvas target
-    artContext.spatialBounds.left = 0;
-    artContext.spatialBounds.right = artContext.spatialBounds.left + (cHPix * 4);
-    artContext.spatialBounds.top = 0;
-    artContext.spatialBounds.bottom = artContext.spatialBounds.top + (cVPix * 4);
-    //Matrix canvasMatrix = new Matrix();
-    //canvasMatrix.preScale((artContext.spatialBounds.right - artContext.spatialBounds.left) / cHPix, (artContext.spatialBounds.bottom - artContext.spatialBounds.top) / cVPix);
-    //canvasMatrix.preTranslate(artContext.spatialBounds.left, artContext.spatialBounds.top);
-    //TODO Rotate?
-    //Matrix canvasMatrixInverse = new Matrix();
-    //artContext.transform.invert(canvasMatrixInverse);
-
-    //TODO This is for testing.  This should be separated out when we actually do the two modes.
-    artContext.transform.set(mViewportMatrix);
-
-    //TODO Inefficient?  Keep canvas?
-    Bitmap bCanvas = Bitmap.createBitmap(cHPix, cVPix, Bitmap.Config.ARGB_8888);
-
-    fullState.iCanvas.draw(artContext, bCanvas);
-
-    //TODO Seems fishy here
-    if (layersFragment != null) {
-      layersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
-    }
-
-    //TODO This step could introduce extra rounding error when not needed for FOLLOW_VIEWPORT
-    //viewport.concat(canvasMatrixInverse);
-    //TODO Paint?
-    viewport.drawBitmap(bCanvas, 0, 0, null);
     //viewport.drawText("" + debugInfo, 10, 10, new Paint());
   }
 
