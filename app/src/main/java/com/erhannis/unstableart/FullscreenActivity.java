@@ -695,16 +695,18 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     //TODO INEFFICIENT, DON'T KEEP ...?
     FullState fullState = historyManager.rebuild();
     ArtContext artContext = new ArtContext();
+    //TODO Might be nice to merge these two as far as possible
     switch (fullState.state.canvasMode) {
       case FIXED: {
         // Don't forget; graphics origin is in the top left corner.  ... :/
+        //TODO Allow canvas redimming, rescaling
         int cHPix = 1920; //NOTE Canvas render width
         int cVPix = 1007; //NOTE Canvas render height
         //NOTE Canvas target
-        artContext.spatialBounds.left = 400;
-        artContext.spatialBounds.right = artContext.spatialBounds.left + (cHPix * 4);
-        artContext.spatialBounds.top = 400;
-        artContext.spatialBounds.bottom = artContext.spatialBounds.top + (cVPix * 4);
+        artContext.spatialBounds.left = 0;
+        artContext.spatialBounds.right = artContext.spatialBounds.left + cHPix;
+        artContext.spatialBounds.top = 0;
+        artContext.spatialBounds.bottom = artContext.spatialBounds.top + cVPix;
         Matrix canvasMatrix = new Matrix();
         canvasMatrix.preTranslate(artContext.spatialBounds.left, artContext.spatialBounds.top);
         canvasMatrix.preScale((artContext.spatialBounds.right - artContext.spatialBounds.left) / cHPix, (artContext.spatialBounds.bottom - artContext.spatialBounds.top) / cVPix);
@@ -719,11 +721,6 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
         Bitmap bCanvas = Bitmap.createBitmap(cHPix, cVPix, Bitmap.Config.ARGB_8888);
 
         fullState.iCanvas.draw(artContext, bCanvas);
-
-        //TODO Seems fishy here
-        if (layersFragment != null) {
-          layersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
-        }
 
         //TODO This step could introduce extra rounding error?
         viewport.concat(mViewportMatrix);
@@ -741,18 +738,12 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
         artContext.spatialBounds.top = 0;
         artContext.spatialBounds.bottom = artContext.spatialBounds.top + cVPix;
 
-        //TODO This is for testing.  This should be separated out when we actually do the two modes.
         artContext.transform.set(mViewportMatrix);
 
         //TODO Inefficient?  Keep canvas?
         Bitmap bCanvas = Bitmap.createBitmap(cHPix, cVPix, Bitmap.Config.ARGB_8888);
 
         fullState.iCanvas.draw(artContext, bCanvas);
-
-        //TODO Seems fishy here
-        if (layersFragment != null) {
-          layersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
-        }
 
         //TODO Paint?
         viewport.drawBitmap(bCanvas, 0, 0, null);
@@ -761,6 +752,12 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
       default:
         throw new IllegalStateException("Unrecognized canvas mode: " + fullState.state.canvasMode);
     }
+
+    //TODO Seems fishy here
+    if (layersFragment != null) {
+      layersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
+    }
+
     //viewport.drawText("" + debugInfo, 10, 10, new Paint());
   }
 
