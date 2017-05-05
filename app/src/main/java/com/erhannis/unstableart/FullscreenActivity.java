@@ -396,7 +396,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
             });
             break;
           case M_LOAD:
-            getTextInput(FullscreenActivity.this, "Load from filename", new Consumer<String>() {
+            getTextInput(FullscreenActivity.this, "Load from path/filename", new Consumer<String>() {
               @Override
               public void accept(String s) {
                 final File f = new File(s);
