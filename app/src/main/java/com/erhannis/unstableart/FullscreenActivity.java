@@ -361,7 +361,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
               break;
             }
           case M_SAVE_AS:
-            getTextInput(FullscreenActivity.this, "Save to filename", new Consumer<String>() {
+            getTextInput(FullscreenActivity.this, "Save to path/filename (*.uaf)", new Consumer<String>() {
               @Override
               public void accept(String s) {
                 final File f = new File(s);
