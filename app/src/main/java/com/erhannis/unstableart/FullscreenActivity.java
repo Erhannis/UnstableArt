@@ -50,6 +50,7 @@ import com.erhannis.unstableart.history.SetColorSMHN;
 import com.erhannis.unstableart.history.SetToolSizeSMHN;
 import com.erhannis.unstableart.mechanics.FullState;
 import com.erhannis.unstableart.mechanics.State;
+import com.erhannis.unstableart.mechanics.color.Color;
 import com.erhannis.unstableart.mechanics.color.IntColor;
 import com.erhannis.unstableart.mechanics.context.ArtContext;
 import com.erhannis.unstableart.mechanics.context.GroupLayer;
@@ -57,6 +58,7 @@ import com.erhannis.unstableart.mechanics.context.Layer;
 import com.erhannis.unstableart.mechanics.context.StrokePL;
 import com.erhannis.unstableart.mechanics.stroke.StrokePoint;
 import com.erhannis.unstableart.settings.InputMapper;
+import com.erhannis.unstableart.ui.colors.ColorsFragment;
 import com.erhannis.unstableart.ui.layers.LayersFragment;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.KryoException;
@@ -87,7 +89,7 @@ import java8.util.function.Consumer;
  * http://stackoverflow.com/questions/17861755
  *
  */
-public class FullscreenActivity extends AppCompatActivity implements LayersFragment.OnLayersFragmentInteractionListener {
+public class FullscreenActivity extends AppCompatActivity implements LayersFragment.OnLayersFragmentInteractionListener, ColorsFragment.OnColorsFragmentInteractionListener {
 //<editor-fold desc="Constants">
   private static final String TAG = "FullscreenActivity";
 
@@ -127,6 +129,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   private ListView mRightDrawerView;
 
   private LayersFragment<String> layersFragment;
+  private ColorsFragment colorsFragment;
 
   private Matrix mViewportMatrix = new Matrix();
   private Matrix mViewportMatrixInverse = new Matrix();
@@ -238,14 +241,35 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   }
 
   protected void initToolDrawer() {
-    /**/
+    LinearLayout colorsContainer = new LinearLayout(this);
+    colorsContainer.setId(View.generateViewId());
+    colorsContainer.setOrientation(LinearLayout.VERTICAL);
+    LinearLayout layersContainer = new LinearLayout(this);
+    layersContainer.setId(View.generateViewId());
+    layersContainer.setOrientation(LinearLayout.VERTICAL);
+    mLeftDrawerView.addView(colorsContainer);
+    mLeftDrawerView.addView(layersContainer);
+
     FragmentManager fragMan = getSupportFragmentManager();
     FragmentTransaction fragTransaction = fragMan.beginTransaction();
 
     layersFragment = new LayersFragment<String>();
     FullState fullState = historyManager.rebuild();
     layersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
-    fragTransaction.add(mLeftDrawerView.getId(), layersFragment, "LayersFragment");
+    fragTransaction.add(layersContainer.getId(), layersFragment, "LayersFragment");
+
+    /**/
+    colorsFragment = new ColorsFragment();
+    //TODO Set current color?
+    //FullState fullState = historyManager.rebuild();
+    //colorsFragment.setCurColor();
+    fragTransaction.add(colorsContainer.getId(), colorsFragment, "ColorsFragment");
+
+    //if (1 == 1) return;
+    /**/
+
+    /**/
+
     fragTransaction.commit();
 
     Button btnAddStrokeLayer = new Button(this);
@@ -259,7 +283,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
         scheduleRedraw();
       }
     });
-    mLeftDrawerView.addView(btnAddStrokeLayer);
+    layersContainer.addView(btnAddStrokeLayer);
 
     Button btnAddGroupLayer = new Button(this);
     btnAddGroupLayer.setText("Add group layer");
@@ -272,7 +296,14 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
         scheduleRedraw();
       }
     });
-    mLeftDrawerView.addView(btnAddGroupLayer);
+    layersContainer.addView(btnAddGroupLayer);
+
+    mLeftDrawerView.setOnTouchListener(new View.OnTouchListener() {
+      @Override
+      public boolean onTouch(View v, MotionEvent event) {
+        return true;
+      }
+    });
 
     if (1==1) return;
     /**/
@@ -894,7 +925,6 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   //TODO Allow mapping
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
-    //TODO Broke back button?
     System.out.println("keycode " + keyCode);
     switch (keyCode) {
       case KeyEvent.KEYCODE_VOLUME_DOWN:
@@ -1229,6 +1259,13 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   @Override
   public void onMoveLayer(String layerUuid, String newParentUuid, int newPosition) {
     historyManager.executeMoveLayer(layerUuid, newParentUuid, newPosition);
+    scheduleRedraw();
+  }
+
+  @Override
+  //TODO Should it (potentially) be by color uuid?
+  public void onSelectColor(Color color) {
+    historyManager.attach(new SetColorSMHN(color));
     scheduleRedraw();
   }
   //</editor-fold>

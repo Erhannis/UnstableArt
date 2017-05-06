@@ -64,6 +64,7 @@ dependencies {
     compile 'net.sourceforge.streamsupport:streamsupport-flow:1.5.4'
     compile 'net.sourceforge.streamsupport:streamsupport-literal:1.5.4'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'com.github.danielnilsson9:color-picker-view:1.4.0@aar'
 
     testCompile 'junit:junit:4.12'
 }

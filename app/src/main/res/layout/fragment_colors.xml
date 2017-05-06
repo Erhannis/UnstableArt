@@ -1,0 +1,30 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              tools:context="com.erhannis.unstableart.ui.colors.ColorsFragment">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.github.danielnilsson9.colorpickerview.view.ColorPickerView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/nilssonpicker"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvTodo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="(Colors go here)"/>
+
+    <Button
+        android:id="@+id/btnSelectColor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Select" />
+
+</LinearLayout>

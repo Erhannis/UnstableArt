@@ -61,6 +61,7 @@ Lock opacity
 Fixed vs. Viewport canvas mode
 Info "pen" (show x,y; color...layers?  dunno)
 Import image
+Next to layer show average color?
 
 
 
