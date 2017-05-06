@@ -2,6 +2,7 @@ package com.erhannis.unstableart;
 
 import android.graphics.PointF;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -120,5 +121,10 @@ public class MiscUtils {
     }
     //TODO Remove doubled point?
     return points;
+  }
+
+  public static String getExtension(File f) {
+    String[] parts = f.getName().split("\\.");
+    return parts[parts.length - 1];
   }
 }

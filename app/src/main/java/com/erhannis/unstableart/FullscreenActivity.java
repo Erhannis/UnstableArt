@@ -112,7 +112,8 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   private static final String M_SAVE = "Save";
   private static final String M_SAVE_AS = "Save as...";
   private static final String M_LOAD = "Load...";
-  private static final String[] ACTIONS_MENU = {M_REDO, M_UNDO, M_COLOR, M_SIZE, M_CANVAS_MODE, M_SAVE, M_SAVE_AS, M_LOAD};
+  private static final String M_EXPORT = "Export...";
+  private static final String[] ACTIONS_MENU = {M_REDO, M_UNDO, M_COLOR, M_SIZE, M_CANVAS_MODE, M_SAVE, M_SAVE_AS, M_LOAD, M_EXPORT};
 //</editor-fold>
 
 //<editor-fold desc="UI">
@@ -416,6 +417,69 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
               }
             });
             break;
+          case M_EXPORT:
+            getTextInput(FullscreenActivity.this, "Export to path/filename (jpg/png/webp)", new Consumer<String>() {
+              @Override
+              public void accept(String s) {
+                final File f = new File(s);
+
+                // Hmm.  Kinda questionable way of reducing code duplication,
+                final Runnable doExport = new Runnable() {
+                  @Override
+                  public void run() {
+                    FileOutputStream fos = null;
+                    try {
+                      //TODO Allow settings - compression, format, background
+                      fos = new FileOutputStream(f);
+                      Bitmap bCanvas = drawCanvas(new Canvas());
+                      switch (MiscUtils.getExtension(f).toUpperCase()) {
+                        case "JPG":
+                        case "JPEG":
+                          bCanvas.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+                          break;
+                        case "PNG":
+                          bCanvas.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                          break;
+                        case "WEBP":
+                          bCanvas.compress(Bitmap.CompressFormat.WEBP, 90, fos);
+                          break;
+                        default:
+                          throw new IOException("Unknown extension");
+                      }
+                      fos.flush();
+                    } catch (IOException e) {
+                      e.printStackTrace();
+                      showToast(FullscreenActivity.this, "Error exporting\n" + e.getMessage());
+                    } finally {
+                      if (fos != null) {
+                        try {
+                          fos.close();
+                        } catch (IOException e) {
+                          e.printStackTrace();
+                        }
+                      }
+                    }
+                  }
+                };
+
+                if (f.exists()) {
+                  getYesNoCancelInput(FullscreenActivity.this, "File exists.  Overwrite?", new Consumer<Boolean>() {
+                    @Override
+                    public void accept(Boolean overwrite) {
+                      if (overwrite) {
+                        doExport.run();
+                      }
+                    }
+                  });
+                } else {
+                  if (f.getParentFile() != null) {
+                    f.getParentFile().mkdirs();
+                  }
+                  doExport.run();
+                }
+              }
+            });
+            break;
         }
       }
     });
@@ -686,8 +750,17 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     }
   }
 
-  private void drawCanvas(Canvas viewport) {
-    //TODO Fixed vs. Viewport canvas mode
+  /**
+   * Draws onto the passed viewport.  Returns the rendered canvas bitmap.  The former is usually more important.
+   * If all you want is the latter, you still have to pass in a viewport, but it could be tiny.
+   * @param viewport
+   * @return
+   */
+  private Bitmap drawCanvas(Canvas viewport) {
+    //TODO We're passing in the viewport, but using mViewportMatrix?
+    //TODO We could split this method for just returning the canvas bitmap.
+
+    final Bitmap result;
 
     //TODO BACKGROUND background?
     viewport.drawARGB(0xFF, 0xFF, 0xFF, 0xFF);
@@ -727,6 +800,8 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
         //TODO Paint?
         viewport.drawBitmap(bCanvas, canvasMatrix, null);
         //viewport.drawText("" + debugInfo, 10, 10, new Paint());
+
+        result = bCanvas;
         break;
       }
       case FOLLOW_VIEWPORT: {
@@ -747,6 +822,8 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
 
         //TODO Paint?
         viewport.drawBitmap(bCanvas, 0, 0, null);
+
+        result = bCanvas;
         break;
       }
       default:
@@ -759,6 +836,8 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     }
 
     //viewport.drawText("" + debugInfo, 10, 10, new Paint());
+
+    return result;
   }
 
   @Override
