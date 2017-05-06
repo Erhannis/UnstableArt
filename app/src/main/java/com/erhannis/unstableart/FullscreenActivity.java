@@ -139,6 +139,19 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
 
   private File mLastSave = null;
 
+  private final RedrawScheduler mRedrawScheduler = new RedrawScheduler(new Runnable() {
+    @Override
+    public void run() {
+      if (mSurfaceHolder != null) {
+        Canvas c = mSurfaceHolder.lockCanvas();
+        if (c != null) {
+          drawCanvas(c);
+          mSurfaceHolder.unlockCanvasAndPost(c);
+        }
+      }
+    }
+  });
+
   private final Handler mHideHandler = new Handler();
   private final Runnable mHidePart2Runnable = new Runnable() {
     @SuppressLint("InlinedApi")
@@ -221,7 +234,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
       mDrawerLayout.addDrawerListener(mDrawerToggle); // Set the drawer toggle as the DrawerListener
     }
 
-    redraw();
+    scheduleRedraw();
   }
 
   protected void initToolDrawer() {
@@ -243,7 +256,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
         //TODO There should probably be a better way of getting a uuid
         String uuid = historyManager.rebuild().iCanvas.getId();
         historyManager.executeCreateLayer(uuid, new StrokePL());
-        redraw();
+        scheduleRedraw();
       }
     });
     mLeftDrawerView.addView(btnAddStrokeLayer);
@@ -256,7 +269,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
         //TODO There should probably be a better way of getting a uuid
         String uuid = historyManager.rebuild().iCanvas.getId();
         historyManager.executeCreateLayer(uuid, new GroupLayer());
-        redraw();
+        scheduleRedraw();
       }
     });
     mLeftDrawerView.addView(btnAddGroupLayer);
@@ -302,12 +315,12 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
         switch (s) {
           case M_REDO:
             if (historyManager.tryRedo()) {
-              redraw();
+              scheduleRedraw();
             }
             break;
           case M_UNDO:
             if (historyManager.tryUndo()) {
-              redraw();
+              scheduleRedraw();
             }
             break;
           case M_COLOR:
@@ -349,7 +362,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
               default:
                 throw new IllegalStateException("Invalid current mode: " + curMode);
             }
-            redraw();
+            scheduleRedraw();
             break;
           case M_SAVE:
             if (mLastSave != null) {
@@ -583,7 +596,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
         if (!mViewportMatrix.invert(mViewportMatrixInverse)) {
           throw new IllegalStateException("Viewport matrix non-invertible!");
         }
-        redraw();
+        scheduleRedraw();
         return true;
       }
 
@@ -592,7 +605,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
         //TODO Map
         mViewportMatrix.reset();
         mViewportMatrixInverse.reset();
-        redraw();
+        scheduleRedraw();
       }
 
       @Override
@@ -660,7 +673,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
         }
         lastFocusX = focusX;
         lastFocusY = focusY;
-        redraw();
+        scheduleRedraw();
         return true;
       }
 
@@ -719,7 +732,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
               Log.d(TAG, "Unhandled action: " + event.getActionMasked());
               break;
           }
-          redraw();
+          scheduleRedraw();
           return true;
         } else if (InputMapper.getMapper().deviceMoves(event.getDevice())) {
           boolean retVal = mScaleGestureDetector.onTouchEvent(event);
@@ -739,15 +752,9 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     //toggle();
   }
 
-  //TODO Is this use of mSurfaceHolder ok?
-  protected void redraw() {
-    if (mSurfaceHolder != null) {
-      Canvas c = mSurfaceHolder.lockCanvas();
-      if (c != null) {
-        drawCanvas(c);
-        mSurfaceHolder.unlockCanvasAndPost(c);
-      }
-    }
+  //TODO Maybe just call it on the object in the first place?
+  protected void scheduleRedraw() {
+    mRedrawScheduler.scheduleRedraw();
   }
 
   /**
@@ -892,12 +899,12 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     switch (keyCode) {
       case KeyEvent.KEYCODE_VOLUME_DOWN:
         if (historyManager.tryUndo()) {
-          redraw();
+          scheduleRedraw();
         }
         return true;
       case KeyEvent.KEYCODE_VOLUME_UP:
         if (historyManager.tryRedo()) {
-          redraw();
+          scheduleRedraw();
         }
         return true;
       default:
@@ -1210,19 +1217,19 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   @Override
   public void onCreateLayer(String parentUuid, Layer child) {
     historyManager.executeCreateLayer(parentUuid, child);
-    redraw();
+    scheduleRedraw();
   }
 
   @Override
   public void onSelectLayer(String layerUuid) {
     historyManager.executeSelectLayer(layerUuid);
-    redraw();
+    scheduleRedraw();
   }
 
   @Override
   public void onMoveLayer(String layerUuid, String newParentUuid, int newPosition) {
     historyManager.executeMoveLayer(layerUuid, newParentUuid, newPosition);
-    redraw();
+    scheduleRedraw();
   }
   //</editor-fold>
 }

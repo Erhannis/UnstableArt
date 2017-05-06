@@ -60,6 +60,7 @@ Allow name layers
 Lock opacity
 Fixed vs. Viewport canvas mode
 Info "pen" (show x,y; color...layers?  dunno)
+Import image
 
 
 

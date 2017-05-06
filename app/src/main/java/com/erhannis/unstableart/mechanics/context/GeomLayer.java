@@ -7,8 +7,8 @@ public abstract class GeomLayer extends Layer {
   public GeomLayer() {
   }
 
-  protected GeomLayer(Layer uuidParent) {
-    super(uuidParent);
+  protected GeomLayer(String uuid) {
+    super(uuid);
   }
 
   @Override

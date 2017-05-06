@@ -50,8 +50,8 @@ public abstract class Layer implements Serializable, IDd<String> {
     this.uuid = UUID.randomUUID().toString();
   }
 
-  protected Layer(Layer uuidParent) {
-    this.uuid = uuidParent.uuid;
+  protected Layer(String uuid) {
+    this.uuid = uuid;
   }
 
   protected void copyOntoWithOpacity(Bitmap bIn, Bitmap bOut) {
@@ -75,7 +75,7 @@ public abstract class Layer implements Serializable, IDd<String> {
     return this;
   }
 
-  // I strongly suggest this be written: return (LayerSubclass)new LayerSubclass(this).init();
+  // I strongly suggest this be written: return (LayerSubclass)new LayerSubclass(this.getId()).init();
   public abstract Layer instantiate();
 
   public String toString() {

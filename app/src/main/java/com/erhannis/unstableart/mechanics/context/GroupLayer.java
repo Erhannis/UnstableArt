@@ -28,8 +28,8 @@ public class GroupLayer extends Layer implements Tree<Layer> {
   public GroupLayer() {
   }
 
-  protected GroupLayer(Layer uuidParent) {
-    super(uuidParent);
+  protected GroupLayer(String uuid) {
+    super(uuid);
   }
 
   public void addLayer(Layer iLayer) {
@@ -64,7 +64,7 @@ public class GroupLayer extends Layer implements Tree<Layer> {
 
   @Override
   public GroupLayer instantiate() {
-    return (GroupLayer) new GroupLayer(this).init();
+    return (GroupLayer) new GroupLayer(this.getId()).init();
   }
 
   //<editor-fold desc="Group methods">

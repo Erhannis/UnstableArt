@@ -7,8 +7,8 @@ public abstract class PaintLayer extends Layer {
   public PaintLayer() {
   }
 
-  protected PaintLayer(Layer uuidParent) {
-    super(uuidParent);
+  protected PaintLayer(String uuid) {
+    super(uuid);
   }
 
   @Override

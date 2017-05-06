@@ -7,8 +7,8 @@ public abstract class EffectLayer extends Layer {
   public EffectLayer() {
   }
 
-  protected EffectLayer(Layer uuidParent) {
-    super(uuidParent);
+  protected EffectLayer(String uuid) {
+    super(uuid);
   }
 
   @Override

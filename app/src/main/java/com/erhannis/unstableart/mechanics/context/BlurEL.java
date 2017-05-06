@@ -18,8 +18,8 @@ public class BlurEL extends EffectLayer {
   public BlurEL() {
   }
 
-  protected BlurEL(Layer uuidParent) {
-    super(uuidParent);
+  protected BlurEL(String uuid) {
+    super(uuid);
   }
 
   @Override
@@ -68,6 +68,6 @@ public class BlurEL extends EffectLayer {
 
   @Override
   public BlurEL instantiate() {
-    return (BlurEL)new BlurEL(this).init();
+    return (BlurEL)new BlurEL(this.getId()).init();
   }
 }

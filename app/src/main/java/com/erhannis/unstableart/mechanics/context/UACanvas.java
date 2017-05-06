@@ -12,8 +12,8 @@ public class UACanvas extends GroupLayer {
   public UACanvas() {
   }
 
-  protected UACanvas(Layer uuidParent) {
-    super(uuidParent);
+  protected UACanvas(String uuid) {
+    super(uuid);
   }
 
   @Override
@@ -25,6 +25,6 @@ public class UACanvas extends GroupLayer {
 
   @Override
   public UACanvas instantiate() {
-    return (UACanvas) new UACanvas(this).init();
+    return (UACanvas) new UACanvas(this.getId()).init();
   }
 }

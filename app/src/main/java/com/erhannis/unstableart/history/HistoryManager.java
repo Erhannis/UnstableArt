@@ -37,7 +37,7 @@ public class HistoryManager implements Serializable {
     testInit();
   }
 
-  public void testInit() {
+  protected synchronized void testInit() {
     StrokePL strokeLayer = new StrokePL();
     attach(new AddLayerLMHN(root.aCanvas, strokeLayer));
     attach(new SetLayerSMHN(strokeLayer));
@@ -49,18 +49,18 @@ public class HistoryManager implements Serializable {
     //attach(new AddLayerLMHN(root.aCanvas, blurLayer));
   }
 
-  public void select(HistoryNode node) {
+  protected synchronized void select(HistoryNode node) {
     //TODO Send events, etc.
     //TODO Check connected to root?
     selected = node;
   }
 
-  public void attach(HistoryNode child) {
+  public synchronized void attach(HistoryNode child) {
     attach(selected, child);
     select(child);
   }
 
-  public void attach(HistoryNode parent, HistoryNode child) {
+  protected synchronized void attach(HistoryNode parent, HistoryNode child) {
     //TODO Send events, etc.
     //TODO Check connected to root?
     parent.addChild(child);
@@ -187,7 +187,9 @@ public class HistoryManager implements Serializable {
     return null;
   }
 
-  public FullState rebuild() {
+  // I STRONGLY recommend that the code subordinate to this function not retain any references to
+  //     the returned FullState or any subfields, on pain of threading issues.
+  public synchronized FullState rebuild() {
     HistoryNode curr = selected;
     ArrayList<HistoryNode> chain = new ArrayList<HistoryNode>();
     while (curr != null) {

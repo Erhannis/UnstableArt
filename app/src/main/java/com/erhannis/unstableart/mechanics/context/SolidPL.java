@@ -15,8 +15,8 @@ public class SolidPL extends PaintLayer {
   public SolidPL() {
   }
 
-  protected SolidPL(Layer uuidParent) {
-    super(uuidParent);
+  protected SolidPL(String uuid) {
+    super(uuid);
   }
 
   @Override
@@ -33,7 +33,7 @@ public class SolidPL extends PaintLayer {
 
   //TODO Pass in color?
   @Override
-  public StrokePL instantiate() {
-    return (StrokePL)new StrokePL(this).init();
+  public SolidPL instantiate() {
+    return (SolidPL) new SolidPL(this.getId()).init();
   }
 }

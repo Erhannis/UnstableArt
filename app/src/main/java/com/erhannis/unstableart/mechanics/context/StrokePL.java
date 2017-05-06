@@ -24,8 +24,8 @@ public class StrokePL extends PaintLayer {
   public StrokePL() {
   }
 
-  protected StrokePL(Layer uuidParent) {
-    super(uuidParent);
+  protected StrokePL(String uuid) {
+    super(uuid);
   }
 
   @Override
@@ -49,6 +49,6 @@ public class StrokePL extends PaintLayer {
 
   @Override
   public StrokePL instantiate() {
-    return (StrokePL)new StrokePL(this).init();
+    return (StrokePL)new StrokePL(this.getId()).init();
   }
 }

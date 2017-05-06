@@ -113,7 +113,12 @@ public class LayersFragment<ID> extends Fragment {
   public <T extends Tree & IDd<ID>> void setTree(T tree, ID selectedId) {
     mTree = (IDd<ID> & Tree)tree;
     mSelectedId = selectedId;
-    updateView();
+    new Handler(Looper.getMainLooper()).post(new Runnable() {
+      @Override
+      public void run() {
+        updateView();
+      }
+    });
   }
 
   public void updateView() {
