@@ -48,6 +48,7 @@ import com.erhannis.mathnstuff.TimeoutTimer;
 import com.erhannis.unstableart.history.HistoryManager;
 import com.erhannis.unstableart.history.SetCanvasModeSMHN;
 import com.erhannis.unstableart.history.SetColorSMHN;
+import com.erhannis.unstableart.history.SetToolSMHN;
 import com.erhannis.unstableart.history.SetToolSizeSMHN;
 import com.erhannis.unstableart.mechanics.FullState;
 import com.erhannis.unstableart.mechanics.State;
@@ -57,10 +58,14 @@ import com.erhannis.unstableart.mechanics.context.ArtContext;
 import com.erhannis.unstableart.mechanics.context.GroupLayer;
 import com.erhannis.unstableart.mechanics.context.Layer;
 import com.erhannis.unstableart.mechanics.context.StrokePL;
+import com.erhannis.unstableart.mechanics.stroke.BrushST;
+import com.erhannis.unstableart.mechanics.stroke.PenST;
 import com.erhannis.unstableart.mechanics.stroke.StrokePoint;
 import com.erhannis.unstableart.settings.InputMapper;
 import com.erhannis.unstableart.ui.colors.ColorsFragment;
 import com.erhannis.unstableart.ui.layers.LayersFragment;
+import com.erhannis.unstableart.ui.tools.ActionsFragment;
+import com.erhannis.unstableart.ui.tools.ToolsFragment;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.KryoException;
 import com.esotericsoftware.kryo.io.Input;
@@ -90,53 +95,36 @@ import java8.util.function.Consumer;
  * http://stackoverflow.com/questions/17861755
  *
  */
-public class FullscreenActivity extends AppCompatActivity implements LayersFragment.OnLayersFragmentInteractionListener, ColorsFragment.OnColorsFragmentInteractionListener {
+public class FullscreenActivity extends AppCompatActivity implements
+        LayersFragment.OnLayersFragmentInteractionListener,
+        ColorsFragment.OnColorsFragmentInteractionListener,
+        ToolsFragment.OnToolsFragmentInteractionListener,
+        ActionsFragment.OnActionsFragmentInteractionListener {
 //<editor-fold desc="Constants">
   private static final String TAG = "FullscreenActivity";
 
   private static final boolean AUTO_HIDE = true;
   private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
   private static final int UI_ANIMATION_DELAY = 300;
-
-  final String serverUri = "tcp://192.168.0.6:1883";
-
-  final String clientId = "ExampleAndroidClient";
-  final String subscriptionTopic = "topic1";
-  final String publishTopic = "topic2";
-  final String publishMessage = "blah blah blah";
-  private static final String COLOR_SPLINE_TOPIC = "color_spline";
-  private static final String COLOR_VALUE_TOPIC = "color_value";
-
-  private static final String M_REDO = "Redo";
-  private static final String M_UNDO = "Undo";
-  private static final String M_COLOR = "Color";
-  private static final String M_SIZE = "Size";
-  private static final String M_CANVAS_MODE = "Toggle canvas mode";
-  private static final String M_SAVE = "Save";
-  private static final String M_SAVE_AS = "Save as...";
-  private static final String M_LOAD = "Load...";
-  private static final String M_EXPORT = "Export...";
-  private static final String[] ACTIONS_MENU = {M_REDO, M_UNDO, M_COLOR, M_SIZE, M_CANVAS_MODE, M_SAVE, M_SAVE_AS, M_LOAD, M_EXPORT};
 //</editor-fold>
 
 //<editor-fold desc="UI">
   private SurfaceView surf;
-  //TODO Is this permissible?
   private SurfaceHolder mSurfaceHolder;
 
   private DrawerLayout mDrawerLayout;
   private ActionBarDrawerToggle mDrawerToggle;
   private LinearLayout mLeftDrawerView;
-  private ListView mRightDrawerView;
+  private LinearLayout mRightDrawerView;
 
-  private LayersFragment<String> layersFragment;
-  private ColorsFragment colorsFragment;
+  private LayersFragment<String> mLayersFragment;
+  private ColorsFragment mColorsFragment;
+  private ToolsFragment mToolsFragment;
+  private ActionsFragment mActionsFragment;
 
   private Matrix mViewportMatrix = new Matrix();
   private Matrix mViewportMatrixInverse = new Matrix();
 //</editor-fold>
-
-  private MqttAndroidClient mqttAndroidClient;
 
   //TODO I kinda wanted this to be final, but now it's how we're saving/loading files
   private HistoryManager historyManager = new HistoryManager();
@@ -204,7 +192,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
       // Configure navigation drawer
       mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
       mLeftDrawerView = (LinearLayout)findViewById(R.id.left_drawer);
-      mRightDrawerView = (ListView)findViewById(R.id.right_drawer);
+      mRightDrawerView = (LinearLayout)findViewById(R.id.right_drawer);
       mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
 
         /** Called when a drawer has settled in a completely closed state. */
@@ -245,34 +233,31 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     LinearLayout colorsContainer = new LinearLayout(this);
     colorsContainer.setId(View.generateViewId());
     colorsContainer.setOrientation(LinearLayout.VERTICAL);
+
     LinearLayout layersContainer = new LinearLayout(this);
     layersContainer.setId(View.generateViewId());
     layersContainer.setOrientation(LinearLayout.VERTICAL);
+
     mLeftDrawerView.addView(colorsContainer);
     mLeftDrawerView.addView(layersContainer);
 
     FragmentManager fragMan = getSupportFragmentManager();
     FragmentTransaction fragTransaction = fragMan.beginTransaction();
 
-    layersFragment = new LayersFragment<String>();
+    mLayersFragment = new LayersFragment<String>();
     FullState fullState = historyManager.rebuild();
-    layersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
-    fragTransaction.add(layersContainer.getId(), layersFragment, "LayersFragment");
+    mLayersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
+    fragTransaction.add(layersContainer.getId(), mLayersFragment, "LayersFragment");
 
-    /**/
-    colorsFragment = new ColorsFragment();
+    mColorsFragment = new ColorsFragment();
     //TODO Set current color?
     //FullState fullState = historyManager.rebuild();
     //colorsFragment.setCurColor();
-    fragTransaction.add(colorsContainer.getId(), colorsFragment, "ColorsFragment");
-
-    //if (1 == 1) return;
-    /**/
-
-    /**/
+    fragTransaction.add(colorsContainer.getId(), mColorsFragment, "ColorsFragment");
 
     fragTransaction.commit();
 
+    //TODO Move into fragment
     Button btnAddStrokeLayer = new Button(this);
     btnAddStrokeLayer.setText("Add stroke layer");
     btnAddStrokeLayer.setOnClickListener(new View.OnClickListener() {
@@ -305,227 +290,35 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
         return true;
       }
     });
-
-    if (1==1) return;
-    /**/
-
-    /*
-    mLeftDrawerView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice, new String[]{"Pen", "Brush", "test"}));
-    //TODO Set selected listener
-
-    mLeftDrawerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-      @Override
-      public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        //TODO Brittle.
-        //TODO Check if already selected?  Can that happen?
-        switch (i) {
-          case 0:
-            historyManager.attach(new SetToolSMHN(new PenST()));
-            break;
-          case 1:
-            historyManager.attach(new SetToolSMHN(new BrushST()));
-            break;
-          case 2:
-            Intent intent = new Intent(getApplicationContext(), TreeTestActivity.class);
-            startActivity(intent);
-            break;
-        }
-      }
-    });
-    */
   }
 
   protected void initActionDrawer() {
-    //TODO Add "Save" vs. "Save as..."
-    mRightDrawerView.setAdapter(new ArrayAdapter<String>(this,
-            android.R.layout.simple_list_item_1, ACTIONS_MENU));
-    mRightDrawerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    LinearLayout actionsContainer = new LinearLayout(this);
+    actionsContainer.setId(View.generateViewId());
+    actionsContainer.setOrientation(LinearLayout.VERTICAL);
+
+    LinearLayout toolsContainer = new LinearLayout(this);
+    toolsContainer.setId(View.generateViewId());
+    toolsContainer.setOrientation(LinearLayout.VERTICAL);
+
+    mRightDrawerView.addView(actionsContainer);
+    mRightDrawerView.addView(toolsContainer);
+
+    FragmentManager fragMan = getSupportFragmentManager();
+    FragmentTransaction fragTransaction = fragMan.beginTransaction();
+
+    mActionsFragment = new ActionsFragment();
+    fragTransaction.add(actionsContainer.getId(), mActionsFragment, "ActionsFragment");
+
+    mToolsFragment = new ToolsFragment();
+    fragTransaction.add(actionsContainer.getId(), mToolsFragment, "ToolsFragment");
+
+    fragTransaction.commit();
+
+    mRightDrawerView.setOnTouchListener(new View.OnTouchListener() {
       @Override
-      public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        //TODO Brittle.
-        String s = adapterView.getItemAtPosition(i).toString();
-        switch (s) {
-          case M_REDO:
-            if (historyManager.tryRedo()) {
-              scheduleRedraw();
-            }
-            break;
-          case M_UNDO:
-            if (historyManager.tryUndo()) {
-              scheduleRedraw();
-            }
-            break;
-          case M_COLOR:
-            getTextInput(FullscreenActivity.this, "8 digit hex color", new Consumer<String>() {
-              @Override
-              public void accept(String s) {
-                try {
-                  int intARGB = (int)Long.parseLong(s, 16); //LOSS
-                  historyManager.attach(new SetColorSMHN(new IntColor(intARGB)));
-                } catch (NumberFormatException nfe) {
-                  showToast(FullscreenActivity.this, "Invalid hex string; use 0-9 and A-F");
-                }
-              }
-            });
-            break;
-          case M_SIZE:
-            getTextInput(FullscreenActivity.this, "Size, double-precision", new Consumer<String>() {
-              @Override
-              public void accept(String s) {
-                try {
-                  double size = Double.parseDouble(s);
-                  historyManager.attach(new SetToolSizeSMHN(size));
-                } catch (NumberFormatException nfe) {
-                  showToast(FullscreenActivity.this, "Invalid double, decimal numbers only");
-                }
-              }
-            });
-            break;
-          case M_CANVAS_MODE:
-            //TODO C'mon, there's gotta be a better way
-            State.CanvasMode curMode = historyManager.rebuild().state.canvasMode;
-            switch (curMode) {
-              case FIXED:
-                historyManager.attach(new SetCanvasModeSMHN(State.CanvasMode.FOLLOW_VIEWPORT));
-                break;
-              case FOLLOW_VIEWPORT:
-                historyManager.attach(new SetCanvasModeSMHN(State.CanvasMode.FIXED));
-                break;
-              default:
-                throw new IllegalStateException("Invalid current mode: " + curMode);
-            }
-            scheduleRedraw();
-            break;
-          case M_SAVE:
-            if (mLastSave != null) {
-              try {
-                saveTo(mLastSave);
-              } catch (IOException e) {
-                e.printStackTrace();
-                showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
-              }
-              break;
-            }
-          case M_SAVE_AS:
-            getTextInput(FullscreenActivity.this, "Save to path/filename (*.uaf)", new Consumer<String>() {
-              @Override
-              public void accept(String s) {
-                final File f = new File(s);
-                if (f.exists()) {
-                  getYesNoCancelInput(FullscreenActivity.this, "File exists.  Overwrite?", new Consumer<Boolean>() {
-                    @Override
-                    public void accept(Boolean overwrite) {
-                      if (overwrite) {
-                        try {
-                          saveTo(f);
-                          mLastSave = f;
-                        } catch (IOException e) {
-                          e.printStackTrace();
-                          showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
-                        }
-                      }
-                    }
-                  });
-                } else {
-                  if (f.getParentFile() != null) {
-                    f.getParentFile().mkdirs();
-                  }
-                  try {
-                    saveTo(f);
-                    mLastSave = f;
-                  } catch (IOException e) {
-                    e.printStackTrace();
-                    showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
-                  }
-                }
-              }
-            });
-            break;
-          case M_LOAD:
-            getTextInput(FullscreenActivity.this, "Load from path/filename", new Consumer<String>() {
-              @Override
-              public void accept(String s) {
-                final File f = new File(s);
-                if (f.exists()) {
-                  //TODO Check if unsaved changes
-                  try {
-                    mLastSave = null; // May result in undesired behavior, but better than what MIGHT result from the alternative.
-                    loadFrom(f);
-                    mLastSave = f;
-                  } catch (Exception e) {
-                    e.printStackTrace();
-                    showToast(FullscreenActivity.this, "Couldn't load file, probably older version.\nErr message OR version string: " + e.getMessage());
-                  }
-                } else {
-                  showToast(FullscreenActivity.this, "Can't find file!");
-                }
-              }
-            });
-            break;
-          case M_EXPORT:
-            getTextInput(FullscreenActivity.this, "Export to path/filename (jpg/png/webp)", new Consumer<String>() {
-              @Override
-              public void accept(String s) {
-                final File f = new File(s);
-
-                // Hmm.  Kinda questionable way of reducing code duplication,
-                final Runnable doExport = new Runnable() {
-                  @Override
-                  public void run() {
-                    FileOutputStream fos = null;
-                    try {
-                      //TODO Allow settings - compression, format, background
-                      fos = new FileOutputStream(f);
-                      Bitmap bCanvas = drawCanvas(new Canvas());
-                      switch (MiscUtils.getExtension(f).toUpperCase()) {
-                        case "JPG":
-                        case "JPEG":
-                          bCanvas.compress(Bitmap.CompressFormat.JPEG, 90, fos);
-                          break;
-                        case "PNG":
-                          bCanvas.compress(Bitmap.CompressFormat.PNG, 100, fos);
-                          break;
-                        case "WEBP":
-                          bCanvas.compress(Bitmap.CompressFormat.WEBP, 90, fos);
-                          break;
-                        default:
-                          throw new IOException("Unknown extension");
-                      }
-                      fos.flush();
-                    } catch (IOException e) {
-                      e.printStackTrace();
-                      showToast(FullscreenActivity.this, "Error exporting\n" + e.getMessage());
-                    } finally {
-                      if (fos != null) {
-                        try {
-                          fos.close();
-                        } catch (IOException e) {
-                          e.printStackTrace();
-                        }
-                      }
-                    }
-                  }
-                };
-
-                if (f.exists()) {
-                  getYesNoCancelInput(FullscreenActivity.this, "File exists.  Overwrite?", new Consumer<Boolean>() {
-                    @Override
-                    public void accept(Boolean overwrite) {
-                      if (overwrite) {
-                        doExport.run();
-                      }
-                    }
-                  });
-                } else {
-                  if (f.getParentFile() != null) {
-                    f.getParentFile().mkdirs();
-                  }
-                  doExport.run();
-                }
-              }
-            });
-            break;
-        }
+      public boolean onTouch(View v, MotionEvent event) {
+        return true;
       }
     });
   }
@@ -574,34 +367,34 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     getSupportActionBar().setHomeButtonEnabled(true);
 
-    //initMqtt();
-
-    //xstream.setMode(XStream.ID_REFERENCES);
-
+    //TODO Remove, probably
     InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
     InputManager im = (InputManager) this.getSystemService(Context.INPUT_SERVICE);
-
     int[] ids = im.getInputDeviceIds();
-
     for (int i : ids) {
       InputDevice dev = im.getInputDevice(i);
       System.out.println(i + " : " + dev);
     }
 
-    /*
-    Random rand = new Random();
-    for (int i = 0; i < 10; i++) {
-      ArrayList<PointF> line = new ArrayList<PointF>();
-      for (int j = 0; j < 10; j++) {
-        line.add(new PointF(rand.nextFloat() * 500, rand.nextFloat() * 500));
-      }
-      lines.add(line);
-    }
-    */
-
     surf = (SurfaceView)findViewById(R.id.surfaceView);
 
     mSurfaceHolder = surf.getHolder();
+    mSurfaceHolder.addCallback(new SurfaceHolder.Callback() {
+      @Override
+      public void surfaceCreated(SurfaceHolder holder) {
+        scheduleRedraw();
+      }
+
+      @Override
+      public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+      }
+
+      @Override
+      public void surfaceDestroyed(SurfaceHolder holder) {
+
+      }
+    });
 
     //TODO Export some of this view stuff?
 
@@ -870,8 +663,8 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     }
 
     //TODO Seems fishy here
-    if (layersFragment != null) {
-      layersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
+    if (mLayersFragment != null) {
+      mLayersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
     }
 
     //viewport.drawText("" + debugInfo, 10, 10, new Paint());
@@ -1083,122 +876,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
   }
   //</editor-fold>
 
-  //<editor-fold desc="MQTT">
-  private void initMqtt() {
-    mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), serverUri, clientId);
-    mqttAndroidClient.setCallback(new MqttCallbackExtended() {
-      @Override
-      public void connectComplete(boolean reconnect, String serverURI) {
-
-        if (reconnect) {
-          addToHistory("Reconnected to : " + serverURI);
-          // Because Clean Session is true, we need to re-subscribe
-          //subscribeToTopic(subscriptionTopic);
-          subscribeToColorTopic();
-        } else {
-          addToHistory("Connected to: " + serverURI);
-        }
-      }
-
-      @Override
-      public void connectionLost(Throwable cause) {
-        addToHistory("The Connection was lost.");
-      }
-
-      @Override
-      public void messageArrived(String topic, MqttMessage message) throws Exception {
-        addToHistory("Incoming message: " + new String(message.getPayload()));
-      }
-
-      @Override
-      public void deliveryComplete(IMqttDeliveryToken token) {
-
-      }
-    });
-
-    MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
-    mqttConnectOptions.setAutomaticReconnect(true);
-    mqttConnectOptions.setCleanSession(false);
-
-    try {
-      //addToHistory("Connecting to " + serverUri);
-      mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
-        @Override
-        public void onSuccess(IMqttToken asyncActionToken) {
-          DisconnectedBufferOptions disconnectedBufferOptions = new DisconnectedBufferOptions();
-          disconnectedBufferOptions.setBufferEnabled(true);
-          disconnectedBufferOptions.setBufferSize(100);
-          disconnectedBufferOptions.setPersistBuffer(false);
-          disconnectedBufferOptions.setDeleteOldestMessages(false);
-          mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
-          subscribeToColorTopic();
-        }
-
-        @Override
-        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-          exception.printStackTrace();
-          addToHistory("Failed to connect to: " + serverUri);
-        }
-      });
-    } catch (Exception ex){
-      ex.printStackTrace();
-    }
-  }
-
-
-  public void subscribeToTopic(final String topic, IMqttMessageListener listener) {
-    try {
-      mqttAndroidClient.subscribe(topic, 0, null, new IMqttActionListener() {
-        @Override
-        public void onSuccess(IMqttToken asyncActionToken) {
-          addToHistory("Subscribed to " + topic);
-        }
-
-        @Override
-        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-          addToHistory("Failed to subscribe to " + topic);
-        }
-      });
-
-      mqttAndroidClient.subscribe(topic, 0, listener);
-
-    } catch (Exception ex){
-      System.err.println("Exception whilst subscribing");
-      ex.printStackTrace();
-    }
-  }
-
-  public void subscribeToColorTopic() {
-    subscribeToTopic(COLOR_VALUE_TOPIC, new IMqttMessageListener() {
-      @Override
-      public void messageArrived(String topic, MqttMessage message) throws Exception {
-        String payload = new String(message.getPayload());
-        System.out.println("Message: " + topic + " : " + payload);
-        //TODO Change color
-        //curColor = new IntColor((int)Long.parseLong(payload));
-      }
-    });
-  }
-
-  public void publishMessage(String topic, String msg) {
-    try {
-      MqttMessage message = new MqttMessage();
-      message.setPayload(msg.getBytes());
-      mqttAndroidClient.publish(topic, message);
-      addToHistory("Message Published");
-      if(!mqttAndroidClient.isConnected()){
-        addToHistory(mqttAndroidClient.getBufferedMessageCount() + " messages in buffer.");
-      }
-    } catch (Exception e) {
-      System.err.println("Error Publishing: " + e.getMessage());
-      e.printStackTrace();
-    }
-  }
-
-  private void addToHistory(String s) {
-    System.out.println(s);
-  }
-  //</editor-fold>
+  //TODO Incorporate MQTT, sometime?
 
   //<editor-fold desc="SHOW/HIDE OVERLAY">
   private void toggle() {
@@ -1265,6 +943,7 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
 
   //TODO Should this be at the top of the code?
   protected Color mScheduledColor = null;
+  //TODO Optionize the timeout?
   protected final TimeoutTimer mColorTimer = new TimeoutTimer(500, new Runnable() {
     @Override
     public void run() {
@@ -1283,5 +962,208 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     mScheduledColor = color;
     mColorTimer.restart();
   }
+
+  @Override
+  public void onSelectTool(String tool) {
+    //TODO Hmm.  Instances seem unnecessary for these two tools.
+    //TODO Select by uuid?
+    switch (tool) {
+      case ToolsFragment.M_PEN:
+        historyManager.attach(new SetToolSMHN(new PenST()));
+        break;
+      case ToolsFragment.M_BRUSH:
+        historyManager.attach(new SetToolSMHN(new BrushST()));
+        break;
+      default:
+        showToast("Unhandled tool: " + tool);
+        break;
+    }
+  }
+
+  @Override
+  public void onSelectAction(String action) {
+    switch (action) {
+      case ActionsFragment.M_REDO:
+        if (historyManager.tryRedo()) {
+          scheduleRedraw();
+        }
+        break;
+      case ActionsFragment.M_UNDO:
+        if (historyManager.tryUndo()) {
+          scheduleRedraw();
+        }
+        break;
+      case ActionsFragment.M_COLOR:
+        getTextInput(FullscreenActivity.this, "8 digit hex color", new Consumer<String>() {
+          @Override
+          public void accept(String s) {
+            try {
+              int intARGB = (int)Long.parseLong(s, 16); //LOSS
+              historyManager.attach(new SetColorSMHN(new IntColor(intARGB)));
+            } catch (NumberFormatException nfe) {
+              showToast(FullscreenActivity.this, "Invalid hex string; use 0-9 and A-F");
+            }
+          }
+        });
+        break;
+      case ActionsFragment.M_SIZE:
+        getTextInput(FullscreenActivity.this, "Size, double-precision", new Consumer<String>() {
+          @Override
+          public void accept(String s) {
+            try {
+              double size = Double.parseDouble(s);
+              historyManager.attach(new SetToolSizeSMHN(size));
+            } catch (NumberFormatException nfe) {
+              showToast(FullscreenActivity.this, "Invalid double, decimal numbers only");
+            }
+          }
+        });
+        break;
+      case ActionsFragment.M_CANVAS_MODE:
+        //TODO C'mon, there's gotta be a better way
+        State.CanvasMode curMode = historyManager.rebuild().state.canvasMode;
+        switch (curMode) {
+          case FIXED:
+            historyManager.attach(new SetCanvasModeSMHN(State.CanvasMode.FOLLOW_VIEWPORT));
+            break;
+          case FOLLOW_VIEWPORT:
+            historyManager.attach(new SetCanvasModeSMHN(State.CanvasMode.FIXED));
+            break;
+          default:
+            throw new IllegalStateException("Invalid current mode: " + curMode);
+        }
+        scheduleRedraw();
+        break;
+      case ActionsFragment.M_SAVE:
+        if (mLastSave != null) {
+          try {
+            saveTo(mLastSave);
+          } catch (IOException e) {
+            e.printStackTrace();
+            showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
+          }
+          break;
+        }
+      case ActionsFragment.M_SAVE_AS:
+        getTextInput(FullscreenActivity.this, "Save to path/filename (*.uaf)", new Consumer<String>() {
+          @Override
+          public void accept(String s) {
+            final File f = new File(s);
+            if (f.exists()) {
+              getYesNoCancelInput(FullscreenActivity.this, "File exists.  Overwrite?", new Consumer<Boolean>() {
+                @Override
+                public void accept(Boolean overwrite) {
+                  if (overwrite) {
+                    try {
+                      saveTo(f);
+                      mLastSave = f;
+                    } catch (IOException e) {
+                      e.printStackTrace();
+                      showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
+                    }
+                  }
+                }
+              });
+            } else {
+              if (f.getParentFile() != null) {
+                f.getParentFile().mkdirs();
+              }
+              try {
+                saveTo(f);
+                mLastSave = f;
+              } catch (IOException e) {
+                e.printStackTrace();
+                showToast(FullscreenActivity.this, "Error saving\n" + e.getMessage());
+              }
+            }
+          }
+        });
+        break;
+      case ActionsFragment.M_LOAD:
+        getTextInput(FullscreenActivity.this, "Load from path/filename", new Consumer<String>() {
+          @Override
+          public void accept(String s) {
+            final File f = new File(s);
+            if (f.exists()) {
+              //TODO Check if unsaved changes
+              try {
+                mLastSave = null; // May result in undesired behavior, but better than what MIGHT result from the alternative.
+                loadFrom(f);
+                mLastSave = f;
+              } catch (Exception e) {
+                e.printStackTrace();
+                showToast(FullscreenActivity.this, "Couldn't load file, probably older version.\nErr message OR version string: " + e.getMessage());
+              }
+            } else {
+              showToast(FullscreenActivity.this, "Can't find file!");
+            }
+          }
+        });
+        break;
+      case ActionsFragment.M_EXPORT:
+        getTextInput(FullscreenActivity.this, "Export to path/filename (jpg/png/webp)", new Consumer<String>() {
+          @Override
+          public void accept(String s) {
+            final File f = new File(s);
+
+            // Hmm.  Kinda questionable way of reducing code duplication,
+            final Runnable doExport = new Runnable() {
+              @Override
+              public void run() {
+                FileOutputStream fos = null;
+                try {
+                  //TODO Allow settings - compression, format, background
+                  fos = new FileOutputStream(f);
+                  Bitmap bCanvas = drawCanvas(new Canvas());
+                  switch (MiscUtils.getExtension(f).toUpperCase()) {
+                    case "JPG":
+                    case "JPEG":
+                      bCanvas.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+                      break;
+                    case "PNG":
+                      bCanvas.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                      break;
+                    case "WEBP":
+                      bCanvas.compress(Bitmap.CompressFormat.WEBP, 90, fos);
+                      break;
+                    default:
+                      throw new IOException("Unknown extension");
+                  }
+                  fos.flush();
+                } catch (IOException e) {
+                  e.printStackTrace();
+                  showToast(FullscreenActivity.this, "Error exporting\n" + e.getMessage());
+                } finally {
+                  if (fos != null) {
+                    try {
+                      fos.close();
+                    } catch (IOException e) {
+                      e.printStackTrace();
+                    }
+                  }
+                }
+              }
+            };
+
+            if (f.exists()) {
+              getYesNoCancelInput(FullscreenActivity.this, "File exists.  Overwrite?", new Consumer<Boolean>() {
+                @Override
+                public void accept(Boolean overwrite) {
+                  if (overwrite) {
+                    doExport.run();
+                  }
+                }
+              });
+            } else {
+              if (f.getParentFile() != null) {
+                f.getParentFile().mkdirs();
+              }
+              doExport.run();
+            }
+          }
+        });
+        break;
+    }
+ }
   //</editor-fold>
 }
