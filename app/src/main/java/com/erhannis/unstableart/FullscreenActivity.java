@@ -19,6 +19,7 @@ import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ScaleGestureDetectorCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.Space;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
@@ -26,6 +27,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -62,6 +64,7 @@ import com.erhannis.unstableart.mechanics.stroke.BrushST;
 import com.erhannis.unstableart.mechanics.stroke.PenST;
 import com.erhannis.unstableart.mechanics.stroke.StrokePoint;
 import com.erhannis.unstableart.settings.InputMapper;
+import com.erhannis.unstableart.ui.Spacer;
 import com.erhannis.unstableart.ui.colors.ColorsFragment;
 import com.erhannis.unstableart.ui.layers.LayersFragment;
 import com.erhannis.unstableart.ui.tools.ActionsFragment;
@@ -302,7 +305,9 @@ public class FullscreenActivity extends AppCompatActivity implements
     toolsContainer.setOrientation(LinearLayout.VERTICAL);
 
     mRightDrawerView.addView(actionsContainer);
+    mRightDrawerView.addView(new Spacer(this, 0xFF000000));
     mRightDrawerView.addView(toolsContainer);
+    mRightDrawerView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
 
     FragmentManager fragMan = getSupportFragmentManager();
     FragmentTransaction fragTransaction = fragMan.beginTransaction();
@@ -311,7 +316,7 @@ public class FullscreenActivity extends AppCompatActivity implements
     fragTransaction.add(actionsContainer.getId(), mActionsFragment, "ActionsFragment");
 
     mToolsFragment = new ToolsFragment();
-    fragTransaction.add(actionsContainer.getId(), mToolsFragment, "ToolsFragment");
+    fragTransaction.add(toolsContainer.getId(), mToolsFragment, "ToolsFragment");
 
     fragTransaction.commit();
 
