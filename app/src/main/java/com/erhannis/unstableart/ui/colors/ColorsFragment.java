@@ -85,16 +85,7 @@ public class ColorsFragment extends Fragment {
         public void onColorChanged(int newColor) {
           //TODO Support DoublesColor etc.
           mCurColor = new IntColor(newColor);
-        }
-      });
-
-      Button btnSelectColor = (Button)llView.findViewById(R.id.btnSelectColor);
-      btnSelectColor.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-          if (mCurColor != null) {
-            selectColor(mCurColor);
-          }
+          selectColor(mCurColor);
         }
       });
     }

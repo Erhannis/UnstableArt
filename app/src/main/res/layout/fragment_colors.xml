@@ -21,10 +21,4 @@
         android:layout_height="wrap_content"
         android:text="(Colors go here)"/>
 
-    <Button
-        android:id="@+id/btnSelectColor"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Select" />
-
 </LinearLayout>

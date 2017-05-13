@@ -44,6 +44,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.erhannis.mathnstuff.TimeoutTimer;
 import com.erhannis.unstableart.history.HistoryManager;
 import com.erhannis.unstableart.history.SetCanvasModeSMHN;
 import com.erhannis.unstableart.history.SetColorSMHN;
@@ -1262,11 +1263,25 @@ public class FullscreenActivity extends AppCompatActivity implements LayersFragm
     scheduleRedraw();
   }
 
+  //TODO Should this be at the top of the code?
+  protected Color mScheduledColor = null;
+  protected final TimeoutTimer mColorTimer = new TimeoutTimer(500, new Runnable() {
+    @Override
+    public void run() {
+      Color newColor = mScheduledColor;
+      if (newColor != null) {
+        //TODO Think of other potential solutions
+        historyManager.attach(new SetColorSMHN(mScheduledColor));
+        scheduleRedraw();
+      }
+    }
+  });
+
   @Override
   //TODO Should it (potentially) be by color uuid?
   public void onSelectColor(Color color) {
-    historyManager.attach(new SetColorSMHN(color));
-    scheduleRedraw();
+    mScheduledColor = color;
+    mColorTimer.restart();
   }
   //</editor-fold>
 }
