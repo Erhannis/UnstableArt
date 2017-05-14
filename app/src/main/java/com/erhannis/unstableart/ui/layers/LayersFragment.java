@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -56,7 +57,7 @@ public class LayersFragment<ID> extends Fragment {
 
   private LinearLayout llView;
 
-  private OnLayersFragmentInteractionListener mListener;
+  private OnLayersFragmentInteractionListener<ID> mListener;
 
   public LayersFragment() {
     // Required empty public constructor
@@ -82,6 +83,24 @@ public class LayersFragment<ID> extends Fragment {
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     // Inflate the layout for this fragment
     llView = (LinearLayout)inflater.inflate(R.layout.fragment_layers, container, false);
+
+
+    llView.findViewById(R.id.btnAddStrokeLayer).setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        Layer newLayer = new StrokePL();
+        createLayer(((IDd<ID>)mTree).getId(), newLayer);
+      }
+    });
+
+    llView.findViewById(R.id.btnAddGroupLayer).setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        Layer newLayer = new GroupLayer();
+        createLayer(((IDd<ID>)mTree).getId(), newLayer);
+      }
+    });
+
     updateView();
     return llView;
   }
@@ -241,18 +260,19 @@ public class LayersFragment<ID> extends Fragment {
       @Override
       public void run() {
         if (mListener != null) {
-          mListener.onMoveLayer(uuid, parentUuid, childPosition);
+          //TODO Fix if we change ID to not String
+          mListener.onMoveLayer((ID)uuid, (ID)parentUuid, childPosition);
         }
       }
     });
   }
 
-  private void createLayer(GroupLayer parent, Layer child) {
+  private void createLayer(ID parentId, Layer child) {
     new Handler(Looper.getMainLooper()).post(new Runnable() {
       @Override
       public void run() {
         if (mListener != null) {
-          mListener.onCreateLayer(parent.uuid, child);
+          mListener.onCreateLayer(parentId, child);
         }
       }
     });
@@ -263,7 +283,8 @@ public class LayersFragment<ID> extends Fragment {
       @Override
       public void run() {
         if (mListener != null) {
-          mListener.onSelectLayer(layerUuid);
+          //TODO Fix if we change ID to not String
+          mListener.onSelectLayer((ID)layerUuid);
         }
       }
     });
@@ -335,11 +356,11 @@ public class LayersFragment<ID> extends Fragment {
    * "http://developer.android.com/training/basics/fragments/communicating.html"
    * >Communicating with Other Fragments</a> for more information.
    */
-  public interface OnLayersFragmentInteractionListener {
+  public interface OnLayersFragmentInteractionListener<ID> {
     // TODO: Update argument type and name
-    public void onCreateLayer(String parentUuid, Layer child);
-    public void onSelectLayer(String layerUuid);
-    public void onMoveLayer(String layerUuid, String newParentUuid, int newPosition);
+    public void onCreateLayer(ID parentUuid, Layer child);
+    public void onSelectLayer(ID layerUuid);
+    public void onMoveLayer(ID layerUuid, ID newParentUuid, int newPosition);
   }
 
   /*

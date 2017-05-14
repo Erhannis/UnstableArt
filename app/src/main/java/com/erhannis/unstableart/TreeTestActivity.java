@@ -15,7 +15,7 @@ import com.erhannis.unstableart.mechanics.context.GroupLayer;
 import com.erhannis.unstableart.mechanics.context.Layer;
 import com.erhannis.unstableart.ui.layers.LayersFragment;
 
-public class TreeTestActivity extends AppCompatActivity implements LayersFragment.OnLayersFragmentInteractionListener {
+public class TreeTestActivity extends AppCompatActivity implements LayersFragment.OnLayersFragmentInteractionListener<String> {
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {

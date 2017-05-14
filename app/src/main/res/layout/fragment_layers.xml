@@ -6,11 +6,17 @@
               tools:context="com.erhannis.unstableart.ui.layers.LayersFragment">
 
 
-    <TextView
-        android:id="@+id/textView"
+    <Button
+        android:id="@+id/btnAddStrokeLayer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Before"/>
+        android:text="Add stroke layer"/>
+
+    <Button
+        android:id="@+id/btnAddGroupLayer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add group layer"/>
 
     <com.terlici.dragndroplist.DragNDropListView
         android:id="@id/android:list"
@@ -18,11 +24,5 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="After"/>
 
 </LinearLayout>

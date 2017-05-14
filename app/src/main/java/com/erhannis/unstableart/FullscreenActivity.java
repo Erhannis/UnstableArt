@@ -61,6 +61,7 @@ import com.erhannis.unstableart.mechanics.context.GroupLayer;
 import com.erhannis.unstableart.mechanics.context.Layer;
 import com.erhannis.unstableart.mechanics.context.StrokePL;
 import com.erhannis.unstableart.mechanics.stroke.BrushST;
+import com.erhannis.unstableart.mechanics.stroke.FillST;
 import com.erhannis.unstableart.mechanics.stroke.PenST;
 import com.erhannis.unstableart.mechanics.stroke.StrokePoint;
 import com.erhannis.unstableart.settings.InputMapper;
@@ -99,7 +100,7 @@ import java8.util.function.Consumer;
  *
  */
 public class FullscreenActivity extends AppCompatActivity implements
-        LayersFragment.OnLayersFragmentInteractionListener,
+        LayersFragment.OnLayersFragmentInteractionListener<String>,
         ColorsFragment.OnColorsFragmentInteractionListener,
         ToolsFragment.OnToolsFragmentInteractionListener,
         ActionsFragment.OnActionsFragmentInteractionListener {
@@ -242,6 +243,8 @@ public class FullscreenActivity extends AppCompatActivity implements
     layersContainer.setOrientation(LinearLayout.VERTICAL);
 
     mLeftDrawerView.addView(colorsContainer);
+    mLeftDrawerView.addView(new Spacer(this, 0xFF000000));
+    mLeftDrawerView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
     mLeftDrawerView.addView(layersContainer);
 
     FragmentManager fragMan = getSupportFragmentManager();
@@ -259,33 +262,6 @@ public class FullscreenActivity extends AppCompatActivity implements
     fragTransaction.add(colorsContainer.getId(), mColorsFragment, "ColorsFragment");
 
     fragTransaction.commit();
-
-    //TODO Move into fragment
-    Button btnAddStrokeLayer = new Button(this);
-    btnAddStrokeLayer.setText("Add stroke layer");
-    btnAddStrokeLayer.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        //TODO There should probably be a better way of getting a uuid
-        String uuid = historyManager.rebuild().iCanvas.getId();
-        historyManager.executeCreateLayer(uuid, new StrokePL());
-        scheduleRedraw();
-      }
-    });
-    layersContainer.addView(btnAddStrokeLayer);
-
-    Button btnAddGroupLayer = new Button(this);
-    btnAddGroupLayer.setText("Add group layer");
-    btnAddGroupLayer.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        //TODO There should probably be a better way of getting a uuid
-        String uuid = historyManager.rebuild().iCanvas.getId();
-        historyManager.executeCreateLayer(uuid, new GroupLayer());
-        scheduleRedraw();
-      }
-    });
-    layersContainer.addView(btnAddGroupLayer);
 
     mLeftDrawerView.setOnTouchListener(new View.OnTouchListener() {
       @Override
@@ -306,8 +282,8 @@ public class FullscreenActivity extends AppCompatActivity implements
 
     mRightDrawerView.addView(actionsContainer);
     mRightDrawerView.addView(new Spacer(this, 0xFF000000));
-    mRightDrawerView.addView(toolsContainer);
     mRightDrawerView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
+    mRightDrawerView.addView(toolsContainer);
 
     FragmentManager fragMan = getSupportFragmentManager();
     FragmentTransaction fragTransaction = fragMan.beginTransaction();
@@ -650,6 +626,8 @@ public class FullscreenActivity extends AppCompatActivity implements
         artContext.spatialBounds.top = 0;
         artContext.spatialBounds.bottom = artContext.spatialBounds.top + cVPix;
 
+        System.out.println(cHPix + " x " + cVPix);
+
         artContext.transform.set(mViewportMatrix);
 
         //TODO Inefficient?  Keep canvas?
@@ -979,7 +957,11 @@ public class FullscreenActivity extends AppCompatActivity implements
       case ToolsFragment.M_BRUSH:
         historyManager.attach(new SetToolSMHN(new BrushST()));
         break;
+      case ToolsFragment.M_FILL:
+        historyManager.attach(new SetToolSMHN(new FillST()));
+        break;
       default:
+        System.err.println("Unhandled tool: " + tool);
         showToast("Unhandled tool: " + tool);
         break;
     }
@@ -1095,6 +1077,7 @@ public class FullscreenActivity extends AppCompatActivity implements
                 mLastSave = null; // May result in undesired behavior, but better than what MIGHT result from the alternative.
                 loadFrom(f);
                 mLastSave = f;
+                scheduleRedraw();
               } catch (Exception e) {
                 e.printStackTrace();
                 showToast(FullscreenActivity.this, "Couldn't load file, probably older version.\nErr message OR version string: " + e.getMessage());

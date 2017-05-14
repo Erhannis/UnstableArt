@@ -24,7 +24,8 @@ public class ToolsFragment extends Fragment {
 
   public static final String M_PEN = "Pen";
   public static final String M_BRUSH = "Brush";
-  public static final String[] TOOLS_MENU = new String[]{M_PEN, M_BRUSH};
+  public static final String M_FILL = "Fill";
+  public static final String[] TOOLS_MENU = new String[]{M_PEN, M_BRUSH, M_FILL};
 
   private LinearLayout llView;
 
@@ -57,6 +58,7 @@ public class ToolsFragment extends Fragment {
 
     ListView lvTools = (ListView)llView.findViewById(R.id.lvTools);
 
+    //TODO Show which selected
     lvTools.setAdapter(new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_single_choice, TOOLS_MENU));
     //TODO Set selected listener
 
