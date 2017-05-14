@@ -1,6 +1,10 @@
 Unstable Art!  Art program with experimental features.
 
-Undo-tree: mess with time; never draw on the wrong layer again.  Auto-redraw painting in higher-res.
+Undo-tree: Mess with time; never draw on the wrong layer again.  Results in many of the other features.
+Saved history: The undo-tree is recorded in your save file.
+Infinite zoom: Pan and zoom as far as you want, or toggle canvas mode if you want to do pixel art or something.
+Resolution-agnostic: Auto-redraw painting in higher-res.
+Distributed widgets: Keep the color picker etc. open on your phone while you draw on your tablet.
 
 Building:
 *  You'll need to run `mvn clean install` on https://github.com/romix/kryo/tree/kryo-2.23-continuations - it's the only code I've found that will serialize my long history chains.
