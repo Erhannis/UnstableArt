@@ -1,6 +1,8 @@
 In order
 --------
-Fragmentize menus etc.
+Hide layers
+Eraser
+Color picker
 
 
 Duh
@@ -84,6 +86,7 @@ Improve file dialogs
 
 Done
 ----
+Fragmentize menus etc.
 Fix canvas spatials OR have it match viewport
 Fixed vs. Viewport canvas mode
 Pinch/zoom/pan
