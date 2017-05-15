@@ -1,7 +1,6 @@
 In order
 --------
 Hide layers
-Eraser
 Color picker
 
 
@@ -31,6 +30,7 @@ Figure out how to not open drawers with pen (or arbitrary tool)
 Proper fullscreen
 "New" button
 Merge layers
+Brush back map to eraser
 
 
 Ideas/Things to do
@@ -65,6 +65,8 @@ Lock opacity
 Info "pen" (show x,y; color...layers?  dunno)
 Import image
 Next to layer show average color?
+Compositing brushes
+Porterduff modes on brushes?
 
 
 Fix
@@ -86,6 +88,7 @@ Improve file dialogs
 
 Done
 ----
+Eraser
 Fragmentize menus etc.
 Fix canvas spatials OR have it match viewport
 Fixed vs. Viewport canvas mode

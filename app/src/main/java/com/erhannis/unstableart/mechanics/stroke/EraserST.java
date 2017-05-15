@@ -17,7 +17,7 @@ public class EraserST extends StrokeTool {
   //TODO Hmm, tranforms?  Color bounds?  Contexts?  Paths?  Base thickness?
   public void apply(ArtContext artContext, Color color, double size, Stroke stroke, Bitmap canvas) {
     Paint paint = new Paint();
-    paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+    paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
     //TODO Set color, alpha, width
     //TODO Should maybe Canvas be passed in?
     Canvas cCanvas = new Canvas(canvas);
