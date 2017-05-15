@@ -27,15 +27,25 @@ public abstract class Layer implements Serializable, IDd<String> {
   // I have mixed feelings about using UUIDs for identification, buuuuut....
   public final String uuid;
 
+  //TODO Just make a layerState or something?
+  public transient boolean visible = true;
   public transient double opacity = 1.0; //TODO Technically initialization
 
   public String getId() {
     return uuid;
   }
 
+  public void draw(ArtContext artContext, Bitmap canvas) {
+    if (!visible) {
+      return;
+    }
+    drawInner(artContext, canvas);
+  }
+
   /**
    * Here's the recommended idea for this.
    *
+   * If not `visible`, do nothing.  Otherwise:
    * A Layer may apply changes to the passed in canvas.  These changes should account for opacity.
    * It may then copy the canvas, and pass the copy to its children, if any.
    * It may then make further changes to the copy, if desired - ignoring opacity.
@@ -44,7 +54,7 @@ public abstract class Layer implements Serializable, IDd<String> {
    * @param artContext
    * @param canvas
    */
-  public abstract void draw(ArtContext artContext, Bitmap canvas);
+  public abstract void drawInner(ArtContext artContext, Bitmap canvas);
 
   public Layer() {
     this.uuid = UUID.randomUUID().toString();

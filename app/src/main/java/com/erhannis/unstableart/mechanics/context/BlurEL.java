@@ -23,7 +23,7 @@ public class BlurEL extends EffectLayer {
   }
 
   @Override
-  public void draw(ArtContext artContext, Bitmap bCanvas) {
+  public void drawInner(ArtContext artContext, Bitmap bCanvas) {
     Bitmap bCanvas2 = Bitmap.createBitmap(bCanvas.getWidth(), bCanvas.getHeight(), bCanvas.getConfig());
     //TODO Figure out scaling
     for (int x = 0; x < bCanvas.getWidth(); x++) {

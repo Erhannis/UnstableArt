@@ -43,16 +43,12 @@ public class GroupLayer extends Layer implements Tree<Layer> {
   }
 
   @Override
-  public void draw(ArtContext artContext, Bitmap canvas) {
+  public void drawInner(ArtContext artContext, Bitmap canvas) {
     Bitmap copy = canvas.copy(canvas.getConfig(), true);
     for (Layer iLayer : iLayers) {
       iLayer.draw(artContext, copy);
     }
-    Canvas cCanvas = new Canvas(canvas);
-    Paint p = new Paint();
-    //TODO Clamp?
-    p.setAlpha((int)(opacity * 255)); //LOSS
-    cCanvas.drawBitmap(copy, 0, 0, p);
+    copyOntoWithOpacity(copy, canvas);
   }
 
   @Override

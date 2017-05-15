@@ -29,7 +29,7 @@ public class StrokePL extends PaintLayer {
   }
 
   @Override
-  public void draw(ArtContext artContext, Bitmap canvas) {
+  public void drawInner(ArtContext artContext, Bitmap canvas) {
     Canvas cCanvas = new Canvas(canvas);
     for (int i = 0; i < strokes.size(); i++) {
       //TODO Pass cCanvas in?

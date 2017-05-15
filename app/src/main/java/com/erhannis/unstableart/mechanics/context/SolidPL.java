@@ -20,7 +20,7 @@ public class SolidPL extends PaintLayer {
   }
 
   @Override
-  public void draw(ArtContext artContext, Bitmap canvas) {
+  public void drawInner(ArtContext artContext, Bitmap canvas) {
     Canvas cCanvas = new Canvas(canvas);
     cCanvas.drawColor(color.getARGBInt());
   }
