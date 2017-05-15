@@ -159,7 +159,21 @@ public class HistoryManager implements Serializable {
     }
   }
 
+  //TODO Check transaction?
+  public synchronized void executeShowHideLayer(String layerUuid, boolean visible) {
+    Layer aLayer = findLayerByUuid(root, layerUuid);
+    if (aLayer != null) {
+      attach(new ShowHideLayerLMHN(aLayer, visible));
+    } else {
+      //TODO Toast?
+      System.err.println("HM.executeShowHideLayer error");
+    }
+  }
+
   protected static Layer findLayerByUuid(HistoryNode root, String layerUuid) {
+    if (layerUuid == null) {
+      return null;
+    }
     // Assuming here that RootHN occurs first or not at all
     if (root instanceof RootHN && layerUuid.equals(((RootHN)root).aCanvas.uuid)) {
       return ((RootHN)root).aCanvas;

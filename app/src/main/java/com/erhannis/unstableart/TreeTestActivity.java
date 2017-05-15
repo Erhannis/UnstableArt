@@ -65,4 +65,9 @@ public class TreeTestActivity extends AppCompatActivity implements LayersFragmen
   public void onMoveLayer(String layerUuid, String newParentUuid, int newPosition) {
 
   }
+
+  @Override
+  public void onShowHideLayer(String layerUuid, boolean visible) {
+
+  }
 }

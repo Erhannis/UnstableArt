@@ -22,9 +22,12 @@ import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.erhannis.unstableart.R;
+
+import java8.util.function.BiConsumer;
 
 public class DragNDropCursorAdapter extends CursorAdapter implements DragNDropAdapter {
 	public static enum RowType {
@@ -35,15 +38,18 @@ public class DragNDropCursorAdapter extends CursorAdapter implements DragNDropAd
 	int mHandler;
 	int mLayout;
 	int mSelected;
+	int mVisible;
 	String[] mFromText;
 	int[] mToText;
 	String mFromRowType;
 	String mFromLevel;
 	String mFromSelected;
+	String mFromVisible;
+	BiConsumer<Integer, Boolean> mOnToggleVisibility;
 
 	protected LayoutInflater mCursorInflater;
 
-	public DragNDropCursorAdapter(Context context, int layout, Cursor cursor, String[] fromText, int[] toText, String fromRowType, String fromLevel, int handler, String fromSelected, int selected) {
+	public DragNDropCursorAdapter(Context context, int layout, Cursor cursor, String[] fromText, int[] toText, String fromRowType, String fromLevel, int handler, String fromSelected, int selected, String fromVisible, int visible, BiConsumer<Integer, Boolean> onToggleVisibility) {
 		super(context, cursor, 0);
 
 		mCursorInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -56,6 +62,9 @@ public class DragNDropCursorAdapter extends CursorAdapter implements DragNDropAd
 		mHandler = handler;
 		mFromSelected = fromSelected;
 		mSelected = selected;
+		mFromVisible = fromVisible;
+		mVisible = visible;
+		mOnToggleVisibility = onToggleVisibility;
 		setup();
 	}
 	
@@ -98,11 +107,26 @@ public class DragNDropCursorAdapter extends CursorAdapter implements DragNDropAd
 		}
 		View handler = view.findViewById(mHandler);
 		View selectedIndicator = view.findViewById(mSelected);
+		CheckBox cbVisible = (CheckBox)view.findViewById(mVisible);
+
 		if ("true".equalsIgnoreCase(cursor.getString(cursor.getColumnIndex(mFromSelected)))) {
 			selectedIndicator.setVisibility(View.VISIBLE);
 		} else {
 			selectedIndicator.setVisibility(View.INVISIBLE);
 		}
+		if ("true".equalsIgnoreCase(cursor.getString(cursor.getColumnIndex(mFromVisible)))) {
+			cbVisible.setChecked(true);
+		} else {
+			cbVisible.setChecked(false);
+		}
+		final int pos = cursor.getPosition();
+		cbVisible.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				boolean checked = ((CheckBox) v).isChecked();
+				mOnToggleVisibility.accept(pos, checked);
+			}
+		});
 		TextView tvSpace = (TextView)view.findViewById(R.id.tvSpace);
 		if (mFromRowType != null) {
 			String type = cursor.getString(cursor.getColumnIndex(mFromRowType));
@@ -110,13 +134,16 @@ public class DragNDropCursorAdapter extends CursorAdapter implements DragNDropAd
 				case BEGIN:
 					//TODO Could be weird
 					handler.setVisibility(View.VISIBLE);
+					cbVisible.setVisibility(View.VISIBLE);
 					break;
 				case END:
 					// Invisible?
 					handler.setVisibility(View.GONE);
+					cbVisible.setVisibility(View.GONE);
 					break;
 				case NODE:
 					handler.setVisibility(View.VISIBLE);
+					cbVisible.setVisibility(View.VISIBLE);
 					break;
 			}
 		}

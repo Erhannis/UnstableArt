@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 
 import com.terlici.dragndroplist.IDd;
+import com.terlici.dragndroplist.Visible;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -20,7 +21,7 @@ import java.util.UUID;
  *
  * Created by erhannis on 3/22/17.
  */
-public abstract class Layer implements Serializable, IDd<String> {
+public abstract class Layer implements Serializable, IDd<String>, Visible {
   //TODO I feel like this ought to be transient, too, but I'm not sure
   public boolean archetype = true;
 
@@ -31,8 +32,14 @@ public abstract class Layer implements Serializable, IDd<String> {
   public transient boolean visible = true;
   public transient double opacity = 1.0; //TODO Technically initialization
 
+  @Override
   public String getId() {
     return uuid;
+  }
+
+  @Override
+  public boolean isVisible() {
+    return visible;
   }
 
   public void draw(ArtContext artContext, Bitmap canvas) {

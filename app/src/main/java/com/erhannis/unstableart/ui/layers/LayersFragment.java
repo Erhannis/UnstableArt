@@ -30,6 +30,7 @@ import com.terlici.dragndroplist.DragNDropCursorAdapter.RowType;
 import com.terlici.dragndroplist.DragNDropListView;
 import com.terlici.dragndroplist.IDd;
 import com.terlici.dragndroplist.Tree;
+import com.terlici.dragndroplist.Visible;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -37,23 +38,20 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+import java8.util.function.BiConsumer;
 import java.util.jar.Pack200;
 
 /**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link LayersFragment.OnLayersFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link LayersFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * //TODO This is becoming horrifying.  Fix it.
  */
 public class LayersFragment<ID> extends Fragment {
-  private static final String[] COLUMNS = new String[]{"_id", "uuid", "type", "level", "text", "selected"};
+  private static final String[] COLUMNS = new String[]{"_id", "uuid", "type", "level", "text", "selected", "visible"};
   private static final int COL_UUID = 1;
   private static final int COL_TYPE = 2;
   private static final int COL_LEVEL = 3;
   private static final int COL_TEXT = 4;
   private static final int COL_SELECTED = 5;
+  private static final int COL_VISIBLE = 6;
 
   private LinearLayout llView;
 
@@ -109,8 +107,8 @@ public class LayersFragment<ID> extends Fragment {
   private Tree mTree = null;
   private ID mSelectedId = null;
 
-  public <T extends Tree & IDd<ID>> void setTree(T tree, ID selectedId) {
-    mTree = (IDd<ID> & Tree)tree;
+  public <T extends Tree & IDd<ID> & Visible> void setTree(T tree, ID selectedId) {
+    mTree = (IDd<ID> & Tree & Visible)tree;
     mSelectedId = selectedId;
     new Handler(Looper.getMainLooper()).post(new Runnable() {
       @Override
@@ -122,7 +120,7 @@ public class LayersFragment<ID> extends Fragment {
 
   public void updateView() {
     if (llView != null && mTree != null) {
-      MatrixCursor matrixCursor = getCursorFromTree((Tree & IDd<ID>)mTree, mSelectedId);
+      MatrixCursor matrixCursor = getCursorFromTree((Tree & IDd<ID> & Visible)mTree, mSelectedId);
       // Still testing
 
       DragNDropListView list = (DragNDropListView)llView.findViewById(android.R.id.list);
@@ -136,8 +134,18 @@ public class LayersFragment<ID> extends Fragment {
               "level",
               R.id.handler,
               "selected",
-              R.id.selected
-              );
+              R.id.selected,
+              "visible",
+              R.id.cbCheckBox,
+              new BiConsumer<Integer, Boolean>() {
+                @Override
+                public void accept(Integer i, Boolean visible) {
+                  MatrixCursor cursor = ((MatrixCursor)list.getItemAtPosition(i));
+                  String uuid = cursor.getString(COL_UUID);
+                  showHideLayer(uuid, visible);
+                }
+              }
+      );
 
       list.setOnItemDragNDropListener(new DragNDropListView.OnItemDragNDropListener() {
         @Override
@@ -150,13 +158,7 @@ public class LayersFragment<ID> extends Fragment {
           // Note: occurs before item has moved.
           //showToast("dropped item " + startPosition + " -> " + endPosition);
 
-          FactoryHashMap<String, Integer> unused = new FactoryHashMap<String, Integer>(new Factory<Integer>() {
-            @Override
-            public Integer construct() {
-              return 0;
-            }
-          });
-          String oldParentUuid = getParentUuid(list, unused, startPosition);
+          String oldParentUuid = getParentUuid(list, null, startPosition);
           if (oldParentUuid == null) {
             invalid();
             return;
@@ -209,6 +211,14 @@ public class LayersFragment<ID> extends Fragment {
   }
 
   private static String getParentUuid(DragNDropListView list, FactoryHashMap<String, Integer> positions, int target) {
+    if (positions == null) {
+      positions = new FactoryHashMap<String, Integer>(new Factory<Integer>() {
+        @Override
+        public Integer construct() {
+          return 0;
+        }
+      });
+    }
     Stack<String> parentUuids = new Stack<>();
     String curParentUuid = null;
     for (int i = 0; i < target; i++) {
@@ -250,7 +260,7 @@ public class LayersFragment<ID> extends Fragment {
     new Handler(Looper.getMainLooper()).post(new Runnable() {
       @Override
       public void run() {
-        setTree((Tree & IDd<ID>)mTree, mSelectedId);
+        setTree((Tree & IDd<ID> & Visible)mTree, mSelectedId);
       }
     });
   }
@@ -290,7 +300,19 @@ public class LayersFragment<ID> extends Fragment {
     });
   }
 
-  protected static <ID, T extends Tree & IDd<ID>> MatrixCursor getCursorFromTree(T tree, ID selectedId) {
+  private void showHideLayer(String uuid, boolean visible) {
+    new Handler(Looper.getMainLooper()).post(new Runnable() {
+      @Override
+      public void run() {
+        if (mListener != null) {
+          //TODO Fix if we change ID to not String
+          mListener.onShowHideLayer((ID)uuid, visible);
+        }
+      }
+    });
+  }
+
+  protected static <ID, T extends Tree & IDd<ID> & Visible> MatrixCursor getCursorFromTree(T tree, ID selectedId) {
     String[] columns = COLUMNS;
     MatrixCursor matrixCursor = new MatrixCursor(columns);
 
@@ -299,23 +321,23 @@ public class LayersFragment<ID> extends Fragment {
 
     long rowId = 1L;
 
-    matrixCursor.addRow(new Object[]{rowId++, tree.getId(), RowType.BEGIN, childStack.size(), tree.toString(), tree.getId().equals(selectedId)});
-    endStack.push(new Object[]{rowId++, tree.getId(), RowType.END, childStack.size(), tree.toString(), false});
+    matrixCursor.addRow(new Object[]{rowId++, tree.getId(), RowType.BEGIN, childStack.size(), tree.toString(), tree.getId().equals(selectedId), tree.isVisible()});
+    endStack.push(new Object[]{rowId++, tree.getId(), RowType.END, childStack.size(), tree.toString(), false, tree.isVisible()});
     childStack.push(tree.getChildren().iterator());
     stackLoop: while (!childStack.isEmpty()) {
       Iterator children = childStack.pop();
 
       while (children.hasNext()) {
         //TODO Maybe catch possible exception?
-        IDd<ID> child = (IDd<ID>) children.next();
+        IDd<ID> child = (IDd<ID> & Visible) children.next();
         if (child instanceof Tree) {
-          matrixCursor.addRow(new Object[]{rowId++, child.getId(), RowType.BEGIN, childStack.size() + 1, child.toString(), child.getId().equals(selectedId)});
-          endStack.push(new Object[]{rowId++, child.getId(), RowType.END, childStack.size() + 1, child.toString(), false});
+          matrixCursor.addRow(new Object[]{rowId++, child.getId(), RowType.BEGIN, childStack.size() + 1, child.toString(), child.getId().equals(selectedId), ((Visible)child).isVisible()});
+          endStack.push(new Object[]{rowId++, child.getId(), RowType.END, childStack.size() + 1, child.toString(), false, ((Visible)child).isVisible()});
           childStack.push(children);
           childStack.push(((Tree)child).getChildren().iterator());
           continue stackLoop;
         } else {
-          matrixCursor.addRow(new Object[]{rowId++, child.getId(), RowType.NODE, childStack.size() + 1, child.toString(), child.getId().equals(selectedId)});
+          matrixCursor.addRow(new Object[]{rowId++, child.getId(), RowType.NODE, childStack.size() + 1, child.toString(), child.getId().equals(selectedId), ((Visible)child).isVisible()});
         }
       }
       matrixCursor.addRow(endStack.pop());
@@ -361,6 +383,7 @@ public class LayersFragment<ID> extends Fragment {
     public void onCreateLayer(ID parentUuid, Layer child);
     public void onSelectLayer(ID layerUuid);
     public void onMoveLayer(ID layerUuid, ID newParentUuid, int newPosition);
+    public void onShowHideLayer(ID layerUuid, boolean visible);
   }
 
   /*

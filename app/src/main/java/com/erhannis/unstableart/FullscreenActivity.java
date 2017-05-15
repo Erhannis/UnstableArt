@@ -142,7 +142,13 @@ public class FullscreenActivity extends AppCompatActivity implements
       if (mSurfaceHolder != null) {
         Canvas c = mSurfaceHolder.lockCanvas();
         if (c != null) {
-          drawCanvas(c);
+          try {
+            drawCanvas(c);
+          } catch (Throwable t) {
+            t.printStackTrace();
+            //TODO Toasts could pile up
+            showToast("An error occurred while rendering");
+          }
           mSurfaceHolder.unlockCanvasAndPost(c);
         }
       }
@@ -922,6 +928,12 @@ public class FullscreenActivity extends AppCompatActivity implements
   @Override
   public void onMoveLayer(String layerUuid, String newParentUuid, int newPosition) {
     historyManager.executeMoveLayer(layerUuid, newParentUuid, newPosition);
+    scheduleRedraw();
+  }
+
+  @Override
+  public void onShowHideLayer(String layerUuid, boolean visible) {
+    historyManager.executeShowHideLayer(layerUuid, visible);
     scheduleRedraw();
   }
 
