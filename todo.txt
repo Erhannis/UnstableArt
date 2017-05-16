@@ -6,7 +6,6 @@ Color picker
 Duh
 ---
 (could intersect viewport with canvas for efficiency)
-tools (erase)
 mipmap caches
 figure out bg drawing, and similar things
 undo tree interface
@@ -67,6 +66,7 @@ Import image
 Next to layer show average color?
 Compositing brushes
 Porterduff modes on brushes?
+Copy/paste OUTSIDE history tree?
 
 
 Fix
