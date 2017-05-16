@@ -1,6 +1,5 @@
 In order
 --------
-Hide layers
 Color picker
 
 
@@ -19,7 +18,6 @@ ugh, SetLayerSettingsAHN
 Hmm, "normally" colors only mix on a given layer.  Should we, should we not?  Should there be an isolation-layer-wrapper?
 Distinguish between tip and eraser
 Figure out natural scale, system for relative scaling and translation of viewport
-color picker
 keymapping
 Show layer thumbnails
 Allow more generic tree-list mapping
@@ -31,6 +29,8 @@ Proper fullscreen
 "New" button
 Merge layers
 Brush back map to eraser
+Please fix the layers ui architecture
+color history
 
 
 Ideas/Things to do
@@ -88,6 +88,8 @@ Improve file dialogs
 
 Done
 ----
+Associate with *.uaf
+Hide layers
 Eraser
 Fragmentize menus etc.
 Fix canvas spatials OR have it match viewport

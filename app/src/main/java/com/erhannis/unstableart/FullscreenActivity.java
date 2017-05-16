@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.hardware.input.InputManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -88,8 +89,10 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -321,12 +324,16 @@ public class FullscreenActivity extends AppCompatActivity implements
   }
 
   private void loadFrom(File file) throws IOException {
+    loadFrom(new FileInputStream(file));
+  }
+
+  private void loadFrom(InputStream inputStream) throws IOException {
     //TODO Static Kryo?
     Kryo kryo = new Kryo();
     String versionString = null;
     Input input = null;
     try {
-      input = new Input(new FileInputStream(file));
+      input = new Input(inputStream);
       versionString = input.readString();
       historyManager = kryo.readObject(input, HistoryManager.class);
       input.close();
@@ -348,6 +355,22 @@ public class FullscreenActivity extends AppCompatActivity implements
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    Uri data = this.getIntent().getData();
+    if (data != null) {
+      System.out.println("Autoloading " + data.getPath());
+      try {
+        InputStream inputStream = getContentResolver().openInputStream(data);
+        loadFrom(inputStream);
+        File f = new File(data.getPath());
+        if (f.exists() && f.isFile()) {
+          mLastSave = f;
+        }
+      } catch (Throwable e) {
+        e.printStackTrace();
+        showToast("Error loading file\nErr message OR version string: " + e.getMessage());
+      }
+    }
 
     setContentView(R.layout.activity_fullscreen);
 
