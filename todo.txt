@@ -78,6 +78,7 @@ Thinking on paper
 -----------------
 1.  What to do about layers?  Is a layer responsible for drawing over input, or does its parent pass it a clear canvas and composite the output?  Or both?  On the side of child, it'd make more sense for a child to apply its own opacity, etc., rather than making the parent do it.  On the side of parent, consider clipping masks - once the child composites its output with the existing stuff, the parent can no longer clip it.  And what about, say, a blur layer?  It would require the existing stuff, to function.  How would you clip that, anyway?  
 2.  Layers are transient.  I think.  It's the tree that canonically defines the state of the art.
+3.  So here's the issue with the color picker.  Currently, the history nodes organize the layers, then stack colored strokes into them.  The layers then draw themselves.  BUT, having a historically-enabled color picker requires knowing half of the draw stack of a layer before the rest of it (FRICK, OR OTHER LAYERS) can be drawn.  Friiiick, that side note is a doozy.  Auuugh.  Imagine you have two layers.  You draw on one, and pick a color from it.  You draw on the other with that color, and pick a color from that.  Cycle back and forth.  The two layers' colors depend on each other, which means you can't render them separately.  Firck.  I'mma...think about this later.
 
 
 Lower priority
