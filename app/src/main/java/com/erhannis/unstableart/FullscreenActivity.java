@@ -49,6 +49,9 @@ import android.widget.Toast;
 
 import com.erhannis.mathnstuff.TimeoutTimer;
 import com.erhannis.unstableart.history.HistoryManager;
+import com.erhannis.unstableart.history.HistoryNode;
+import com.erhannis.unstableart.history.PickColorPMHN;
+import com.erhannis.unstableart.history.PlaceMarkerAHN;
 import com.erhannis.unstableart.history.SetCanvasModeSMHN;
 import com.erhannis.unstableart.history.SetColorSMHN;
 import com.erhannis.unstableart.history.SetToolSMHN;
@@ -65,6 +68,7 @@ import com.erhannis.unstableart.mechanics.stroke.BrushST;
 import com.erhannis.unstableart.mechanics.stroke.EraserST;
 import com.erhannis.unstableart.mechanics.stroke.FillST;
 import com.erhannis.unstableart.mechanics.stroke.PenST;
+import com.erhannis.unstableart.mechanics.stroke.Stroke;
 import com.erhannis.unstableart.mechanics.stroke.StrokePoint;
 import com.erhannis.unstableart.settings.InputMapper;
 import com.erhannis.unstableart.ui.Spacer;
@@ -533,7 +537,28 @@ public class FullscreenActivity extends AppCompatActivity implements
               historyManager.rollbackStrokeTransaction();
               return true; //TODO Still redraw?
             case MotionEvent.ACTION_UP:
-              historyManager.commitStrokeTransaction();
+              HistoryNode selected = historyManager.getSelected();
+              if (selected instanceof PlaceMarkerAHN) {
+                Stroke stroke = historyManager.getCurStroke();
+                historyManager.rollbackStrokeTransaction();
+                if (stroke.points.size() > 0) {
+                  StrokePoint pt = stroke.points.get(stroke.points.size() - 1);
+
+                  int cHPix = surf.getWidth();
+                  int cVPix = surf.getHeight();
+
+                  Bitmap bCanvas = Bitmap.createBitmap(cHPix, cVPix, Bitmap.Config.ARGB_8888);
+                  drawCanvas(new Canvas(bCanvas));
+                  float[] xy = {(float)pt.x, (float)pt.y};
+                  mViewportMatrixInverse.mapPoints(xy);
+                  int newColor = bCanvas.getPixel((int)xy[0], (int)xy[1]);
+
+                  mScheduledColor = null;
+                  historyManager.attach(new SetColorSMHN(new IntColor(newColor)));
+                }
+              } else {
+                historyManager.commitStrokeTransaction();
+              }
               break;
             case MotionEvent.ACTION_DOWN:
               historyManager.startStrokeTransaction(); // Continue into next case
@@ -995,6 +1020,9 @@ public class FullscreenActivity extends AppCompatActivity implements
         break;
       case ToolsFragment.M_ERASER:
         historyManager.attach(new SetToolSMHN(new EraserST()));
+        break;
+      case ToolsFragment.M_EYEDROPPER:
+        historyManager.attach(new PickColorPMHN());
         break;
       case ToolsFragment.M_FILL:
         historyManager.attach(new SetToolSMHN(new FillST()));

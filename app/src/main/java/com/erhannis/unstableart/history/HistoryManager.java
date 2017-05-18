@@ -60,6 +60,11 @@ public class HistoryManager implements Serializable {
     select(child);
   }
 
+  //TODO Probably a bad idea
+  public synchronized HistoryNode getSelected() {
+    return selected;
+  }
+
   protected synchronized void attach(HistoryNode parent, HistoryNode child) {
     //TODO Send events, etc.
     //TODO Check connected to root?
