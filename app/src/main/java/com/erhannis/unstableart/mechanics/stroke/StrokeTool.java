@@ -2,6 +2,7 @@ package com.erhannis.unstableart.mechanics.stroke;
 
 import android.graphics.Bitmap;
 
+import com.erhannis.unstableart.mechanics.State;
 import com.erhannis.unstableart.mechanics.color.Color;
 import com.erhannis.unstableart.mechanics.context.ArtContext;
 
@@ -12,5 +13,5 @@ import com.erhannis.unstableart.mechanics.context.ArtContext;
  */
 public abstract class StrokeTool extends Tool {
   //TODO Canvas instead of Bitmap?
-  public abstract void apply(ArtContext artContext, Color color, double size, Stroke stroke, Bitmap canvas);
+  public abstract void apply(ArtContext artContext, State state, Bitmap canvas);
 }

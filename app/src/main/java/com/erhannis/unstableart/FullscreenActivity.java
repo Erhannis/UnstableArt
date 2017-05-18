@@ -8,19 +8,14 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.PointF;
 import android.hardware.input.InputManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GestureDetectorCompat;
-import android.support.v4.view.ScaleGestureDetectorCompat;
-import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.Space;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
@@ -39,12 +34,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.erhannis.mathnstuff.TimeoutTimer;
@@ -58,10 +49,9 @@ import com.erhannis.unstableart.mechanics.State;
 import com.erhannis.unstableart.mechanics.color.Color;
 import com.erhannis.unstableart.mechanics.color.IntColor;
 import com.erhannis.unstableart.mechanics.context.ArtContext;
-import com.erhannis.unstableart.mechanics.context.GroupLayer;
 import com.erhannis.unstableart.mechanics.context.Layer;
-import com.erhannis.unstableart.mechanics.context.StrokePL;
 import com.erhannis.unstableart.mechanics.stroke.BrushST;
+import com.erhannis.unstableart.mechanics.stroke.ColorPickerST;
 import com.erhannis.unstableart.mechanics.stroke.EraserST;
 import com.erhannis.unstableart.mechanics.stroke.FillST;
 import com.erhannis.unstableart.mechanics.stroke.PenST;
@@ -77,19 +67,8 @@ import com.esotericsoftware.kryo.KryoException;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
-import org.eclipse.paho.android.service.MqttAndroidClient;
-import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
-import org.eclipse.paho.client.mqttv3.IMqttActionListener;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
-import org.eclipse.paho.client.mqttv3.IMqttToken;
-import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -533,10 +512,10 @@ public class FullscreenActivity extends AppCompatActivity implements
               historyManager.rollbackStrokeTransaction();
               return true; //TODO Still redraw?
             case MotionEvent.ACTION_UP:
-              historyManager.commitStrokeTransaction();
+              historyManager.commitTouchTransaction();
               break;
             case MotionEvent.ACTION_DOWN:
-              historyManager.startStrokeTransaction(); // Continue into next case
+              historyManager.startTouchTransaction(); // Continue into next case
             case MotionEvent.ACTION_MOVE: //TODO What about basically anything else?
               //TODO Check transaction?
               float[] xy = new float[]{Float.NaN, Float.NaN};
@@ -995,6 +974,9 @@ public class FullscreenActivity extends AppCompatActivity implements
         break;
       case ToolsFragment.M_ERASER:
         historyManager.attach(new SetToolSMHN(new EraserST()));
+        break;
+      case ToolsFragment.M_COLOR_PICKER:
+        historyManager.attach(new SetToolSMHN(new ColorPickerST()));
         break;
       case ToolsFragment.M_FILL:
         historyManager.attach(new SetToolSMHN(new FillST()));

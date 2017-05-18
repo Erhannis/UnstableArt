@@ -25,8 +25,9 @@ public class ToolsFragment extends Fragment {
   public static final String M_PEN = "Pen";
   public static final String M_BRUSH = "Brush";
   public static final String M_ERASER = "Eraser";
+  public static final String M_COLOR_PICKER = "Color picker";
   public static final String M_FILL = "Fill";
-  public static final String[] TOOLS_MENU = new String[]{M_PEN, M_BRUSH, M_ERASER, M_FILL};
+  public static final String[] TOOLS_MENU = new String[]{M_PEN, M_BRUSH, M_ERASER, M_COLOR_PICKER, M_FILL};
 
   private LinearLayout llView;
 

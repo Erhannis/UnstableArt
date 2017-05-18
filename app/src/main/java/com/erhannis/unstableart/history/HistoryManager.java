@@ -3,7 +3,6 @@ package com.erhannis.unstableart.history;
 import com.erhannis.unstableart.mechanics.FullState;
 import com.erhannis.unstableart.mechanics.State;
 import com.erhannis.unstableart.mechanics.color.DoublesColor;
-import com.erhannis.unstableart.mechanics.context.BlurEL;
 import com.erhannis.unstableart.mechanics.context.GroupLayer;
 import com.erhannis.unstableart.mechanics.context.Layer;
 import com.erhannis.unstableart.mechanics.context.StrokePL;
@@ -26,7 +25,7 @@ public class HistoryManager implements Serializable {
   //TODO Split into view and edit?
   protected HistoryNode selected;
 
-  protected transient Stroke mCurStroke = null;
+  protected transient Stroke mCurTouch = null;
 
   public HistoryManager() {
     //TODO Consider
@@ -95,34 +94,34 @@ public class HistoryManager implements Serializable {
 
   //TODO Commit-rollback architecture?
 
-  //TODO How show current stroke?
+  //TODO How show current touch?
 
   //TODO Allow pass in?
-  public synchronized Stroke startStrokeTransaction() {
+  public synchronized Stroke startTouchTransaction() {
     //TODO Throw error if in transaction?
     //TODO Set state?  (inTransaction = stroke)
-    mCurStroke = new Stroke();
-    return mCurStroke;
+    mCurTouch = new Stroke();
+    return mCurTouch;
   }
 
   public synchronized Stroke getCurStroke() {
     //TODO Throw error if not in correct state?
-    return mCurStroke;
+    return mCurTouch;
   }
 
-  public synchronized Stroke commitStrokeTransaction() {
+  public synchronized Stroke commitTouchTransaction() {
     //TODO Throw error if not in correct state?
-    HistoryNode strokeNode = new AddStrokePHN(mCurStroke);
+    HistoryNode strokeNode = new AddStrokePHN(mCurTouch);
     attach(selected, strokeNode);
     select(strokeNode);
-    Stroke stroke = mCurStroke;
-    mCurStroke = null;
+    Stroke stroke = mCurTouch;
+    mCurTouch = null;
     return stroke;
   }
 
   public synchronized void rollbackStrokeTransaction() {
     //TODO Throw error if not in correct state?
-    mCurStroke = null;
+    mCurTouch = null;
   }
 
   //TODO Check transaction?
