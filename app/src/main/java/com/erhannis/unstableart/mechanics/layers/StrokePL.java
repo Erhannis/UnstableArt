@@ -31,7 +31,7 @@ public class StrokePL extends PaintLayer {
 
   @Override
   public void drawInner(ArtContext artContext, Bitmap canvas) {
-    Canvas cCanvas = new Canvas(canvas);
+    //Canvas cCanvas = new Canvas(canvas);
     for (int i = 0; i < strokes.size(); i++) {
       //TODO Pass cCanvas in?
       tools.get(i).apply(artContext, colors.get(i), sizes.get(i), strokes.get(i), canvas);
