@@ -31,17 +31,17 @@ public class HSVGL extends GroupLayer {
     if (iLayers.size() >= 1) {
       // Hue
       iLayers.get(0).draw(artContext, h);
-      setHue(blank, h);
+      //setHue(blank, h);
     }
     if (iLayers.size() >= 2) {
       // Saturation
       iLayers.get(1).draw(artContext, s);
-      setSat(blank, s);
+      //setSat(blank, s);
     }
     if (iLayers.size() >= 3) {
       // Value
       iLayers.get(2).draw(artContext, v);
-      setVal(blank, v);
+      //setVal(blank, v);
     }
     copyOntoWithOpacity(blank, canvas);
   }

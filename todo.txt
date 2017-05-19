@@ -72,6 +72,7 @@ Think about how layer composition will work - simplify?
 
 Fix
 ---
+Not sure the eyedropper even works, when multiple layers
 export size
 PorterDuff layers
 
