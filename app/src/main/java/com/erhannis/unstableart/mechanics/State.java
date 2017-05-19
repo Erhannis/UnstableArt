@@ -1,7 +1,7 @@
 package com.erhannis.unstableart.mechanics;
 
 import com.erhannis.unstableart.mechanics.color.Color;
-import com.erhannis.unstableart.mechanics.context.Layer;
+import com.erhannis.unstableart.mechanics.layers.Layer;
 import com.erhannis.unstableart.mechanics.stroke.Tool;
 
 /**

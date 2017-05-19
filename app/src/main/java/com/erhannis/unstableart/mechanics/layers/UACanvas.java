@@ -1,4 +1,4 @@
-package com.erhannis.unstableart.mechanics.context;
+package com.erhannis.unstableart.mechanics.layers;
 
 import java.util.HashMap;
 
@@ -26,5 +26,10 @@ public class UACanvas extends GroupLayer {
   @Override
   public UACanvas instantiate() {
     return (UACanvas) new UACanvas(this.getId()).init();
+  }
+
+  @Override
+  public String getDescription() {
+    return "Unstable Art Canvas - Root layer object of a given painting.";
   }
 }

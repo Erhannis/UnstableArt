@@ -1,8 +1,8 @@
 package com.erhannis.unstableart.history;
 
 import com.erhannis.unstableart.mechanics.State;
-import com.erhannis.unstableart.mechanics.context.StrokePL;
-import com.erhannis.unstableart.mechanics.context.UACanvas;
+import com.erhannis.unstableart.mechanics.layers.StrokePL;
+import com.erhannis.unstableart.mechanics.layers.UACanvas;
 import com.erhannis.unstableart.mechanics.stroke.Stroke;
 import com.erhannis.unstableart.mechanics.stroke.StrokeTool;
 

@@ -18,6 +18,12 @@
         android:layout_height="wrap_content"
         android:text="Add group layer"/>
 
+    <Button
+        android:id="@+id/btnAddOtherLayer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add other layer..."/>
+
     <com.terlici.dragndroplist.DragNDropListView
         android:id="@id/android:list"
         android:layout_width="match_parent"

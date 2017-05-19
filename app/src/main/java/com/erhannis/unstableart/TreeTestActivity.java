@@ -1,18 +1,10 @@
 package com.erhannis.unstableart;
 
-import android.database.MatrixCursor;
-import android.net.Uri;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 
-import com.erhannis.unstableart.history.HistoryManager;
-import com.erhannis.unstableart.mechanics.context.GroupLayer;
-import com.erhannis.unstableart.mechanics.context.Layer;
+import com.erhannis.unstableart.mechanics.layers.Layer;
 import com.erhannis.unstableart.ui.layers.LayersFragment;
 
 public class TreeTestActivity extends AppCompatActivity implements LayersFragment.OnLayersFragmentInteractionListener<String> {

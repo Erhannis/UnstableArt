@@ -2,7 +2,7 @@ package com.erhannis.unstableart.history;
 
 import com.erhannis.unstableart.mechanics.State;
 import com.erhannis.unstableart.mechanics.color.Color;
-import com.erhannis.unstableart.mechanics.context.UACanvas;
+import com.erhannis.unstableart.mechanics.layers.UACanvas;
 
 /**
  * //TODO What if we want to allow changing color during a stroke?

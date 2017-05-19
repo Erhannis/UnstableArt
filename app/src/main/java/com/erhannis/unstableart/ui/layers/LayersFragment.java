@@ -1,30 +1,29 @@
 package com.erhannis.unstableart.ui.layers;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.MatrixCursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.SimpleCursorAdapter;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.erhannis.android.ekandroid.ClassScanner;
 import com.erhannis.mathnstuff.FactoryHashMap;
 import com.erhannis.mathnstuff.utils.Factory;
-import com.erhannis.unstableart.FullscreenActivity;
 import com.erhannis.unstableart.R;
-import com.erhannis.unstableart.mechanics.context.GroupLayer;
-import com.erhannis.unstableart.mechanics.context.Layer;
-import com.erhannis.unstableart.mechanics.context.StrokePL;
+import com.erhannis.unstableart.mechanics.layers.GroupLayer;
+import com.erhannis.unstableart.mechanics.layers.Layer;
+import com.erhannis.unstableart.mechanics.layers.StrokePL;
+import com.erhannis.unstableart.mechanics.layers.UACanvas;
 import com.terlici.dragndroplist.DragNDropCursorAdapter;
 import com.terlici.dragndroplist.DragNDropCursorAdapter.RowType;
 import com.terlici.dragndroplist.DragNDropListView;
@@ -32,14 +31,12 @@ import com.terlici.dragndroplist.IDd;
 import com.terlici.dragndroplist.Tree;
 import com.terlici.dragndroplist.Visible;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 import java8.util.function.BiConsumer;
-import java.util.jar.Pack200;
 
 /**
  * //TODO This is becoming horrifying.  Fix it.
@@ -96,6 +93,53 @@ public class LayersFragment<ID> extends Fragment {
       public void onClick(View v) {
         Layer newLayer = new GroupLayer();
         createLayer(((IDd<ID>)mTree).getId(), newLayer);
+      }
+    });
+
+    llView.findViewById(R.id.btnAddOtherLayer).setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        //TODO This will need to change, for settings, etc.
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+        List<Class> classes = new ArrayList<Class>();
+        try {
+          classes = ClassScanner.getConcreteDescendants(getContext(), Layer.class, null);
+        } catch (NoSuchMethodException e) {
+          e.printStackTrace();
+        } catch (IOException e) {
+          e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+          e.printStackTrace();
+        }
+
+        classes.remove(UACanvas.class);
+
+        ArrayList<String> classNames = new ArrayList<String>();
+        for (Class<?> clazz : classes) {
+          classNames.add(clazz.getName());
+        }
+        String[] layerTypes = new String[]{};
+        layerTypes = classNames.toArray(layerTypes);
+
+        final List<Class> fClasses = classes;
+
+        builder.setTitle("Pick a layer type")
+                .setItems(layerTypes, new DialogInterface.OnClickListener() {
+                  public void onClick(DialogInterface dialog, int which) {
+                    try {
+                      Layer newLayer = (Layer)fClasses.get(which).newInstance();
+                      createLayer(((IDd<ID>)mTree).getId(), newLayer);
+                    } catch (java.lang.InstantiationException e) {
+                      e.printStackTrace();
+                      showToast("Error creating layer:\n" + e.getMessage());
+                    } catch (IllegalAccessException e) {
+                      e.printStackTrace();
+                      showToast("Error creating layer:\n" + e.getMessage());
+                    }
+                  }
+                });
+        builder.show();
       }
     });
 

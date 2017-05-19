@@ -12,3 +12,4 @@ Building:
 Released under the MIT license.
 
 Note: you'll probably need to clone and `mvn clean install` my util project, MathNStuff.  ( https://github.com/Erhannis/MathNStuff )
+And ALSO clone and run `./gradlew clean uploadArchives` on my Android util project, EKAndroid.  ( https://github.com/Erhannis/EKAndroid.git )

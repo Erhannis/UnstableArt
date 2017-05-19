@@ -1,20 +1,14 @@
-package com.erhannis.unstableart.mechanics.context;
+package com.erhannis.unstableart.mechanics.layers;
 
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
 
-import com.erhannis.unstableart.history.AddLayerLMHN;
-import com.erhannis.unstableart.history.HistoryNode;
-import com.terlici.dragndroplist.IDd;
+import com.erhannis.unstableart.mechanics.context.ArtContext;
 import com.terlici.dragndroplist.Tree;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * //TODO I'm tempted for this to replace UACanvas
@@ -118,6 +112,11 @@ public class GroupLayer extends Layer implements Tree<Layer> {
       }
     }
     return false;
+  }
+
+  @Override
+  public String getDescription() {
+    return "GroupLayer - Contains several layers, rendering them all on top of each other.";
   }
   //</editor-fold>
 }
