@@ -1,9 +1,12 @@
-package com.erhannis.unstableart.mechanics.context;
+package com.erhannis.unstableart.mechanics.layers;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Xfermode;
 
+import com.erhannis.unstableart.Described;
+import com.erhannis.unstableart.mechanics.context.ArtContext;
 import com.terlici.dragndroplist.IDd;
 import com.terlici.dragndroplist.Visible;
 
@@ -21,7 +24,7 @@ import java.util.UUID;
  *
  * Created by erhannis on 3/22/17.
  */
-public abstract class Layer implements Serializable, IDd<String>, Visible {
+public abstract class Layer implements Serializable, IDd<String>, Visible, Described {
   //TODO I feel like this ought to be transient, too, but I'm not sure
   public boolean archetype = true;
 
@@ -75,6 +78,16 @@ public abstract class Layer implements Serializable, IDd<String>, Visible {
     Canvas cCanvas = new Canvas(bOut);
     //TODO Factor out?
     Paint p = new Paint();
+    //TODO Clamp?
+    p.setAlpha((int)(opacity * 255)); //LOSS
+    cCanvas.drawBitmap(bIn, 0, 0, p);
+  }
+
+  protected void copyOntoWithOpacityAndXfermode(Bitmap bIn, Bitmap bOut, Xfermode mode) {
+    Canvas cCanvas = new Canvas(bOut);
+    //TODO Factor out?
+    Paint p = new Paint();
+    p.setXfermode(mode);
     //TODO Clamp?
     p.setAlpha((int)(opacity * 255)); //LOSS
     cCanvas.drawBitmap(bIn, 0, 0, p);

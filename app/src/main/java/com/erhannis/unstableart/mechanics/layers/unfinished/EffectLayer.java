@@ -1,4 +1,6 @@
-package com.erhannis.unstableart.mechanics.context;
+package com.erhannis.unstableart.mechanics.layers.unfinished;
+
+import com.erhannis.unstableart.mechanics.layers.Layer;
 
 /**
  * Created by erhannis on 3/23/17.

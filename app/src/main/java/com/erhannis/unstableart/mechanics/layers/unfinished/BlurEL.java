@@ -1,9 +1,11 @@
-package com.erhannis.unstableart.mechanics.context;
+package com.erhannis.unstableart.mechanics.layers.unfinished;
 
 import android.graphics.Bitmap;
 
 import com.erhannis.unstableart.mechanics.color.ColorUtils;
 import com.erhannis.unstableart.mechanics.color.DoublesColor;
+import com.erhannis.unstableart.mechanics.context.ArtContext;
+import com.erhannis.unstableart.mechanics.layers.Layer;
 
 /**
  * Vaguely works.  Not very well, not very fast.  On hold.
@@ -69,5 +71,10 @@ public class BlurEL extends EffectLayer {
   @Override
   public BlurEL instantiate() {
     return (BlurEL)new BlurEL(this.getId()).init();
+  }
+
+  @Override
+  public String getDescription() {
+    return "Blur Effect Layer - Unfinished.  Intended to...blur the layers beneath, I think?";
   }
 }

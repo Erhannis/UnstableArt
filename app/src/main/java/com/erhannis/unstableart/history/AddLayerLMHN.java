@@ -1,8 +1,8 @@
 package com.erhannis.unstableart.history;
 
-import com.erhannis.unstableart.mechanics.context.GroupLayer;
-import com.erhannis.unstableart.mechanics.context.Layer;
-import com.erhannis.unstableart.mechanics.context.UACanvas;
+import com.erhannis.unstableart.mechanics.layers.GroupLayer;
+import com.erhannis.unstableart.mechanics.layers.Layer;
+import com.erhannis.unstableart.mechanics.layers.UACanvas;
 
 /**
  * //TODO Incomplete

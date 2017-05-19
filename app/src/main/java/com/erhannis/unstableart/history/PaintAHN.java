@@ -1,7 +1,7 @@
 package com.erhannis.unstableart.history;
 
 import com.erhannis.unstableart.mechanics.State;
-import com.erhannis.unstableart.mechanics.context.UACanvas;
+import com.erhannis.unstableart.mechanics.layers.UACanvas;
 
 /**
  * Created by erhannis on 3/18/17.

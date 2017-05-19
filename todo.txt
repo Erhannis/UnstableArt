@@ -67,11 +67,13 @@ Next to layer show average color?
 Compositing brushes
 Porterduff modes on brushes?
 Copy/paste OUTSIDE history tree?
+Think about how layer composition will work - simplify?
 
 
 Fix
 ---
 export size
+PorterDuff layers
 
 
 Thinking on paper

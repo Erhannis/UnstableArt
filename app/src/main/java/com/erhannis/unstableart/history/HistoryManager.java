@@ -3,11 +3,10 @@ package com.erhannis.unstableart.history;
 import com.erhannis.unstableart.mechanics.FullState;
 import com.erhannis.unstableart.mechanics.State;
 import com.erhannis.unstableart.mechanics.color.DoublesColor;
-import com.erhannis.unstableart.mechanics.context.BlurEL;
-import com.erhannis.unstableart.mechanics.context.GroupLayer;
-import com.erhannis.unstableart.mechanics.context.Layer;
-import com.erhannis.unstableart.mechanics.context.StrokePL;
-import com.erhannis.unstableart.mechanics.context.UACanvas;
+import com.erhannis.unstableart.mechanics.layers.GroupLayer;
+import com.erhannis.unstableart.mechanics.layers.Layer;
+import com.erhannis.unstableart.mechanics.layers.StrokePL;
+import com.erhannis.unstableart.mechanics.layers.UACanvas;
 import com.erhannis.unstableart.mechanics.stroke.BrushST;
 import com.erhannis.unstableart.mechanics.stroke.Stroke;
 
