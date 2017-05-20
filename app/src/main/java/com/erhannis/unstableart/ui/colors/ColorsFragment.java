@@ -60,6 +60,7 @@ public class ColorsFragment extends Fragment {
   public void updateView() {
     if (llView != null) {
       ColorPickerView colorPickerView = (ColorPickerView)llView.findViewById(R.id.nilssonpicker);
+      colorPickerView.setAlphaSliderVisible(true);
       colorPickerView.setOnColorChangedListener(new ColorPickerView.OnColorChangedListener() {
         @Override
         public void onColorChanged(int newColor) {
