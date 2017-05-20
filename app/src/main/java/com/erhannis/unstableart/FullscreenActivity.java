@@ -53,6 +53,7 @@ import com.erhannis.unstableart.mechanics.color.Color;
 import com.erhannis.unstableart.mechanics.color.IntColor;
 import com.erhannis.unstableart.mechanics.context.ArtContext;
 import com.erhannis.unstableart.mechanics.layers.Layer;
+import com.erhannis.unstableart.mechanics.stroke.AirbrushST;
 import com.erhannis.unstableart.mechanics.stroke.BrushST;
 import com.erhannis.unstableart.mechanics.stroke.EraserST;
 import com.erhannis.unstableart.mechanics.stroke.FillST;
@@ -995,6 +996,9 @@ public class FullscreenActivity extends AppCompatActivity implements
         break;
       case ToolsFragment.M_BRUSH:
         historyManager.attach(new SetToolSMHN(new BrushST()));
+        break;
+      case ToolsFragment.M_AIRBRUSH:
+        historyManager.attach(new SetToolSMHN(new AirbrushST()));
         break;
       case ToolsFragment.M_ERASER:
         historyManager.attach(new SetToolSMHN(new EraserST()));

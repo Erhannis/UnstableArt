@@ -24,10 +24,11 @@ public class ToolsFragment extends Fragment {
 
   public static final String M_PEN = "Pen";
   public static final String M_BRUSH = "Brush";
+  public static final String M_AIRBRUSH = "Airbrush";
   public static final String M_ERASER = "Eraser";
   public static final String M_EYEDROPPER = "Eyedropper"; //TODO Shouldn't stay selected
   public static final String M_FILL = "Fill";
-  public static final String[] TOOLS_MENU = new String[]{M_PEN, M_BRUSH, M_ERASER, M_EYEDROPPER, M_FILL};
+  public static final String[] TOOLS_MENU = new String[]{M_PEN, M_BRUSH, M_AIRBRUSH, M_ERASER, M_EYEDROPPER, M_FILL};
 
   private LinearLayout llView;
 
