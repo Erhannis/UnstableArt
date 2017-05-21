@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.graphics.Xfermode;
 
 import com.erhannis.unstableart.mechanics.color.Color;
 import com.erhannis.unstableart.mechanics.color.DoublesColor;
@@ -15,7 +16,7 @@ import com.erhannis.unstableart.mechanics.context.ArtContext;
  */
 public class EraserST extends StrokeTool {
   //TODO Hmm, tranforms?  Color bounds?  Contexts?  Paths?  Base thickness?
-  public void apply(ArtContext artContext, Color color, double size, Stroke stroke, Bitmap canvas) {
+  public void apply(ArtContext artContext, Color color, Xfermode mode, double size, Stroke stroke, Bitmap canvas) {
     Paint paint = new Paint();
     paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
     //TODO Set color, alpha, width
