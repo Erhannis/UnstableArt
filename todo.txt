@@ -74,6 +74,7 @@ Fix
 ---
 export size
 PorterDuff layers
+Eraser
 
 
 Thinking on paper
