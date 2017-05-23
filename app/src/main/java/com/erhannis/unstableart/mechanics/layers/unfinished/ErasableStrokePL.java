@@ -28,7 +28,7 @@ public class ErasableStrokePL extends StrokePL {
     Bitmap copy = canvas.copy(Bitmap.Config.ARGB_8888, true);
     for (int i = 0; i < strokes.size(); i++) {
       //TODO Pass cCanvas in?
-      tools.get(i).apply(artContext, colors.get(i), sizes.get(i), strokes.get(i), copy);
+      tools.get(i).apply(artContext, colors.get(i), null, sizes.get(i), strokes.get(i), copy);
     }
     copyOntoWithOpacity(copy, canvas);
   }
