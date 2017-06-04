@@ -55,6 +55,7 @@ import com.erhannis.unstableart.mechanics.stroke.BrushST;
 import com.erhannis.unstableart.mechanics.stroke.EraserST;
 import com.erhannis.unstableart.mechanics.stroke.FillST;
 import com.erhannis.unstableart.mechanics.stroke.PenST;
+import com.erhannis.unstableart.mechanics.stroke.SolidBrushST;
 import com.erhannis.unstableart.mechanics.stroke.StrokePoint;
 import com.erhannis.unstableart.settings.InputMapper;
 import com.erhannis.unstableart.ui.Spacer;
@@ -971,6 +972,9 @@ public class FullscreenActivity extends AppCompatActivity implements
         break;
       case ToolsFragment.M_BRUSH:
         historyManager.attach(new SetToolSMHN(new BrushST()));
+        break;
+      case ToolsFragment.M_SOLID_BRUSH:
+        historyManager.attach(new SetToolSMHN(new SolidBrushST()));
         break;
       case ToolsFragment.M_AIRBRUSH:
         historyManager.attach(new SetToolSMHN(new AirbrushST()));
