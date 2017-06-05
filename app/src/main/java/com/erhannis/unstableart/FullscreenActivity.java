@@ -519,6 +519,7 @@ public class FullscreenActivity extends AppCompatActivity implements
               historyManager.startStrokeTransaction(); // Continue into next case
             case MotionEvent.ACTION_MOVE: //TODO What about basically anything else?
               //TODO Check transaction?
+              System.out.println("event " + event.getActionMasked());
               float[] xy = new float[]{Float.NaN, Float.NaN};
               float x = Float.NaN;
               float y = Float.NaN;
@@ -527,16 +528,19 @@ public class FullscreenActivity extends AppCompatActivity implements
                 x = event.getHistoricalX(i);
                 y = event.getHistoricalY(i);
                 p = event.getHistoricalPressure(i);
+                System.out.println("hp {" + x + ", " + y + ", " + p + "}");
                 xy[0] = x;
                 xy[1] = y;
                 mViewportMatrixInverse.mapPoints(xy);
                 historyManager.getCurStroke().points.add(new StrokePoint(xy[0], xy[1], p));
               }
+              //TODO If using finger, this can be much closer to the end of the historical points than is good for some brushes.
               if (event.getX() != x || event.getY() != y) {
                 //TODO Debatable
                 x = event.getX();
                 y = event.getY();
                 p = event.getPressure();
+                System.out.println("ep {" + x + ", " + y + ", " + p + "}");
                 xy[0] = x;
                 xy[1] = y;
                 mViewportMatrixInverse.mapPoints(xy);

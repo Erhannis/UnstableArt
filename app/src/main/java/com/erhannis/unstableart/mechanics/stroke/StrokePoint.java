@@ -23,4 +23,11 @@ public class StrokePoint implements Serializable {
     this.y = y;
     this.pressure = pressure;
   }
+
+  public boolean equivalent(StrokePoint b) {
+    if (b == null) {
+      return false;
+    }
+    return (this.x == b.x && this.y == b.y && this.pressure == b.pressure);
+  }
 }
