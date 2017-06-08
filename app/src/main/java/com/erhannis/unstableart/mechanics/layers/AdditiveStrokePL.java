@@ -1,19 +1,11 @@
-package com.erhannis.unstableart.mechanics.layers.unfinished;
+package com.erhannis.unstableart.mechanics.layers;
 
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Xfermode;
 
-import com.erhannis.unstableart.mechanics.color.Color;
 import com.erhannis.unstableart.mechanics.context.ArtContext;
-import com.erhannis.unstableart.mechanics.layers.Layer;
-import com.erhannis.unstableart.mechanics.layers.PaintLayer;
-import com.erhannis.unstableart.mechanics.layers.StrokePL;
-import com.erhannis.unstableart.mechanics.stroke.Stroke;
-import com.erhannis.unstableart.mechanics.stroke.StrokeTool;
-
-import java.util.ArrayList;
 
 /**
  * Created by erhannis on 3/22/17.
