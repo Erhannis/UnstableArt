@@ -38,6 +38,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.erhannis.android.distributeduitest.HubActivity;
 import com.erhannis.mathnstuff.TimeoutTimer;
 import com.erhannis.unstableart.history.HistoryManager;
 import com.erhannis.unstableart.history.SetCanvasModeSMHN;
@@ -83,7 +84,7 @@ import java8.util.function.Consumer;
  * http://stackoverflow.com/questions/17861755
  *
  */
-public class FullscreenActivity extends AppCompatActivity implements
+public class FullscreenActivity extends HubActivity implements
         LayersFragment.OnLayersFragmentInteractionListener<String>,
         ColorsFragment.OnColorsFragmentInteractionListener,
         ToolsFragment.OnToolsFragmentInteractionListener,
@@ -921,6 +922,11 @@ public class FullscreenActivity extends AppCompatActivity implements
 
   //<editor-fold desc="FRAGMENT INTERACTIONS">
   @Override
+  public Object onMessage(String s, Object... objects) {
+    return null;
+  }
+
+  @Override
   public void onCreateLayer(String parentUuid, Layer child) {
     historyManager.executeCreateLayer(parentUuid, child);
     scheduleRedraw();
@@ -1181,6 +1187,6 @@ public class FullscreenActivity extends AppCompatActivity implements
         });
         break;
     }
- }
+  }
   //</editor-fold>
 }

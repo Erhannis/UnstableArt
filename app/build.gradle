@@ -53,8 +53,6 @@ dependencies {
     //TODO I wish I didn't have to use streamsupport!
     compile 'com.android.support:appcompat-v7:25.3.0'
     compile 'com.android.support:support-v4:25.3.0'
-    compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
-    compile 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.2-SNAPSHOT'
     compile 'com.erhannis:MathNStuff:0.1.0-SNAPSHOT'
     compile 'com.android.support:design:25.3.0'
     compile 'com.esotericsoftware.kryo:kryo:2.23-SNAPSHOT'
@@ -67,6 +65,7 @@ dependencies {
     compile 'com.github.danielnilsson9:color-picker-view:1.4.0@aar'
 
     compile 'com.erhannis.android:ekandroid:0.1.0-SNAPSHOT@aar'
+    compile 'com.erhannis.android:distributed-ui:1.0@aar'
 
     testCompile 'junit:junit:4.12'
 }

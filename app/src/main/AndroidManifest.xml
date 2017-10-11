@@ -42,7 +42,17 @@
             </intent-filter>
         </activity>
 
-        <service android:name="org.eclipse.paho.android.service.MqttService"/>
+        <activity
+            android:name="com.erhannis.android.distributeduitest.SatelliteActivity"
+            android:label="@string/title_activity_ua_satellite"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <service android:name="com.erhannis.android.distributeduitest.StarService"/>
 
         <activity android:name=".TreeTestActivity" android:label="TreeTestActivity">
             <intent-filter>
