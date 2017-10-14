@@ -65,7 +65,12 @@ dependencies {
     compile 'com.github.danielnilsson9:color-picker-view:1.4.0@aar'
 
     compile 'com.erhannis.android:ekandroid:0.1.0-SNAPSHOT@aar'
-    compile 'com.erhannis.android:distributed-ui:1.0@aar'
+    compile ('com.erhannis.android:distributed-ui:1.0@aar') {
+        transitive = true
+    }
+
+    // It's dumb that I need to include this.
+    compile 'eu.hgross:blaubot-android:2+'
 
     testCompile 'junit:junit:4.12'
 }

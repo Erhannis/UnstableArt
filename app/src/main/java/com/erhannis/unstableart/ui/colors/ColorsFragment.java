@@ -12,6 +12,8 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.erhannis.android.distributeduitest.ButtonsFragment;
+import com.erhannis.android.distributeduitest.DistributedUiActivity;
 import com.erhannis.unstableart.R;
 import com.erhannis.unstableart.mechanics.color.Color;
 import com.erhannis.unstableart.mechanics.color.IntColor;
@@ -27,7 +29,7 @@ public class ColorsFragment extends Fragment {
 
   private LinearLayout llView;
 
-  private OnColorsFragmentInteractionListener mListener;
+  private DistributedUiActivity mListener;
 
   public ColorsFragment() {
     // Required empty public constructor
@@ -77,7 +79,7 @@ public class ColorsFragment extends Fragment {
       @Override
       public void run() {
         if (mListener != null) {
-          mListener.onSelectColor(color);
+          mListener.sendToHub("onSelectColor", color);
         }
       }
     });
@@ -86,10 +88,10 @@ public class ColorsFragment extends Fragment {
   @Override
   public void onAttach(Context context) {
     super.onAttach(context);
-    if (context instanceof OnColorsFragmentInteractionListener) {
-      mListener = (OnColorsFragmentInteractionListener) context;
+    if (context instanceof DistributedUiActivity && ((DistributedUiActivity)context).implementsInterface(OnColorsFragmentInteractionListener.class)) {
+      mListener = (DistributedUiActivity) context;
     } else {
-      throw new RuntimeException(context.toString() + " must implement OnColorsFragmentInteractionListener");
+      throw new RuntimeException(context.toString() + " must report implementation OnColorsFragmentInteractionListener");
     }
   }
 

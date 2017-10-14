@@ -922,7 +922,14 @@ public class FullscreenActivity extends HubActivity implements
 
   //<editor-fold desc="FRAGMENT INTERACTIONS">
   @Override
-  public Object onMessage(String s, Object... objects) {
+  public Object onMessage(String method, Object... objects) {
+    switch (method) {
+      case "onSelectColor":
+        onSelectColor((Color)objects[0]);
+        break;
+      default:
+        throw new RuntimeException("Unknown method: " + method);
+    }
     return null;
   }
 
