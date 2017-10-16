@@ -71,6 +71,15 @@ public class ColorsFragment extends Fragment {
           selectColor(mCurColor);
         }
       });
+      Button btnMoveFragment = (Button)llView.findViewById(R.id.btnMoveFragment);
+      btnMoveFragment.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          if (mListener != null) {
+            mListener.sendToHub("onMoveColorsFragment");
+          }
+        }
+      });
     }
   }
 
@@ -113,6 +122,8 @@ public class ColorsFragment extends Fragment {
    */
   public interface OnColorsFragmentInteractionListener {
     public void onSelectColor(Color color);
+    //TODO This is a hack
+    public void onMoveColorsFragment();
   }
 
   public void showToast(String text) {

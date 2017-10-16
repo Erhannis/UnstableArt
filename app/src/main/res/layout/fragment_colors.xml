@@ -21,4 +21,10 @@
         android:layout_height="wrap_content"
         android:text="(Colors go here)"/>
 
+    <Button
+        android:id="@+id/btnMoveFragment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Move"/>
+
 </LinearLayout>

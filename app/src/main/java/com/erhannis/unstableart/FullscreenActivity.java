@@ -38,6 +38,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.erhannis.android.distributeduitest.DistributedUIFragmentChange;
+import com.erhannis.android.distributeduitest.FragmentHandle;
 import com.erhannis.android.distributeduitest.HubActivity;
 import com.erhannis.mathnstuff.TimeoutTimer;
 import com.erhannis.unstableart.history.HistoryManager;
@@ -927,6 +929,9 @@ public class FullscreenActivity extends HubActivity implements
       case "onSelectColor":
         onSelectColor((Color)objects[0]);
         break;
+      case "onMoveColorsFragment":
+        onMoveColorsFragment();
+        break;
       default:
         throw new RuntimeException("Unknown method: " + method);
     }
@@ -977,6 +982,40 @@ public class FullscreenActivity extends HubActivity implements
   public void onSelectColor(Color color) {
     mScheduledColor = color;
     mColorTimer.restart();
+  }
+
+  //TODO This is SUCH a hack
+  protected boolean mColorsFragmentIsLocal = true;
+  @Override
+  public void onMoveColorsFragment() {
+    if (mColorsFragmentIsLocal) {
+//      FragmentManager fragMan = getSupportFragmentManager();
+//      FragmentTransaction fragTransaction = fragMan.beginTransaction();
+//      fragTransaction.remove(mColorsFragment); //TODO Would this survive a rotation?
+//      fragTransaction.commit();
+      sendRawToSatellites(new DistributedUIFragmentChange(DistributedUIFragmentChange.ChangeType.HOST_FRAGMENT, new FragmentHandle(ColorsFragment.class, "ColorsFragment")));
+      mColorsFragmentIsLocal = false;
+    } else {
+//      mColorsFragment.get
+//
+//      FragmentManager fragMan = getSupportFragmentManager();
+//      FragmentTransaction fragTransaction = fragMan.beginTransaction();
+//
+//      mLayersFragment = new LayersFragment<String>();
+//      FullState fullState = historyManager.rebuild();
+//      mLayersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
+//      fragTransaction.add(layersContainer.getId(), mLayersFragment, "LayersFragment");
+//
+//      mColorsFragment = new ColorsFragment();
+//      //TODO Set current color?
+//      //FullState fullState = historyManager.rebuild();
+//      //colorsFragment.setCurColor();
+//      fragTransaction.add(colorsContainer.getId(), mColorsFragment, "ColorsFragment");
+//
+//      fragTransaction.commit();
+      sendRawToSatellites(new DistributedUIFragmentChange(DistributedUIFragmentChange.ChangeType.DROP_FRAGMENT, new FragmentHandle(ColorsFragment.class, "ColorsFragment")));
+      mColorsFragmentIsLocal = true;
+    }
   }
 
   @Override
