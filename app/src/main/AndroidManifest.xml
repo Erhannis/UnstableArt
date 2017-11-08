@@ -52,7 +52,8 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service android:name="com.erhannis.android.distributeduitest.StarService"/>
+        <service android:name="com.erhannis.android.distributeduitest.starnetwork.StarService"/>
+        <service android:name="com.erhannis.android.distributeduitest.UiMovementService"/>
 
         <activity android:name=".TreeTestActivity" android:label="TreeTestActivity">
             <intent-filter>

@@ -76,7 +76,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import java8.util.function.Consumer;
@@ -716,6 +718,16 @@ public class FullscreenActivity extends HubActivity implements
     return super.onOptionsItemSelected(item);
   }
 
+  @Override
+  public void hostFragment(FragmentHandle fragmentHandle) {
+    //TODO Do
+  }
+
+  @Override
+  public void dropFragment(FragmentHandle fragmentHandle) {
+    //TODO Do
+  }
+
   //TODO Allow mapping
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -924,6 +936,13 @@ public class FullscreenActivity extends HubActivity implements
 
   //<editor-fold desc="FRAGMENT INTERACTIONS">
   @Override
+  public List<FragmentHandle> getFragmentHandles() {
+    ArrayList<FragmentHandle> fragmentHandles = new ArrayList<>();
+    fragmentHandles.add(new FragmentHandle(ColorsFragment.class, "ColorsFragment"));
+    return fragmentHandles;
+  }
+
+  @Override
   public Object onMessage(String method, Object... objects) {
     switch (method) {
       case "onSelectColor":
@@ -993,7 +1012,8 @@ public class FullscreenActivity extends HubActivity implements
 //      FragmentTransaction fragTransaction = fragMan.beginTransaction();
 //      fragTransaction.remove(mColorsFragment); //TODO Would this survive a rotation?
 //      fragTransaction.commit();
-      sendRawToSatellites(new DistributedUIFragmentChange(DistributedUIFragmentChange.ChangeType.HOST_FRAGMENT, new FragmentHandle(ColorsFragment.class, "ColorsFragment")));
+      //TODO
+      //sendRawToSatellites(new DistributedUIFragmentChange(DistributedUIFragmentChange.ChangeType.HOST_FRAGMENT, new FragmentHandle(ColorsFragment.class, "ColorsFragment")));
       mColorsFragmentIsLocal = false;
     } else {
 //      mColorsFragment.get
@@ -1013,7 +1033,8 @@ public class FullscreenActivity extends HubActivity implements
 //      fragTransaction.add(colorsContainer.getId(), mColorsFragment, "ColorsFragment");
 //
 //      fragTransaction.commit();
-      sendRawToSatellites(new DistributedUIFragmentChange(DistributedUIFragmentChange.ChangeType.DROP_FRAGMENT, new FragmentHandle(ColorsFragment.class, "ColorsFragment")));
+      //TODO
+      //sendRawToSatellites(new DistributedUIFragmentChange(DistributedUIFragmentChange.ChangeType.DROP_FRAGMENT, new FragmentHandle(ColorsFragment.class, "ColorsFragment")));
       mColorsFragmentIsLocal = true;
     }
   }
