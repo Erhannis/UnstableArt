@@ -12,7 +12,7 @@ def getGitHash = { ->
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25.0.0'
+    buildToolsVersion '26.0.2'
 
     defaultConfig {
         applicationId "com.erhannis.unstableart"
@@ -21,9 +21,6 @@ android {
         versionCode 1
         versionName "1.0"
         buildConfigField "String", "GIT_HASH", "\"${getGitHash()}\""
-        jackOptions {
-            enabled true
-        }
     }
     buildTypes {
         release {
