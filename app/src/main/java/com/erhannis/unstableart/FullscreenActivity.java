@@ -38,9 +38,9 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.erhannis.android.distributeduitest.DistributedUIFragmentChange;
-import com.erhannis.android.distributeduitest.FragmentHandle;
-import com.erhannis.android.distributeduitest.HubActivity;
+import com.erhannis.android.distributedui.DistributedUIFragmentChange;
+import com.erhannis.android.distributedui.FragmentHandle;
+import com.erhannis.android.distributedui.HubActivity;
 import com.erhannis.mathnstuff.TimeoutTimer;
 import com.erhannis.unstableart.history.HistoryManager;
 import com.erhannis.unstableart.history.SetCanvasModeSMHN;

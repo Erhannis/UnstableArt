@@ -66,8 +66,5 @@ dependencies {
         transitive = true
     }
 
-    // It's dumb that I need to include this.
-    compile 'eu.hgross:blaubot-android:2+'
-
     testCompile 'junit:junit:4.12'
 }

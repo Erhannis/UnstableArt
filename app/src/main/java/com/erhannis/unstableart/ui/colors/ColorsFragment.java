@@ -12,8 +12,8 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.erhannis.android.distributeduitest.ButtonsFragment;
-import com.erhannis.android.distributeduitest.DistributedUiActivity;
+import com.erhannis.android.distributedui.ButtonsFragment;
+import com.erhannis.android.distributedui.DistributedUiActivity;
 import com.erhannis.unstableart.R;
 import com.erhannis.unstableart.mechanics.color.Color;
 import com.erhannis.unstableart.mechanics.color.IntColor;

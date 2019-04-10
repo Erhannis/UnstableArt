@@ -43,7 +43,7 @@
         </activity>
 
         <activity
-            android:name="com.erhannis.android.distributeduitest.SatelliteActivity"
+            android:name="com.erhannis.android.distributedui.SatelliteActivity"
             android:label="@string/title_activity_ua_satellite"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -52,8 +52,8 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service android:name="com.erhannis.android.distributeduitest.starnetwork.StarService"/>
-        <service android:name="com.erhannis.android.distributeduitest.UiMovementService"/>
+        <service android:name="com.erhannis.android.distributedui.starnetwork.StarService"/>
+        <service android:name="com.erhannis.android.distributedui.UiMovementService"/>
 
         <activity android:name=".TreeTestActivity" android:label="TreeTestActivity">
             <intent-filter>
