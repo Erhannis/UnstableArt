@@ -1,5 +1,13 @@
 package com.erhannis.unstableart.history;
 
+import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
+
+import com.erhannis.android.orderednetworkview.DrawableNode;
+import com.erhannis.android.orderednetworkview.Node;
+import com.erhannis.unstableart.R;
+import com.erhannis.unstableart.UAApplication;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.LinkedHashSet;
@@ -11,33 +19,30 @@ import java.util.LinkedHashSet;
  *
  * Created by erhannis on 3/18/17.
  */
-public abstract class HistoryNode implements Serializable {
+public abstract class HistoryNode extends DrawableNode<HistoryNode> implements Serializable {
   public final Date creation;
-  //TODO Would it make any sense to allow multiple inheritance?  cycles?
-  //TODO Ech, do I or do I not make these final?
+
+  //TODO Not sure about this.  It's an optimization, but it might break some stuff in the future.
+  //TODO Also, should it be transient?  It's intended to be ONLY an optimization?
   public HistoryNode preferredParent;
-  public LinkedHashSet<HistoryNode> parents = new LinkedHashSet<>();
-  public HistoryNode preferredChild; // For ease of redo
-  public LinkedHashSet<HistoryNode> children = new LinkedHashSet<>();
 
   public HistoryNode() {
     //TODO It MIGHT be necessary to be able to set this manually
     creation = new Date();
   }
 
-  /**
-   * Also sets preferredParent.  Until further notice.
-   * @param parent
-   */
-  public void setParent(HistoryNode parent) {
-    parents.add(parent);
-    preferredParent = parent;
+  public void addChild(HistoryNode child) {
+    children.remove(child);
+    children.addFirst(child);
+    //TODO See `preferredParent`
+    child.preferredParent = this;
     //TODO Notify anybody?
   }
 
-  public void addChild(HistoryNode child) {
-    children.add(child);
-    preferredChild = child;
-    //TODO Notify anybody?
+  //TODO This is a temporary default.
+  private final Drawable DRAWABLE = ContextCompat.getDrawable(UAApplication.getContext(), R.drawable.n_blank);
+  @Override
+  public Drawable getDrawable() {
+    return DRAWABLE;
   }
 }

@@ -208,9 +208,9 @@ public class LayersFragment<ID> extends Fragment {
             return;
           }
 
-          FactoryHashMap<String, Integer> positions = new FactoryHashMap<String, Integer>(new Factory<Integer>() {
+          FactoryHashMap<String, Integer> positions = new FactoryHashMap<String, Integer>(new Factory<String, Integer>() {
             @Override
-            public Integer construct() {
+            public Integer construct(String s) {
               return 0;
             }
           });
@@ -256,9 +256,9 @@ public class LayersFragment<ID> extends Fragment {
 
   private static String getParentUuid(DragNDropListView list, FactoryHashMap<String, Integer> positions, int target) {
     if (positions == null) {
-      positions = new FactoryHashMap<String, Integer>(new Factory<Integer>() {
+      positions = new FactoryHashMap<String, Integer>(new Factory<String, Integer>() {
         @Override
-        public Integer construct() {
+        public Integer construct(String s) {
           return 0;
         }
       });

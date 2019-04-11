@@ -1,5 +1,10 @@
 package com.erhannis.unstableart.history;
 
+import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
+
+import com.erhannis.unstableart.R;
+import com.erhannis.unstableart.UAApplication;
 import com.erhannis.unstableart.mechanics.State;
 import com.erhannis.unstableart.mechanics.color.Color;
 import com.erhannis.unstableart.mechanics.layers.UACanvas;
@@ -25,5 +30,11 @@ public class SetColorSMHN extends StateModificationAHN {
   @Override
   public void apply(State state, UACanvas iCanvas) {
     state.color = color;
+  }
+
+  private final Drawable DRAWABLE = ContextCompat.getDrawable(UAApplication.getContext(), R.drawable.n_set_color);
+  @Override
+  public Drawable getDrawable() {
+    return DRAWABLE;
   }
 }

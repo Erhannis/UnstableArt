@@ -63,7 +63,6 @@ public class HistoryManager implements Serializable {
     //TODO Send events, etc.
     //TODO Check connected to root?
     parent.addChild(child);
-    child.setParent(parent);
   }
 
   /**
@@ -84,8 +83,8 @@ public class HistoryManager implements Serializable {
    * @return whether redo happened
    */
   public synchronized boolean tryRedo() {
-    if (selected.preferredChild != null) {
-      select(selected.preferredChild);
+    if (!selected.children.isEmpty()) {
+      select(selected.children.peekFirst());
       return true;
     } else {
       return false;
@@ -200,8 +199,9 @@ public class HistoryManager implements Serializable {
     return null;
   }
 
-  // I STRONGLY recommend that the code subordinate to this function not retain any references to
-  //     the returned FullState or any subfields, on pain of threading issues.
+  /** I STRONGLY recommend that the code calling this function not retain any references to
+   *  the returned FullState or any subfields, on pain of threading issues.
+   */
   public synchronized FullState rebuild() {
     HistoryNode curr = selected;
     ArrayList<HistoryNode> chain = new ArrayList<HistoryNode>();
