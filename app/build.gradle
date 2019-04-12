@@ -13,7 +13,6 @@ def getGitHash = { ->
 android {
     compileSdkVersion 27
     buildToolsVersion '28.0.3'
-
     defaultConfig {
         applicationId "com.erhannis.unstableart"
         minSdkVersion 17

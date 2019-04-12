@@ -32,7 +32,7 @@ public class SetColorSMHN extends StateModificationAHN {
     state.color = color;
   }
 
-  private final Drawable DRAWABLE = ContextCompat.getDrawable(UAApplication.getContext(), R.drawable.n_set_color);
+  private final Drawable DRAWABLE = procureDrawable(R.drawable.n_set_color);
   @Override
   public Drawable getDrawable() {
     return DRAWABLE;

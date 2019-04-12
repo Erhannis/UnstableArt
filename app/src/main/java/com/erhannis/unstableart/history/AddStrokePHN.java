@@ -35,7 +35,7 @@ public class AddStrokePHN extends PaintAHN {
     }
   }
 
-  private final Drawable DRAWABLE = ContextCompat.getDrawable(UAApplication.getContext(), R.drawable.n_set_color);
+  private final Drawable DRAWABLE = procureDrawable(R.drawable.n_add_stroke);
   @Override
   public Drawable getDrawable() {
     return DRAWABLE;

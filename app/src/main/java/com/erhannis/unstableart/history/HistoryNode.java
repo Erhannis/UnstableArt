@@ -39,8 +39,14 @@ public abstract class HistoryNode extends DrawableNode<HistoryNode> implements S
     //TODO Notify anybody?
   }
 
+  protected static Drawable procureDrawable(int id) {
+    Drawable d = ContextCompat.getDrawable(UAApplication.getContext(), id);
+    d.setBounds(-50, -50, 50, 50);
+    return d;
+  }
+
   //TODO This is a temporary default.
-  private final Drawable DRAWABLE = ContextCompat.getDrawable(UAApplication.getContext(), R.drawable.n_blank);
+  private final Drawable DRAWABLE = procureDrawable(R.drawable.n_blank);
   @Override
   public Drawable getDrawable() {
     return DRAWABLE;
