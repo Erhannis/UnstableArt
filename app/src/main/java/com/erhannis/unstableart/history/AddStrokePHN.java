@@ -1,5 +1,10 @@
 package com.erhannis.unstableart.history;
 
+import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
+
+import com.erhannis.unstableart.R;
+import com.erhannis.unstableart.UAApplication;
 import com.erhannis.unstableart.mechanics.State;
 import com.erhannis.unstableart.mechanics.layers.StrokePL;
 import com.erhannis.unstableart.mechanics.layers.UACanvas;
@@ -28,5 +33,11 @@ public class AddStrokePHN extends PaintAHN {
       ((StrokePL)state.iSelectedLayer).sizes.add(state.size);
       ((StrokePL)state.iSelectedLayer).tools.add((StrokeTool)state.tool);
     }
+  }
+
+  private final Drawable DRAWABLE = ContextCompat.getDrawable(UAApplication.getContext(), R.drawable.n_set_color);
+  @Override
+  public Drawable getDrawable() {
+    return DRAWABLE;
   }
 }

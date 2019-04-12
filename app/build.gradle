@@ -35,6 +35,9 @@ android {
     packagingOptions {
         exclude 'META-INF/LICENSE'
     }
+    lintOptions {
+        abortOnError false
+    }
 }
 
 repositories {
@@ -63,7 +66,7 @@ dependencies {
 
     implementation project(path: ':orderednetworkview')
     implementation 'com.erhannis.android:ekandroid:0.1.0-SNAPSHOT@aar'
-    implementation ('com.erhannis.android:distributed-ui:1.0@aar') {
+    implementation('com.erhannis.android:distributed-ui:1.0-SNAPSHOT@aar') {
         transitive = true
     }
 
