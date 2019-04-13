@@ -163,9 +163,21 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
       }
     }
 
+    double markerOffsetX = Math.sqrt(MeMath.sqr(NODE_SIZE) / 2);
+    double markerOffsetY = -Math.sqrt(MeMath.sqr(NODE_SIZE) / 2);
     for (Map.Entry<Marker, T> e : markerPositions.entrySet()) {
       Marker m = e.getKey();
+      T t = e.getValue();
+      if (t != null) {
+        MirrorNode<T> node = nodeToMirror.get(t);
 
+        //TODO Not sure how efficient this is.
+        canvas.save();
+        double[] pos = nodePositions.get(node);
+        canvas.translate((float)(pos[0]+markerOffsetX), (float)(pos[1]+markerOffsetY));
+        node.mirror.getDrawable().draw(canvas);
+        canvas.restore();
+      }
     }
 
     canvas.restore();
@@ -201,8 +213,6 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
           pending.remove(child); //TODO Not sure if necessary, not sure how much cost
           pending.push(child);
           nodePositions.put(child, new double[]{newX,newY});
-        }
-        if (!nodePositions.containsKey(child) || nodePositions.get(child)[1] > newY) {
         }
 
         newX += COL_SIZE;
@@ -240,6 +250,11 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
       MirrorNode<T> cm = new MirrorNode<>(child);
       pm.children.addFirst(cm);
     }
+  }
+
+  public void setMarkerPosition(Marker marker, T node) {
+    dirty = true;
+    markerPositions.put(marker, node);
   }
 
   //TODO Include marker positions?

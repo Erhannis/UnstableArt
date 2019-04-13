@@ -19,6 +19,8 @@ import com.erhannis.unstableart.history.SetColorSMHN;
 import com.erhannis.unstableart.mechanics.color.Color;
 import com.erhannis.unstableart.mechanics.color.DoublesColor;
 import com.erhannis.unstableart.mechanics.stroke.Stroke;
+import com.erhannis.unstableart.ui.history.EditMarker;
+import com.erhannis.unstableart.ui.history.ViewMarker;
 
 public class HistoryTestActivity extends AppCompatActivity {
 
@@ -59,8 +61,12 @@ public class HistoryTestActivity extends AppCompatActivity {
     s2_1.addChild(colorSMHN4);
     colorSMHN4.addChild(colorSMHN5);
     colorSMHN5.addChild(s2_2);
+    ViewMarker viewMarker = new ViewMarker();
+    EditMarker editMarker = new EditMarker();
 
-    onvHistory.reset(rootHN, new Marker[]{});
+    onvHistory.reset(rootHN, new Marker[]{viewMarker, editMarker});
+    onvHistory.setMarkerPosition(viewMarker, s2_4);
+    onvHistory.setMarkerPosition(editMarker, colorSMHN5);
 
     findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
       @Override

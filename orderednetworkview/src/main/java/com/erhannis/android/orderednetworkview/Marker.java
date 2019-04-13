@@ -1,6 +1,7 @@
 package com.erhannis.android.orderednetworkview;
 
 import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 
 public class Marker {
   public final Drawable icon;
