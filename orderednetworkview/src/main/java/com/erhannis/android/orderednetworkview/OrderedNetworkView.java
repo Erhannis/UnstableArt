@@ -133,6 +133,27 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
     while (!pending.isEmpty()) {
       MirrorNode<T> node = pending.remove();
 
+      { // Draw links
+        double i = 0;
+        double c = node.children.size();
+        for (MirrorNode<T> child : node.children) {
+          if (!completed.contains(child)) {
+            pending.push(child);
+            completed.add(child);
+          }
+          { // Draw link
+            Paint p = new Paint(linkPaint);
+            double priority = MeMath.interpolate(1, 0, i / c);
+            p.setColor(MeUtils.ARGBToInt(1, 1, priority, priority));
+            double[] a = nodePositions.get(node);
+            double[] b = nodePositions.get(child);
+            //TODO Clip out center of nodes
+            canvas.drawLine((float) a[0], (float) a[1], (float) b[0], (float) b[1], p);
+          }
+          i++;
+        }
+      }
+
       { // Draw node
         //TODO Not sure how efficient this is.
         canvas.save();
@@ -141,42 +162,24 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
         node.mirror.getDrawable().draw(canvas);
         canvas.restore();
       }
-
-
-      double i = 0;
-      double c = node.children.size();
-      for (MirrorNode<T> child : node.children) {
-        if (!completed.contains(child)) {
-          pending.push(child);
-          completed.add(child);
-        }
-        { // Draw link
-          Paint p = new Paint(linkPaint);
-          double priority = MeMath.interpolate(1, 0, i / c);
-          p.setColor(MeUtils.ARGBToInt(1, 1, priority, priority));
-          double[] a = nodePositions.get(node);
-          double[] b = nodePositions.get(child);
-          //TODO Clip out center of nodes
-          canvas.drawLine((float)a[0], (float)a[1], (float)b[0], (float)b[1], p);
-        }
-        i++;
-      }
     }
 
-    double markerOffsetX = Math.sqrt(MeMath.sqr(NODE_SIZE) / 2);
-    double markerOffsetY = -Math.sqrt(MeMath.sqr(NODE_SIZE) / 2);
-    for (Map.Entry<Marker, T> e : markerPositions.entrySet()) {
-      Marker m = e.getKey();
-      T t = e.getValue();
-      if (t != null) {
-        MirrorNode<T> node = nodeToMirror.get(t);
+    { // Draw markers
+      double markerOffsetX = Math.sqrt(MeMath.sqr(NODE_SIZE) / 8);
+      double markerOffsetY = -Math.sqrt(MeMath.sqr(NODE_SIZE) / 8);
+      for (Map.Entry<Marker, T> e : markerPositions.entrySet()) {
+        Marker m = e.getKey();
+        T t = e.getValue();
+        if (t != null) {
+          MirrorNode<T> node = nodeToMirror.get(t);
 
-        //TODO Not sure how efficient this is.
-        canvas.save();
-        double[] pos = nodePositions.get(node);
-        canvas.translate((float)(pos[0]+markerOffsetX), (float)(pos[1]+markerOffsetY));
-        node.mirror.getDrawable().draw(canvas);
-        canvas.restore();
+          //TODO Not sure how efficient this is.
+          canvas.save();
+          double[] pos = nodePositions.get(node);
+          canvas.translate((float) (pos[0] + markerOffsetX), (float) (pos[1] + markerOffsetY));
+          m.icon.draw(canvas);
+          canvas.restore();
+        }
       }
     }
 

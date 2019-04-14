@@ -35,7 +35,7 @@ public class AddStrokePHN extends PaintAHN {
     }
   }
 
-  private final Drawable DRAWABLE = procureDrawable(R.drawable.n_add_stroke);
+  private static final Drawable DRAWABLE = procureDrawable(R.drawable.n_add_stroke);
   @Override
   public Drawable getDrawable() {
     return DRAWABLE;
