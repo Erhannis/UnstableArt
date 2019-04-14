@@ -424,9 +424,7 @@ public class FullscreenActivity extends HubActivity implements
       @Override
       public void onLongPress(MotionEvent e) {
         //TODO Map
-        mViewportMatrix.reset();
-        mViewportMatrixInverse.reset();
-        scheduleRedraw();
+        showToast("Long press");
       }
 
       @Override
@@ -446,8 +444,10 @@ public class FullscreenActivity extends HubActivity implements
       @Override
       public boolean onDoubleTap(MotionEvent e) {
         //TODO Map
-        showToast("Double tap");
-        return false;
+        mViewportMatrix.reset();
+        mViewportMatrixInverse.reset();
+        scheduleRedraw();
+        return true;
       }
 
       @Override

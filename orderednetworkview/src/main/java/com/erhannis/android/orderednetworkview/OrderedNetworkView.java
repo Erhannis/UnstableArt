@@ -2,6 +2,7 @@ package com.erhannis.android.orderednetworkview;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -9,6 +10,9 @@ import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.util.Pair;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 
 import com.erhannis.mathnstuff.MeMath;
@@ -30,10 +34,9 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
   private static final double BG_TONE = 0.5;
   private static final int BG_COLOR = MeUtils.ARGBToInt(1, BG_TONE, BG_TONE, BG_TONE);
 
-  public int dx = 0;
-  public int dy = 0;
-  public float sx = 1;
-  public float sy = 1;
+  private boolean viewportInitialized = false;
+  private Matrix mViewportMatrix = new Matrix();
+  private Matrix mViewportMatrixInverse = new Matrix();
 
   private MirrorNode<T> root; //TODO Final?
   private final HashMap<Marker, T> markerPositions = new HashMap<>();
@@ -45,6 +48,7 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
 
   public OrderedNetworkView(Context context, AttributeSet attributeSet) {
     super(context, attributeSet);
+    setInteractions();
   }
 
   protected HashMap<T, MirrorNode<T>> mirrorRoot(MirrorNode<T> root) {
@@ -96,28 +100,31 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
       canvas.drawPaint(bucket);
 
       // Center canvas
-      //TODO Will have manual zoom instead
-      Rect clip = canvas.getClipBounds();
-      RectF vpSize = new RectF(netSize);
-      vpSize.top -= NODE_SIZE;
-      vpSize.right += NODE_SIZE;
-      vpSize.bottom += NODE_SIZE;
-      vpSize.left -= NODE_SIZE;
+      if (!viewportInitialized) {
+        Rect clip = canvas.getClipBounds();
+        RectF vpSize = new RectF(netSize);
+        vpSize.top -= NODE_SIZE;
+        vpSize.right += NODE_SIZE;
+        vpSize.bottom += NODE_SIZE;
+        vpSize.left -= NODE_SIZE;
 
-      if (vpSize.width() > vpSize.height()) {
-        // Fit width
-        float xs = clip.width() / vpSize.width();
-        canvas.scale(xs, xs);
-      } else {
-        // Fit height
-        float ys = clip.height() / vpSize.height();
-        canvas.scale(ys, ys);
+        float scale;
+        if (vpSize.width() > vpSize.height()) {
+          // Fit width
+          scale = clip.width() / vpSize.width();
+        } else {
+          // Fit height
+          scale = clip.height() / vpSize.height();
+        }
+        mViewportMatrix.postScale(scale, scale);
+        mViewportMatrix.postTranslate((clip.width() / 2f), scale * (clip.top - vpSize.top)); //TODO I think this line is wrong in a way that doesn't show itself in the current way it's being used
+        viewportInitialized = true;
+        if (!mViewportMatrix.invert(mViewportMatrixInverse)) {
+          throw new IllegalStateException("Viewport matrix non-invertible!");
+        }
       }
-      clip = canvas.getClipBounds();
-      canvas.translate(clip.width() / 2f, clip.top - vpSize.top);
 
-      canvas.scale(sx, sy);
-      canvas.translate(dx, dy);
+      canvas.concat(mViewportMatrix);
     }
 
 
@@ -269,5 +276,128 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
     for (Marker m : markers) {
       markerPositions.put(m, null);
     }
+  }
+
+  //// Gestures
+
+  private void setInteractions() {
+    final GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.OnGestureListener() {
+      @Override
+      public boolean onDown(MotionEvent e) {
+        return false;
+      }
+
+      @Override
+      public void onShowPress(MotionEvent e) {
+        //TODO Map
+      }
+
+      @Override
+      public boolean onSingleTapUp(MotionEvent e) {
+        //TODO Map
+        return false;
+      }
+
+      @Override
+      public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        //TODO Map
+        mViewportMatrix.postTranslate(-distanceX, -distanceY);
+        if (!mViewportMatrix.invert(mViewportMatrixInverse)) {
+          throw new IllegalStateException("Viewport matrix non-invertible!");
+        }
+        invalidate();
+        return true;
+      }
+
+      @Override
+      public void onLongPress(MotionEvent e) {
+        //TODO Map
+        float[] xy = {e.getX(), e.getY()};
+        mViewportMatrixInverse.mapPoints(xy);
+      }
+
+      @Override
+      public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        //TODO Map
+        return false;
+      }
+    });
+    gestureDetector.setOnDoubleTapListener(new GestureDetector.OnDoubleTapListener() {
+      @Override
+      public boolean onSingleTapConfirmed(MotionEvent e) {
+        //TODO Map
+        return false;
+      }
+
+      @Override
+      public boolean onDoubleTap(MotionEvent e) {
+        //TODO Map
+        mViewportMatrix.reset();
+        mViewportMatrixInverse.reset();
+        viewportInitialized = false;
+        invalidate();
+        return true;
+      }
+
+      @Override
+      public boolean onDoubleTapEvent(MotionEvent e) {
+        //TODO Map
+        return false;
+      }
+    });
+    gestureDetector.setIsLongpressEnabled(true);
+    final ScaleGestureDetector scaleGestureDetector = new ScaleGestureDetector(getContext(), new ScaleGestureDetector.OnScaleGestureListener() {
+      private float lastFocusX;
+      private float lastFocusY;
+
+      @Override
+      public boolean onScaleBegin(ScaleGestureDetector detector) {
+        lastFocusX = detector.getFocusX();
+        lastFocusY = detector.getFocusY();
+        return true;
+      }
+
+      @Override
+      public boolean onScale(ScaleGestureDetector detector) {
+        Matrix transformationMatrix = new Matrix();
+        float focusX = detector.getFocusX();
+        float focusY = detector.getFocusY();
+
+        //Zoom focus is where the fingers are centered,
+        transformationMatrix.postTranslate(-focusX, -focusY);
+
+        transformationMatrix.postScale(detector.getScaleFactor(), detector.getScaleFactor());
+
+        /* Adding focus shift to allow for scrolling with two pointers down. Remove it to skip this functionality. This could be done in fewer lines, but for clarity I do it this way here */
+        //Edited after comment by chochim
+        float focusShiftX = focusX - lastFocusX;
+        float focusShiftY = focusY - lastFocusY;
+        transformationMatrix.postTranslate(focusX + focusShiftX, focusY + focusShiftY);
+        mViewportMatrix.postConcat(transformationMatrix);
+        if (!mViewportMatrix.invert(mViewportMatrixInverse)) {
+          throw new IllegalStateException("Viewport matrix non-invertible!");
+        }
+        lastFocusX = focusX;
+        lastFocusY = focusY;
+
+        invalidate();
+        return true;
+      }
+
+      @Override
+      public void onScaleEnd(ScaleGestureDetector detector) {
+      }
+    });
+    setOnTouchListener(new OnTouchListener() {
+      @Override
+      public boolean onTouch(View v, MotionEvent event) {
+        scaleGestureDetector.onTouchEvent(event);
+        if (!scaleGestureDetector.isInProgress()) {
+          //TODO May, for instance, miss touchUp events
+          gestureDetector.onTouchEvent(event);
+        }
+        return true;
+      }
+    });
   }
 }
