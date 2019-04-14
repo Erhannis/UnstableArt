@@ -12,7 +12,7 @@ public class EditMarker extends UAMarker {
     }
 
     private static Drawable alterDrawable(Drawable drawable) {
-        drawable.setColorFilter(0xFF00FF00, PorterDuff.Mode.SRC_IN);
+        drawable.setColorFilter(0xFF00FF00, PorterDuff.Mode.SRC_IN); //TODO Setting
         return drawable;
     }
 }

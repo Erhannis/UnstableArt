@@ -129,8 +129,8 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
 
 
     Paint linkPaint = new Paint();
-    linkPaint.setColor(0xFFFFFFFF);
-    linkPaint.setStrokeWidth(0);
+    linkPaint.setColor(0xFFFFFFFF); //TODO Setting
+    linkPaint.setStrokeWidth(0); //TODO Setting
 
     LinkedList<MirrorNode<T>> pending = new LinkedList<>();
     HashSet<MirrorNode<T>> completed = new HashSet<>();
@@ -150,8 +150,8 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
           }
           { // Draw link
             Paint p = new Paint(linkPaint);
-            double priority = MeMath.interpolate(1, 0, i / c);
-            p.setColor(MeUtils.ARGBToInt(1, 1, priority, priority));
+            double priority = MeMath.interpolate(1, 0, i / c); //TODO Setting
+            p.setColor(MeUtils.ARGBToInt(1, 1, priority, priority)); //TODO Setting
             double[] a = nodePositions.get(node);
             double[] b = nodePositions.get(child);
             //TODO Clip out center of nodes
