@@ -6,10 +6,9 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
+import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.Pair;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -20,6 +19,7 @@ import com.erhannis.mathnstuff.MeUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -27,6 +27,132 @@ import java.util.Map;
  * //TODO There might be a better name
  */
 public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
+  public static interface OnDropMarkerListener<T> {
+    public void onDropMarker(Marker m, T node);
+  }
+
+  //TODO Ehhh.  This seems...weird and confused.
+  private class MetaUI {
+    private static final float UI_ITEM_SIZE = (float)(NODE_SIZE * 1.5);
+
+    private transient Marker selectedMarker = null;
+    private transient boolean reset = true;
+    private transient final LinkedHashMap<Marker, float[]> markerPositions = new LinkedHashMap<>();
+
+    public void setMarkers(Marker[] markers) {
+      reset = true;
+      markerPositions.clear();
+      for (Marker m : markers) {
+        markerPositions.put(m, new float[]{0,0});
+      }
+      selectedMarker = null;
+    }
+
+    public void considerMarker(Marker marker) {
+      if (!markerPositions.containsKey(marker)) {
+        reset = true;
+        markerPositions.put(marker, new float[]{0,0});
+        //TODO If interacting, cancel?
+      }
+    }
+
+    private RectF getUiBox() {
+      return getUiBox(new Rect(0, 0, OrderedNetworkView.this.getWidth(), OrderedNetworkView.this.getHeight()));
+    }
+
+    private RectF getUiBox(Rect viewport) {
+      return new RectF(viewport.right - UI_ITEM_SIZE, viewport.top, viewport.right, viewport.top + (UI_ITEM_SIZE * markerPositions.size())); //TODO Setting
+    }
+
+    private void resetMarkerPositions(Rect viewport) {
+      RectF uiBox = getUiBox(viewport);
+      float x = uiBox.centerX();
+      float y = uiBox.top + (UI_ITEM_SIZE / 2);
+      for (Map.Entry<Marker, float[]> e : markerPositions.entrySet()) {
+        e.getValue()[0] = x;
+        e.getValue()[1] = y;
+        y += UI_ITEM_SIZE;
+      }
+    }
+
+    public boolean doesStartMetaInteraction(MotionEvent event) {
+      //TODO Pointer index?
+      RectF uiBox = getUiBox();
+      boolean result = ((event.getActionMasked() == MotionEvent.ACTION_DOWN) && (uiBox.contains(event.getX(), event.getY())));
+      return result;
+    }
+
+    /**
+     *
+     * @param event
+     * @return if the meta-interaction is still underway
+     */
+    public boolean doMetaInteraction(MotionEvent event) {
+      //TODO Double tap to zoom to marker?
+      OrderedNetworkView.this.invalidate();
+      float[] xy = new float[]{event.getX(), event.getY()};
+      switch (event.getActionMasked()) {
+        case MotionEvent.ACTION_UP:
+          reset = true;
+          if (selectedMarker != null) {
+            OrderedNetworkView.this.metaDropMarkerAtSpot(selectedMarker, xy);
+          }
+          return false;
+        case MotionEvent.ACTION_DOWN:
+          selectedMarker = getNearestMarker(xy);
+          return true;
+        case MotionEvent.ACTION_MOVE: //TODO What about basically anything else?
+          if (selectedMarker != null) {
+            float[] mxy = markerPositions.get(selectedMarker);
+            mxy[0] = xy[0];
+            mxy[1] = xy[1];
+          }
+          return true;
+        default:
+          Log.d(TAG, "Unhandled action: " + event.getActionMasked());
+        case MotionEvent.ACTION_CANCEL:
+          reset = true;
+          selectedMarker = null;
+          return false;
+      }
+    }
+
+    private Marker getNearestMarker(float[] xy) {
+      Marker best = null;
+      float dist2 = Float.POSITIVE_INFINITY;
+      for (Map.Entry<Marker, float[]> e : markerPositions.entrySet()) {
+        float dx = (e.getValue()[0] - xy[0]);
+        float dy = (e.getValue()[1] - xy[1]);
+        float newDist2 = (dx*dx) + (dy*dy);
+        if (newDist2 < dist2) {
+          best = e.getKey();
+          dist2 = newDist2;
+        }
+      }
+      return best;
+    }
+
+    public void draw(Canvas canvas) {
+      if (reset) {
+        resetMarkerPositions(canvas.getClipBounds());
+        reset = false;
+      }
+      Paint uiBg = new Paint();
+      uiBg.setColor(0xFF000000); //TODO Setting
+      RectF uiBox = getUiBox(canvas.getClipBounds());
+      canvas.drawRect(uiBox, uiBg);
+      for (Map.Entry<Marker, float[]> e : markerPositions.entrySet()) {
+        canvas.save();
+        canvas.translate(e.getValue()[0], e.getValue()[1]);
+        canvas.scale(2f, 2f);
+        e.getKey().icon.draw(canvas);
+        canvas.restore();
+      }
+    }
+  }
+
+  private static final String TAG = "OrderedNetworkView";
+
   private static final double NODE_SIZE = 100; //TODO Is this where this should be noted?  Should it be hardcoded at all?
   private static final double ROW_SIZE = 150;
   private static final double COL_SIZE = 120;
@@ -39,16 +165,27 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
   private Matrix mViewportMatrixInverse = new Matrix();
 
   private MirrorNode<T> root; //TODO Final?
-  private final HashMap<Marker, T> markerPositions = new HashMap<>();
+  private final LinkedHashMap<Marker, T> markerPositions = new LinkedHashMap<>();
   private HashMap<T, MirrorNode<T>> nodeToMirror;
 
   private transient boolean dirty = true;
   private transient RectF netSize = new RectF(0,0,0,0);
   private transient HashMap<MirrorNode<T>, double[]> nodePositions = new HashMap<>();
 
+  private MetaUI metaUI = new MetaUI();
+
+  private final Handler mainThread;
+
+  private OnDropMarkerListener<T> onDropMarkerListener;
+
   public OrderedNetworkView(Context context, AttributeSet attributeSet) {
     super(context, attributeSet);
     setInteractions();
+    mainThread = new Handler();
+  }
+
+  public void setOnDropMarkerListener(OnDropMarkerListener<T> listener) {
+    onDropMarkerListener = listener;
   }
 
   protected HashMap<T, MirrorNode<T>> mirrorRoot(MirrorNode<T> root) {
@@ -80,7 +217,6 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
   @Override
   protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
     super.onLayout(changed, left, top, right, bottom);
-    System.out.println("layout " + changed + " [" + left + ", " + top + ", " + right + ", " + bottom + "]");
   }
 
   @Override
@@ -90,6 +226,7 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
     }
     if (dirty) {
       calculatePositions();
+      dirty = false;
     }
 
     canvas.save();
@@ -191,6 +328,10 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
     }
 
     canvas.restore();
+
+    canvas.save();
+    metaUI.draw(canvas);
+    canvas.restore();
   }
 
   //TODO Fix.  There are many cases leading to overlapping nodes.
@@ -250,6 +391,7 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
       throw new IllegalArgumentException("parent node was not found in net");
     }
     dirty = true;
+    invalidate();
     if (nodeToMirror.containsKey(child)) {
       MirrorNode<T> pm = nodeToMirror.get(parent);
       MirrorNode<T> cm = nodeToMirror.get(child);
@@ -264,18 +406,22 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
 
   public void setMarkerPosition(Marker marker, T node) {
     dirty = true;
+    invalidate();
     markerPositions.put(marker, node);
+    metaUI.considerMarker(marker);
   }
 
   //TODO Include marker positions?
   public void reset(T root, Marker[] markers) {
     dirty = true;
+    invalidate();
     this.root = new MirrorNode<>(root);
     this.nodeToMirror = mirrorRoot(this.root);
 
     for (Marker m : markers) {
       markerPositions.put(m, null);
     }
+    metaUI.setMarkers(markers);
   }
 
   //// Gestures
@@ -389,15 +535,59 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
       }
     });
     setOnTouchListener(new OnTouchListener() {
+      private boolean isInteractingMeta = false;
       @Override
       public boolean onTouch(View v, MotionEvent event) {
-        scaleGestureDetector.onTouchEvent(event);
-        if (!scaleGestureDetector.isInProgress()) {
-          //TODO May, for instance, miss touchUp events
-          gestureDetector.onTouchEvent(event);
+        if (isInteractingMeta) {
+          isInteractingMeta = metaUI.doMetaInteraction(event);
+        } else {
+          if (metaUI.doesStartMetaInteraction(event)) {
+            isInteractingMeta = metaUI.doMetaInteraction(event);
+          } else {
+            scaleGestureDetector.onTouchEvent(event);
+            if (!scaleGestureDetector.isInProgress()) {
+              //TODO May, for instance, miss touchUp events
+              gestureDetector.onTouchEvent(event);
+            }
+          }
         }
         return true;
       }
     });
+  }
+
+  private void metaDropMarkerAtSpot(final Marker m, float[] dropPos) {
+    mViewportMatrixInverse.mapPoints(dropPos);
+    final MirrorNode<T> node = getNearestNode(dropPos);
+    double[] nodePos = nodePositions.get(node);
+    double dx = (nodePos[0] - dropPos[0]);
+    double dy = (nodePos[1] - dropPos[1]);
+    double dist = Math.sqrt((dx*dx) + (dy*dy));
+    if (dist <= NODE_SIZE * 1.5) { //TODO Setting
+      mainThread.post(new Runnable() {
+        @Override
+        public void run() {
+          OnDropMarkerListener<T> l = onDropMarkerListener;
+          if (l != null) {
+            l.onDropMarker(m, node.mirror);
+          }
+        }
+      });
+    }
+  }
+
+  private MirrorNode<T> getNearestNode(float[] xy) {
+    MirrorNode<T> best = null;
+    double dist2 = Float.POSITIVE_INFINITY;
+    for (Map.Entry<MirrorNode<T>, double[]> e : nodePositions.entrySet()) {
+      double dx = (e.getValue()[0] - xy[0]);
+      double dy = (e.getValue()[1] - xy[1]);
+      double newDist2 = (dx*dx) + (dy*dy);
+      if (newDist2 < dist2) {
+        best = e.getKey();
+        dist2 = newDist2;
+      }
+    }
+    return best;
   }
 }

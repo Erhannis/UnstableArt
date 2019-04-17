@@ -1,22 +1,16 @@
 package com.erhannis.unstableart;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.TextView;
 
 import com.erhannis.android.orderednetworkview.Marker;
 import com.erhannis.android.orderednetworkview.OrderedNetworkView;
-import com.erhannis.mathnstuff.MeMath;
-import com.erhannis.mathnstuff.MeUtils;
 import com.erhannis.unstableart.history.AddStrokePHN;
 import com.erhannis.unstableart.history.HistoryNode;
 import com.erhannis.unstableart.history.RootHN;
 import com.erhannis.unstableart.history.SetColorSMHN;
-import com.erhannis.unstableart.mechanics.color.Color;
 import com.erhannis.unstableart.mechanics.color.DoublesColor;
 import com.erhannis.unstableart.mechanics.stroke.Stroke;
 import com.erhannis.unstableart.ui.history.EditMarker;
@@ -67,6 +61,13 @@ public class HistoryTestActivity extends AppCompatActivity {
     onvHistory.reset(rootHN, new Marker[]{viewMarker, editMarker});
     onvHistory.setMarkerPosition(viewMarker, s2_4);
     onvHistory.setMarkerPosition(editMarker, colorSMHN5);
+
+    onvHistory.setOnDropMarkerListener(new OrderedNetworkView.OnDropMarkerListener<HistoryNode>() {
+      @Override
+      public void onDropMarker(Marker m, HistoryNode node) {
+        onvHistory.setMarkerPosition(m, node);
+      }
+    });
 
     findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
       @Override
