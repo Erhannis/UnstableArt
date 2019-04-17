@@ -17,6 +17,7 @@ import android.view.View;
 import com.erhannis.mathnstuff.MeMath;
 import com.erhannis.mathnstuff.MeUtils;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -39,7 +40,7 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
     private transient boolean reset = true;
     private transient final LinkedHashMap<Marker, float[]> markerPositions = new LinkedHashMap<>();
 
-    public void setMarkers(Marker[] markers) {
+    public void setMarkers(Collection<Marker> markers) {
       reset = true;
       markerPositions.clear();
       for (Marker m : markers) {
@@ -188,7 +189,11 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
     onDropMarkerListener = listener;
   }
 
-  protected HashMap<T, MirrorNode<T>> mirrorRoot(MirrorNode<T> root) {
+  public LinkedHashMap<Marker, T> getMarkerPositions() {
+    return new LinkedHashMap<>(markerPositions);
+  }
+
+  protected static <T extends Node<T>> HashMap<T, MirrorNode<T>> mirrorRoot(MirrorNode<T> root) {
     LinkedList<MirrorNode<T>> pending = new LinkedList<>();
     HashMap<T, MirrorNode<T>> added = new HashMap<>();
 
@@ -400,6 +405,7 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
     } else {
       MirrorNode<T> pm = nodeToMirror.get(parent);
       MirrorNode<T> cm = new MirrorNode<>(child);
+      nodeToMirror.put(child, cm);
       pm.children.addFirst(cm);
     }
   }
@@ -412,16 +418,19 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
   }
 
   //TODO Include marker positions?
-  public void reset(T root, Marker[] markers) {
+  public void reset(T root, LinkedHashMap<Marker, T> markerPositions) {
     dirty = true;
     invalidate();
     this.root = new MirrorNode<>(root);
     this.nodeToMirror = mirrorRoot(this.root);
 
-    for (Marker m : markers) {
-      markerPositions.put(m, null);
-    }
-    metaUI.setMarkers(markers);
+    this.markerPositions.clear();
+    this.markerPositions.putAll(markerPositions);
+    metaUI.setMarkers(markerPositions.keySet());
+  }
+
+  public void refresh() {
+    reset(root.mirror, getMarkerPositions());
   }
 
   //// Gestures

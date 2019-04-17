@@ -1,11 +1,13 @@
 package com.erhannis.unstableart;
 
 import android.os.Bundle;
+import android.support.v4.util.ObjectsCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import com.erhannis.android.orderednetworkview.Marker;
+import com.erhannis.android.orderednetworkview.Node;
 import com.erhannis.android.orderednetworkview.OrderedNetworkView;
 import com.erhannis.unstableart.history.AddStrokePHN;
 import com.erhannis.unstableart.history.HistoryNode;
@@ -15,6 +17,9 @@ import com.erhannis.unstableart.mechanics.color.DoublesColor;
 import com.erhannis.unstableart.mechanics.stroke.Stroke;
 import com.erhannis.unstableart.ui.history.EditMarker;
 import com.erhannis.unstableart.ui.history.ViewMarker;
+
+import java.util.LinkedHashMap;
+import java.util.Objects;
 
 public class HistoryTestActivity extends AppCompatActivity {
 
@@ -58,14 +63,49 @@ public class HistoryTestActivity extends AppCompatActivity {
     ViewMarker viewMarker = new ViewMarker();
     EditMarker editMarker = new EditMarker();
 
-    onvHistory.reset(rootHN, new Marker[]{viewMarker, editMarker});
-    onvHistory.setMarkerPosition(viewMarker, s2_4);
-    onvHistory.setMarkerPosition(editMarker, colorSMHN5);
+    LinkedHashMap<Marker, HistoryNode> markers = new LinkedHashMap<>();
+    markers.put(viewMarker, s2_4);
+    markers.put(editMarker, colorSMHN5);
+    onvHistory.reset(rootHN, markers);
 
     onvHistory.setOnDropMarkerListener(new OrderedNetworkView.OnDropMarkerListener<HistoryNode>() {
       @Override
       public void onDropMarker(Marker m, HistoryNode node) {
+        //TODO Document this
+        HistoryNode prior = onvHistory.getMarkerPositions().get(m);
+        if (ObjectsCompat.equals(m, viewMarker) && prior.children.contains(node)) {
+          // They're dropping the view marker on a child node, rather than using redo - they probably want to prefer that link
+          prior.addChild(node);
+          onvHistory.doAddLink(prior, node);
+        }
+
         onvHistory.setMarkerPosition(m, node);
+
+        { // Ensure consistency of view/edit markers
+          LinkedHashMap<Marker, HistoryNode> markerPositions = onvHistory.getMarkerPositions();
+          HistoryNode editNode = markerPositions.get(editMarker);
+          HistoryNode viewNode = markerPositions.get(viewMarker);
+          if (!ObjectsCompat.equals(editNode, viewNode) && !Node.isAncestor(editNode, viewNode)) {
+            if (ObjectsCompat.equals(m, viewMarker)) {
+              onvHistory.setMarkerPosition(editMarker, viewNode);
+            } else {
+              onvHistory.setMarkerPosition(viewMarker, editNode);
+            }
+          }
+        }
+        { // Update path preference
+          LinkedHashMap<Marker, HistoryNode> markerPositions = onvHistory.getMarkerPositions();
+          HistoryNode editNode = markerPositions.get(editMarker);
+          HistoryNode viewNode = markerPositions.get(viewMarker);
+          //TODO This is the simplest reordering I have, but it may not be the most natural one.  Consider, after testing.
+          boolean changed = false;
+          changed |= Node.preferPath(rootHN, editNode);
+          changed |= Node.preferPath(editNode, viewNode);
+          if (changed) {
+            System.err.println("ordering changed; refreshing view");
+            onvHistory.refresh();
+          }
+        }
       }
     });
 
