@@ -1,5 +1,7 @@
 package com.erhannis.unstableart.history;
 
+import android.support.v4.util.ObjectsCompat;
+
 import com.erhannis.unstableart.mechanics.FullState;
 import com.erhannis.unstableart.mechanics.State;
 import com.erhannis.unstableart.mechanics.color.DoublesColor;
@@ -203,13 +205,13 @@ public class HistoryManager implements Serializable {
    *  the returned FullState or any subfields, on pain of threading issues.
    */
   public synchronized FullState rebuild() {
-    HistoryNode curr = selected;
+    HistoryNode curr = root;
     ArrayList<HistoryNode> chain = new ArrayList<HistoryNode>();
-    while (curr != null) {
+    chain.add(curr);
+    while (!curr.children.isEmpty() && !ObjectsCompat.equals(curr, selected)) {
+      curr = curr.children.getFirst();
       chain.add(curr);
-      curr = curr.preferredParent;
     }
-    Collections.reverse(chain);
     // Now we have a list of actions, from start to finish
     // Set up current layer structure
     UACanvas iCanvas = root.aCanvas.instantiate();

@@ -105,6 +105,7 @@ public class HistoryTestActivity extends AppCompatActivity {
             System.err.println("ordering changed; refreshing view");
             onvHistory.refresh();
           }
+          HistoryNode.rebuildPreferredParents(rootHN);
         }
       }
     });
