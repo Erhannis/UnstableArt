@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -15,30 +14,25 @@ import android.os.Handler;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GestureDetectorCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.erhannis.android.distributedui.DistributedUIFragmentChange;
 import com.erhannis.android.distributedui.FragmentHandle;
 import com.erhannis.android.distributedui.HubActivity;
 import com.erhannis.mathnstuff.TimeoutTimer;
@@ -105,10 +99,10 @@ public class FullscreenActivity extends HubActivity implements
   private SurfaceView surf;
   private SurfaceHolder mSurfaceHolder;
 
-  private DrawerLayout mDrawerLayout;
-  private ActionBarDrawerToggle mDrawerToggle;
-  private LinearLayout mLeftDrawerView;
-  private LinearLayout mRightDrawerView;
+  private LinearLayout mTopLeftDrawerView;
+  private LinearLayout mBottomLeftDrawerView;
+  private LinearLayout mTopRightDrawerView;
+  private LinearLayout mBottomRightDrawerView;
 
   private LayersFragment<String> mLayersFragment;
   private ColorsFragment mColorsFragment;
@@ -187,42 +181,43 @@ public class FullscreenActivity extends HubActivity implements
   protected void onStart() {
     super.onStart();
 
-    if(mDrawerLayout == null || mLeftDrawerView == null || mRightDrawerView == null || mDrawerToggle == null) {
+    if(mTopLeftDrawerView == null || mBottomLeftDrawerView == null || mTopRightDrawerView == null || mBottomRightDrawerView == null) {
       // Configure navigation drawer
-      mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-      mLeftDrawerView = (LinearLayout)findViewById(R.id.left_drawer);
-      mRightDrawerView = (LinearLayout)findViewById(R.id.right_drawer);
-      mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
+      mTopLeftDrawerView = (LinearLayout)findViewById(R.id.top_left_drawer);
+      mBottomLeftDrawerView = (LinearLayout)findViewById(R.id.bottom_left_drawer);
+      mTopRightDrawerView = (LinearLayout)findViewById(R.id.top_right_drawer);
+      mBottomRightDrawerView = (LinearLayout)findViewById(R.id.bottom_right_drawer);
 
-        /** Called when a drawer has settled in a completely closed state. */
-        public void onDrawerClosed(View drawerView) {
-          if(drawerView.equals(mLeftDrawerView)) {
-            getSupportActionBar().setTitle(getTitle());
-            supportInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-            mDrawerToggle.syncState();
+      // This is simultaneously elegant and horrifying, like a zombie ballerina
+      for (View[] buttonDrawerPair : new View[][]{
+              {findViewById(R.id.btnTopLeftDrawer), mTopLeftDrawerView},
+              {findViewById(R.id.btnBottomLeftDrawer), mBottomLeftDrawerView},
+              {findViewById(R.id.btnTopRightDrawer), mTopRightDrawerView},
+              {findViewById(R.id.btnBottomRightDrawer), mBottomRightDrawerView}
+      }) {
+        Button button = (Button)buttonDrawerPair[0];
+        View drawer = buttonDrawerPair[1];
+        button.setOnClickListener(new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            switch (drawer.getVisibility()) {
+              case View.VISIBLE:
+                button.setText("OPEN");
+                drawer.setVisibility(View.GONE);
+                break;
+              case View.INVISIBLE:
+              case View.GONE:
+              default:
+                button.setText("CLOSE");
+                drawer.setVisibility(View.VISIBLE);
+                break;
+            }
           }
-        }
-
-        /** Called when a drawer has settled in a completely open state. */
-        public void onDrawerOpened(View drawerView) {
-          if(drawerView.equals(mLeftDrawerView)) {
-            getSupportActionBar().setTitle(getString(R.string.app_name));
-            supportInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-            mDrawerToggle.syncState();
-          }
-        }
-
-        @Override
-        public void onDrawerSlide(View drawerView, float slideOffset) {
-          // Avoid normal indicator glyph behaviour. This is to avoid glyph movement when opening the right drawer
-          //super.onDrawerSlide(drawerView, slideOffset);
-        }
-      };
+        });
+      }
 
       initToolDrawer();
       initActionDrawer();
-
-      mDrawerLayout.addDrawerListener(mDrawerToggle); // Set the drawer toggle as the DrawerListener
     }
 
     scheduleRedraw();
@@ -237,10 +232,10 @@ public class FullscreenActivity extends HubActivity implements
     layersContainer.setId(View.generateViewId());
     layersContainer.setOrientation(LinearLayout.VERTICAL);
 
-    mLeftDrawerView.addView(colorsContainer);
-    mLeftDrawerView.addView(new Spacer(this, 0xFF000000));
-    mLeftDrawerView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
-    mLeftDrawerView.addView(layersContainer);
+    mTopLeftDrawerView.addView(colorsContainer);
+    mTopLeftDrawerView.addView(new Spacer(this, 0xFF000000));
+    mTopLeftDrawerView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
+    mTopLeftDrawerView.addView(layersContainer);
 
     FragmentManager fragMan = getSupportFragmentManager();
     FragmentTransaction fragTransaction = fragMan.beginTransaction();
@@ -258,7 +253,7 @@ public class FullscreenActivity extends HubActivity implements
 
     fragTransaction.commit();
 
-    mLeftDrawerView.setOnTouchListener(new View.OnTouchListener() {
+    mTopLeftDrawerView.setOnTouchListener(new View.OnTouchListener() {
       @Override
       public boolean onTouch(View v, MotionEvent event) {
         return true;
@@ -275,10 +270,10 @@ public class FullscreenActivity extends HubActivity implements
     toolsContainer.setId(View.generateViewId());
     toolsContainer.setOrientation(LinearLayout.VERTICAL);
 
-    mRightDrawerView.addView(actionsContainer);
-    mRightDrawerView.addView(new Spacer(this, 0xFF000000));
-    mRightDrawerView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
-    mRightDrawerView.addView(toolsContainer);
+    mTopRightDrawerView.addView(actionsContainer);
+    mTopRightDrawerView.addView(new Spacer(this, 0xFF000000));
+    mTopRightDrawerView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
+    mTopRightDrawerView.addView(toolsContainer);
 
     FragmentManager fragMan = getSupportFragmentManager();
     FragmentTransaction fragTransaction = fragMan.beginTransaction();
@@ -291,7 +286,7 @@ public class FullscreenActivity extends HubActivity implements
 
     fragTransaction.commit();
 
-    mRightDrawerView.setOnTouchListener(new View.OnTouchListener() {
+    mTopRightDrawerView.setOnTouchListener(new View.OnTouchListener() {
       @Override
       public boolean onTouch(View v, MotionEvent event) {
         return true;
@@ -672,50 +667,6 @@ public class FullscreenActivity extends HubActivity implements
     //viewport.drawText("" + debugInfo, 10, 10, new Paint());
 
     return result;
-  }
-
-  @Override
-  protected void onPostCreate(Bundle savedInstanceState) {
-    super.onPostCreate(savedInstanceState);
-
-    mDrawerToggle.syncState();
-    // Trigger the initial hide() shortly after the activity has been
-    // created, to briefly hint to the user that UI controls
-    // are available.
-    delayedHide(100);
-  }
-
-  @Override
-  public void onConfigurationChanged(Configuration newConfig) {
-    super.onConfigurationChanged(newConfig);
-
-    mDrawerToggle.onConfigurationChanged(newConfig);
-  }
-
-  @Override
-  public boolean onPrepareOptionsMenu(Menu menu) {
-    //TODO What does this have to do with the left drawer?
-    // If the nav drawer is open, hide action items related to the content view
-    for(int i = 0; i< menu.size(); i++)
-      menu.getItem(i).setVisible(!mDrawerLayout.isDrawerOpen(mLeftDrawerView));
-
-    return super.onPrepareOptionsMenu(menu);
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    //TODO What does this have to do with the right drawer?
-    switch(item.getItemId()) {
-      case android.R.id.home:
-        mDrawerToggle.onOptionsItemSelected(item);
-
-        if(mDrawerLayout.isDrawerOpen(mRightDrawerView))
-          mDrawerLayout.closeDrawer(mRightDrawerView);
-
-        return true;
-    }
-
-    return super.onOptionsItemSelected(item);
   }
 
   @Override

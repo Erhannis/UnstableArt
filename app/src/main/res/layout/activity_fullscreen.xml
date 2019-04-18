@@ -1,4 +1,4 @@
-<android.support.v4.widget.DrawerLayout
+<RelativeLayout
 xmlns:android="http://schemas.android.com/apk/res/android"
 xmlns:tools="http://schemas.android.com/tools"
 android:id="@+id/drawer_layout"
@@ -6,33 +6,101 @@ android:layout_width="match_parent"
 android:layout_height="match_parent"
 android:background="#0099cc"
 tools:context="com.erhannis.unstableart.FullscreenActivity">
+    <View
+        android:id="@+id/anchor_top_right"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="invisible"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        />
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:orientation="vertical"
                   android:layout_width="match_parent"
-                  android:layout_height="match_parent">
+                  android:layout_height="match_parent"
+                  android:layout_alignParentTop="true"
+                  android:layout_alignParentBottom="true"
+                  android:layout_alignParentStart="true"
+                  android:layout_alignParentEnd="true">
         <SurfaceView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/surfaceView"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"/>
+            android:id="@+id/surfaceView"/>
     </LinearLayout>
-    <LinearLayout android:id="@+id/left_drawer"
-              android:layout_width="500dp"
-              android:layout_height="match_parent"
-              android:layout_gravity="left"
-              android:orientation="vertical"
-              android:divider="@android:color/transparent"
-              android:dividerHeight="0dp"
-              android:background="#777"/> <!-- TODO what's with the color scheme? -->
-    <LinearLayout android:id="@+id/right_drawer"
-                  android:layout_width="240dp"
+    <Button
+        android:id="@+id/btnTopLeftDrawer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/top_left_drawer"
+        android:layout_alignParentTop="true"
+        style="?android:attr/buttonStyleSmall"
+        android:text="OPEN"/>
+    <Button
+        android:id="@+id/btnBottomLeftDrawer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/bottom_left_drawer"
+        android:layout_alignParentBottom="true"
+        style="?android:attr/buttonStyleSmall"
+        android:text="OPEN"/>
+    <Button
+        android:id="@+id/btnTopRightDrawer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/top_right_drawer"
+        android:layout_alignParentTop="true"
+        style="?android:attr/buttonStyleSmall"
+        android:text="OPEN"/>
+    <Button
+        android:id="@+id/btnBottomRightDrawer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/bottom_right_drawer"
+        android:layout_alignParentBottom="true"
+        style="?android:attr/buttonStyleSmall"
+        android:text="OPEN"/>
+    <LinearLayout android:id="@+id/top_left_drawer"
+                  android:layout_width="500dp"
                   android:layout_height="match_parent"
-                  android:layout_gravity="right"
+                  android:layout_gravity="start"
+                  android:layout_alignParentStart="true"
+                  android:visibility="gone"
                   android:orientation="vertical"
                   android:divider="@android:color/transparent"
                   android:dividerHeight="0dp"
+                  android:clickable="true"
                   android:background="#777"/> <!-- TODO what's with the color scheme? -->
-</android.support.v4.widget.DrawerLayout>
+    <LinearLayout android:id="@+id/bottom_left_drawer"
+                  android:layout_width="500dp"
+                  android:layout_height="match_parent"
+                  android:layout_gravity="start"
+                  android:layout_alignParentStart="true"
+                  android:visibility="gone"
+                  android:orientation="vertical"
+                  android:divider="@android:color/transparent"
+                  android:dividerHeight="0dp"
+                  android:clickable="true"
+                  android:background="#777"/> <!-- TODO what's with the color scheme? -->
+    <LinearLayout android:id="@+id/top_right_drawer"
+                  android:layout_width="240dp"
+                  android:layout_height="match_parent"
+                  android:layout_gravity="end"
+                  android:layout_toStartOf="@+id/anchor_top_right"
+                  android:visibility="gone"
+                  android:orientation="vertical"
+                  android:divider="@android:color/transparent"
+                  android:dividerHeight="0dp"
+                  android:clickable="true"
+                  android:background="#777"/> <!-- TODO what's with the color scheme? -->
+    <LinearLayout android:id="@+id/bottom_right_drawer"
+                  android:layout_width="500dp"
+                  android:layout_height="match_parent"
+                  android:layout_gravity="end"
+                  android:layout_toStartOf="@+id/anchor_top_right"
+                  android:visibility="gone"
+                  android:orientation="vertical"
+                  android:divider="@android:color/transparent"
+                  android:dividerHeight="0dp"
+                  android:clickable="true"
+                  android:background="#777"/> <!-- TODO what's with the color scheme? -->
+</RelativeLayout>
