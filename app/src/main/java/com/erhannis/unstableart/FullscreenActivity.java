@@ -35,8 +35,11 @@ import android.widget.Toast;
 
 import com.erhannis.android.distributedui.FragmentHandle;
 import com.erhannis.android.distributedui.HubActivity;
+import com.erhannis.android.orderednetworkview.Marker;
+import com.erhannis.android.orderednetworkview.OrderedNetworkView;
 import com.erhannis.mathnstuff.TimeoutTimer;
 import com.erhannis.unstableart.history.HistoryManager;
+import com.erhannis.unstableart.history.HistoryNode;
 import com.erhannis.unstableart.history.SetCanvasModeSMHN;
 import com.erhannis.unstableart.history.SetColorSMHN;
 import com.erhannis.unstableart.history.SetToolSMHN;
@@ -57,6 +60,9 @@ import com.erhannis.unstableart.mechanics.stroke.StrokePoint;
 import com.erhannis.unstableart.settings.InputMapper;
 import com.erhannis.unstableart.ui.Spacer;
 import com.erhannis.unstableart.ui.colors.ColorsFragment;
+import com.erhannis.unstableart.ui.history.EditMarker;
+import com.erhannis.unstableart.ui.history.HistoryFragment;
+import com.erhannis.unstableart.ui.history.ViewMarker;
 import com.erhannis.unstableart.ui.layers.LayersFragment;
 import com.erhannis.unstableart.ui.tools.ActionsFragment;
 import com.erhannis.unstableart.ui.tools.ToolsFragment;
@@ -72,7 +78,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import java8.util.function.Consumer;
@@ -86,7 +95,8 @@ public class FullscreenActivity extends HubActivity implements
         LayersFragment.OnLayersFragmentInteractionListener<String>,
         ColorsFragment.OnColorsFragmentInteractionListener,
         ToolsFragment.OnToolsFragmentInteractionListener,
-        ActionsFragment.OnActionsFragmentInteractionListener {
+        ActionsFragment.OnActionsFragmentInteractionListener,
+        HistoryFragment.OnHistoryFragmentInteractionListener {
 //<editor-fold desc="Constants">
   private static final String TAG = "FullscreenActivity";
 
@@ -108,6 +118,7 @@ public class FullscreenActivity extends HubActivity implements
   private ColorsFragment mColorsFragment;
   private ToolsFragment mToolsFragment;
   private ActionsFragment mActionsFragment;
+  private HistoryFragment mHistoryFragment;
 
   private Matrix mViewportMatrix = new Matrix();
   private Matrix mViewportMatrixInverse = new Matrix();
@@ -218,6 +229,7 @@ public class FullscreenActivity extends HubActivity implements
 
       initToolDrawer();
       initActionDrawer();
+      initHistoryDrawer();
     }
 
     scheduleRedraw();
@@ -252,13 +264,6 @@ public class FullscreenActivity extends HubActivity implements
     fragTransaction.add(colorsContainer.getId(), mColorsFragment, "ColorsFragment");
 
     fragTransaction.commit();
-
-    mTopLeftDrawerView.setOnTouchListener(new View.OnTouchListener() {
-      @Override
-      public boolean onTouch(View v, MotionEvent event) {
-        return true;
-      }
-    });
   }
 
   protected void initActionDrawer() {
@@ -285,13 +290,30 @@ public class FullscreenActivity extends HubActivity implements
     fragTransaction.add(toolsContainer.getId(), mToolsFragment, "ToolsFragment");
 
     fragTransaction.commit();
+  }
 
-    mTopRightDrawerView.setOnTouchListener(new View.OnTouchListener() {
-      @Override
-      public boolean onTouch(View v, MotionEvent event) {
-        return true;
-      }
-    });
+  protected void initHistoryDrawer() {
+    LinearLayout historyContainer = new LinearLayout(this);
+    historyContainer.setId(View.generateViewId());
+    historyContainer.setOrientation(LinearLayout.VERTICAL);
+
+    mBottomRightDrawerView.addView(historyContainer);
+
+    FragmentManager fragMan = getSupportFragmentManager();
+    FragmentTransaction fragTransaction = fragMan.beginTransaction();
+
+    mHistoryFragment = new HistoryFragment();
+    LinkedHashMap<Marker, HistoryNode> markers = new LinkedHashMap<>();
+    ViewMarker viewMarker = new ViewMarker();
+    EditMarker editMarker = new EditMarker();
+    HistoryNode root = historyManager.getRoot();
+    markers.put(viewMarker, root);
+    markers.put(editMarker, root);
+    mHistoryFragment.reset(root, markers);
+    //TODO Setup
+    fragTransaction.add(historyContainer.getId(), mHistoryFragment, "HistoryFragment");
+
+    fragTransaction.commit();
   }
 
   private void saveTo(File file) throws IOException {
@@ -663,6 +685,28 @@ public class FullscreenActivity extends HubActivity implements
     if (mLayersFragment != null) {
       mLayersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
     }
+    //TODO Ditto
+    //TODO And wow, this seems pretty awful
+    if (mHistoryFragment != null) {
+      runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          //TODO Remember that the UI thread must be unburdened, to catch brush strokes.  Are these calls problematic?
+          //TODO THIS IS THE WORST
+          OrderedNetworkView<HistoryNode> onvHistory = mHistoryFragment.getOnvHistory();
+          if (onvHistory != null) {
+            HistoryNode root = historyManager.getRoot();
+            HistoryNode selected = historyManager.getSelected();
+            LinkedHashMap<Marker, HistoryNode> markerPositions = onvHistory.getMarkerPositions();
+            Iterator<Map.Entry<Marker, HistoryNode>> iter = markerPositions.entrySet().iterator();
+            iter.next().setValue(selected);
+            iter.next().setValue(selected);
+            mHistoryFragment.reset(root, markerPositions);
+            //onvHistory.setMarkerPosition(onvHistory.getMarkerPositions().keySet().iterator().next(), historyManager.getSelected());
+          }
+        }
+      });
+    }
 
     //viewport.drawText("" + debugInfo, 10, 10, new Paint());
 
@@ -700,14 +744,21 @@ public class FullscreenActivity extends HubActivity implements
   }
 
   //<editor-fold desc="EXPORTABLE">
-  // From http://stackoverflow.com/a/10904665/513038
   public static void getTextInput(Context ctx, String title, final Consumer<String> callback) {
+    getTextInput(ctx, title, "", callback);
+  }
+
+  // From http://stackoverflow.com/a/10904665/513038
+  public static void getTextInput(Context ctx, String title, CharSequence existing, final Consumer<String> callback) {
     AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
     builder.setTitle(title);
 
 // Set up the input
     final EditText input = new EditText(ctx);
     input.setInputType(InputType.TYPE_CLASS_TEXT);
+    if (existing != null) {
+      input.setText(existing);
+    }
     builder.setView(input);
 
 // Set up the buttons
@@ -899,6 +950,9 @@ public class FullscreenActivity extends HubActivity implements
       case "onSelectColor":
         onSelectColor((Color)objects[0]);
         break;
+      case "onSelectEdit":
+        onSelectEdit((HistoryNode)objects[0]);
+        break;
       case "onMoveColorsFragment":
         onMoveColorsFragment();
         break;
@@ -1034,7 +1088,8 @@ public class FullscreenActivity extends HubActivity implements
         }
         break;
       case ActionsFragment.M_COLOR:
-        getTextInput(FullscreenActivity.this, "8 digit hex color", new Consumer<String>() {
+        int curColor = historyManager.rebuild().state.color.getARGBInt(); //LOSS //TODO This seems really heavy
+        getTextInput(FullscreenActivity.this, "8 digit hex color", Long.toString(curColor, 16), new Consumer<String>() {
           @Override
           public void accept(String s) {
             try {
@@ -1047,7 +1102,8 @@ public class FullscreenActivity extends HubActivity implements
         });
         break;
       case ActionsFragment.M_SIZE:
-        getTextInput(FullscreenActivity.this, "Size, double-precision", new Consumer<String>() {
+        double curSize = historyManager.rebuild().state.size; //TODO This seems really heavy
+        getTextInput(FullscreenActivity.this, "Size, double-precision", curSize + "", new Consumer<String>() {
           @Override
           public void accept(String s) {
             try {
@@ -1205,6 +1261,12 @@ public class FullscreenActivity extends HubActivity implements
         });
         break;
     }
+  }
+
+  @Override
+  public void onSelectEdit(HistoryNode node) {
+    historyManager.select(node);
+    scheduleRedraw();
   }
   //</editor-fold>
 }

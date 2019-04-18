@@ -62,7 +62,7 @@ public abstract class HistoryNode extends DrawableNode<HistoryNode> implements S
   }
 
   //TODO This is a temporary default.
-  private final Drawable DRAWABLE = procureDrawable(R.drawable.n_blank);
+  private static final Drawable DRAWABLE = procureDrawable(R.drawable.n_blank);
   @Override
   public Drawable getDrawable() {
     return DRAWABLE;

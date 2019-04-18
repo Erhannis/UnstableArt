@@ -19,6 +19,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 /**
+ * //TODO I think I need to seriously reconsider the threading and access patterns in this app
+ *
  * Created by erhannis on 3/18/17.
  */
 public class HistoryManager implements Serializable {
@@ -50,7 +52,7 @@ public class HistoryManager implements Serializable {
     //attach(new AddLayerLMHN(root.aCanvas, blurLayer));
   }
 
-  protected synchronized void select(HistoryNode node) {
+  public synchronized void select(HistoryNode node) {
     //TODO Send events, etc.
     //TODO Check connected to root?
     selected = node;
@@ -59,6 +61,14 @@ public class HistoryManager implements Serializable {
   public synchronized void attach(HistoryNode child) {
     attach(selected, child);
     select(child);
+  }
+
+  public synchronized RootHN getRoot() {
+    return root;
+  }
+
+  public synchronized HistoryNode getSelected() {
+    return selected;
   }
 
   protected synchronized void attach(HistoryNode parent, HistoryNode child) {
