@@ -700,11 +700,12 @@ public class FullscreenActivity extends HubActivity implements
           OrderedNetworkView<HistoryNode> onvHistory = mHistoryFragment.getOnvHistory();
           if (onvHistory != null) {
             HistoryNode root = historyManager.getRoot();
-            HistoryNode selected = historyManager.getSelected();
+            HistoryNode selectedForView = historyManager.getSelectedForView();
+            HistoryNode selectedForEdit = historyManager.getSelectedForEdit();
             LinkedHashMap<Marker, HistoryNode> markerPositions = onvHistory.getMarkerPositions();
             Iterator<Map.Entry<Marker, HistoryNode>> iter = markerPositions.entrySet().iterator();
-            iter.next().setValue(selected); // View
-            iter.next().setValue(selected); // Edit
+            iter.next().setValue(selectedForView); // View
+            iter.next().setValue(selectedForEdit); // Edit
             mHistoryFragment.reset(root, markerPositions);
             //onvHistory.setMarkerPosition(onvHistory.getMarkerPositions().keySet().iterator().next(), historyManager.getSelected());
           }
@@ -954,8 +955,8 @@ public class FullscreenActivity extends HubActivity implements
       case "onSelectColor":
         onSelectColor((Color)objects[0]);
         break;
-      case "onSelectEdit":
-        onSelectEdit((HistoryNode)objects[0]);
+      case "onSelectHistory":
+        onSelectHistory((HistoryNode)objects[0], (HistoryNode)objects[1], (Integer)objects[2]);
         break;
       case "onMoveColorsFragment":
         onMoveColorsFragment();
@@ -1268,8 +1269,8 @@ public class FullscreenActivity extends HubActivity implements
   }
 
   @Override
-  public void onSelectEdit(HistoryNode node) {
-    historyManager.select(node);
+  public void onSelectHistory(HistoryNode viewNode, HistoryNode editNode, int priorityMarker) {
+    historyManager.selectMarkers(viewNode, editNode, priorityMarker);
     scheduleRedraw();
   }
   //</editor-fold>

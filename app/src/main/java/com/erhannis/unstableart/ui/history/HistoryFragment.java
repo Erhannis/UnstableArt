@@ -139,18 +139,26 @@ public class HistoryFragment extends Fragment {
             }
             HistoryNode.rebuildPreferredParents(mRoot);
           }
-          onSelectEdit(onvHistory.getMarkerPositions().get(editMarker));
+          int priorityMarker;
+          if (ObjectsCompat.equals(m, viewMarker)) {
+            priorityMarker = 0;
+          } else if (ObjectsCompat.equals(m, viewMarker)) {
+            priorityMarker = 1;
+          } else {
+            priorityMarker = 0; //TODO Could potentially lead to problems
+          }
+          onSelectHistory(onvHistory.getMarkerPositions().get(viewMarker), onvHistory.getMarkerPositions().get(editMarker), priorityMarker);
         }
       });
     }
   }
 
-  protected void onSelectEdit(HistoryNode node) {
+  protected void onSelectHistory(HistoryNode viewNode, HistoryNode editNode, int priorityMarker) {
     new Handler(Looper.getMainLooper()).post(new Runnable() {
       @Override
       public void run() {
         if (mListener != null) {
-          mListener.sendToHub("onSelectEdit", node);
+          mListener.sendToHub("onSelectHistory", viewNode, editNode, priorityMarker);
         }
       }
     });
@@ -183,7 +191,13 @@ public class HistoryFragment extends Fragment {
    * >Communicating with Other Fragments</a> for more information.
    */
   public interface OnHistoryFragmentInteractionListener {
-    public void onSelectEdit(HistoryNode node);
+    /**
+     * History markers have been moved around.
+     * @param viewNode
+     * @param editNode
+     * @param priority Which node was the primary target.  0 for view, 1 for edit.  Important for fixing invalid states without negating the user's action.
+     */
+    public void onSelectHistory(HistoryNode viewNode, HistoryNode editNode, int priority);
   }
 
   public void showToast(String text) {

@@ -2,6 +2,7 @@ package com.erhannis.unstableart.history;
 
 import android.support.v4.util.ObjectsCompat;
 
+import com.erhannis.android.orderednetworkview.Node;
 import com.erhannis.unstableart.mechanics.FullState;
 import com.erhannis.unstableart.mechanics.State;
 import com.erhannis.unstableart.mechanics.color.DoublesColor;
@@ -26,15 +27,15 @@ import java.util.LinkedList;
 public class HistoryManager implements Serializable {
   //TODO Consider finality
   protected final RootHN root;
-  //TODO Split into view and edit?
-  protected HistoryNode selected;
+  protected HistoryNode selectedForView;
+  protected HistoryNode selectedForEdit;
 
   protected transient Stroke mCurStroke = null;
 
   public HistoryManager() {
     //TODO Consider
     root = new RootHN();
-    select(root);
+    selectMarkers(root, root, 0);
 
     //TODO Just for testing
     testInit();
@@ -52,23 +53,60 @@ public class HistoryManager implements Serializable {
     //attach(new AddLayerLMHN(root.aCanvas, blurLayer));
   }
 
-  public synchronized void select(HistoryNode node) {
+  public synchronized void selectForView(HistoryNode node) {
     //TODO Send events, etc.
     //TODO Check connected to root?
-    selected = node;
+    selectedForView = node;
+    if (!ObjectsCompat.equals(selectedForView, selectedForEdit) && !Node.isAncestor(selectedForEdit, selectedForView)) {
+      // The marker order is invalid; move edit marker, too
+      selectedForEdit = selectedForView;
+    }
+  }
+
+  public synchronized void selectForEdit(HistoryNode node) {
+    //TODO Send events, etc.
+    //TODO Check connected to root?
+    selectedForEdit = node;
+    if (!ObjectsCompat.equals(selectedForView, selectedForEdit) && !Node.isAncestor(selectedForEdit, selectedForView)) {
+      // The marker order is invalid; move view marker, too
+      selectedForView = selectedForEdit;
+    }
+  }
+
+  public synchronized void selectMarkers(HistoryNode viewNode, HistoryNode editNode, int priorityMarker) {
+    //TODO Send events, etc.
+    //TODO Check connected to root?
+    selectedForView = viewNode;
+    selectedForEdit = editNode;
+    if (!ObjectsCompat.equals(selectedForView, selectedForEdit) && !Node.isAncestor(selectedForEdit, selectedForView)) {
+      // The marker order is invalid; move markers to match prioritized marker
+      switch (priorityMarker) {
+        case 1:
+          selectedForView = selectedForEdit;
+          break;
+        case 0:
+        default:
+          selectedForEdit = selectedForView;
+          break;
+      }
+    }
   }
 
   public synchronized void attach(HistoryNode child) {
-    attach(selected, child);
-    select(child);
+    attach(selectedForEdit, child);
+    selectForEdit(child);
   }
 
   public synchronized RootHN getRoot() {
     return root;
   }
 
-  public synchronized HistoryNode getSelected() {
-    return selected;
+  public synchronized HistoryNode getSelectedForView() {
+    return selectedForView;
+  }
+
+  public synchronized HistoryNode getSelectedForEdit() {
+    return selectedForEdit;
   }
 
   protected synchronized void attach(HistoryNode parent, HistoryNode child) {
@@ -82,8 +120,14 @@ public class HistoryManager implements Serializable {
    * @return whether undo happened
    */
   public synchronized boolean tryUndo() {
-    if (selected.preferredParent != null) {
-      select(selected.preferredParent);
+    if (selectedForEdit.preferredParent != null) {
+      HistoryNode target = selectedForEdit.preferredParent;
+      if (ObjectsCompat.equals(selectedForView, selectedForEdit)) {
+        selectForEdit(target);
+        selectForView(target);
+      } else {
+        selectForEdit(target);
+      }
       return true;
     } else {
       return false;
@@ -95,8 +139,8 @@ public class HistoryManager implements Serializable {
    * @return whether redo happened
    */
   public synchronized boolean tryRedo() {
-    if (!selected.children.isEmpty()) {
-      select(selected.children.peekFirst());
+    if (!selectedForEdit.children.isEmpty()) {
+      selectForEdit(selectedForEdit.children.peekFirst());
       return true;
     } else {
       return false;
@@ -123,8 +167,8 @@ public class HistoryManager implements Serializable {
   public synchronized Stroke commitStrokeTransaction() {
     //TODO Throw error if not in correct state?
     HistoryNode strokeNode = new AddStrokePHN(mCurStroke);
-    attach(selected, strokeNode);
-    select(strokeNode);
+    attach(selectedForEdit, strokeNode);
+    selectForEdit(strokeNode);
     Stroke stroke = mCurStroke;
     mCurStroke = null;
     return stroke;
@@ -218,7 +262,7 @@ public class HistoryManager implements Serializable {
     HistoryNode curr = root;
     ArrayList<HistoryNode> chain = new ArrayList<HistoryNode>();
     chain.add(curr);
-    while (!curr.children.isEmpty() && !ObjectsCompat.equals(curr, selected)) {
+    while (!curr.children.isEmpty() && !ObjectsCompat.equals(curr, selectedForView)) {
       curr = curr.children.getFirst();
       chain.add(curr);
     }
