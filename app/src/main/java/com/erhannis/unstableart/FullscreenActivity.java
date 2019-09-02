@@ -62,6 +62,7 @@ import com.erhannis.unstableart.ui.Spacer;
 import com.erhannis.unstableart.ui.colors.ColorsFragment;
 import com.erhannis.unstableart.ui.history.EditMarker;
 import com.erhannis.unstableart.ui.history.HistoryFragment;
+import com.erhannis.unstableart.ui.history.LinkMarker;
 import com.erhannis.unstableart.ui.history.ViewMarker;
 import com.erhannis.unstableart.ui.layers.LayersFragment;
 import com.erhannis.unstableart.ui.tools.ActionsFragment;
@@ -306,9 +307,11 @@ public class FullscreenActivity extends HubActivity implements
     LinkedHashMap<Marker, HistoryNode> markers = new LinkedHashMap<>();
     ViewMarker viewMarker = new ViewMarker();
     EditMarker editMarker = new EditMarker();
+    LinkMarker linkMarker = new LinkMarker();
     HistoryNode root = historyManager.getRoot();
     markers.put(viewMarker, root);
     markers.put(editMarker, root);
+    markers.put(linkMarker, null);
     mHistoryFragment.reset(root, markers);
     //TODO Setup
     fragTransaction.add(historyContainer.getId(), mHistoryFragment, "HistoryFragment");
@@ -685,6 +688,7 @@ public class FullscreenActivity extends HubActivity implements
     if (mLayersFragment != null) {
       mLayersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
     }
+
     //TODO Ditto
     //TODO And wow, this seems pretty awful
     if (mHistoryFragment != null) {
@@ -699,8 +703,8 @@ public class FullscreenActivity extends HubActivity implements
             HistoryNode selected = historyManager.getSelected();
             LinkedHashMap<Marker, HistoryNode> markerPositions = onvHistory.getMarkerPositions();
             Iterator<Map.Entry<Marker, HistoryNode>> iter = markerPositions.entrySet().iterator();
-            iter.next().setValue(selected);
-            iter.next().setValue(selected);
+            iter.next().setValue(selected); // View
+            iter.next().setValue(selected); // Edit
             mHistoryFragment.reset(root, markerPositions);
             //onvHistory.setMarkerPosition(onvHistory.getMarkerPositions().keySet().iterator().next(), historyManager.getSelected());
           }

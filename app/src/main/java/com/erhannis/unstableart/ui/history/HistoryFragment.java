@@ -100,17 +100,18 @@ public class HistoryFragment extends Fragment {
           Iterator<Map.Entry<Marker, HistoryNode>> iter = mMarkerPositions.entrySet().iterator();
           Marker viewMarker = iter.next().getKey();
           Marker editMarker = iter.next().getKey();
+          Marker linkMarker = iter.next().getKey();
 
           //TODO Document this
-          HistoryNode prior = onvHistory.getMarkerPositions().get(m);
           //if (ObjectsCompat.equals(m, viewMarker) && prior.children.contains(node)) {
-          if (ObjectsCompat.equals(m, viewMarker)) { //TODO HACK HACK THIS IS HACK
+          if (ObjectsCompat.equals(m, linkMarker)) { //TODO This is kindof a hack
             // They're dropping the view marker on a child node, rather than using redo - they probably want to prefer that link
+            HistoryNode prior = onvHistory.getMarkerPositions().get(editMarker);
             prior.addChild(node);
             onvHistory.doAddLink(prior, node);
+          } else {
+            onvHistory.setMarkerPosition(m, node);
           }
-
-          onvHistory.setMarkerPosition(m, node);
 
           { // Ensure consistency of view/edit markers
             LinkedHashMap<Marker, HistoryNode> markerPositions = onvHistory.getMarkerPositions();

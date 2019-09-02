@@ -411,6 +411,7 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
   }
 
   public void setMarkerPosition(Marker marker, T node) {
+    Log.d(TAG, "setMarkerPosition " + marker + " -> " + node);
     dirty = true;
     invalidate();
     markerPositions.put(marker, node);
