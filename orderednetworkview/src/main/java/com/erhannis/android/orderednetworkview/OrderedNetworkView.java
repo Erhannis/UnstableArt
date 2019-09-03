@@ -30,6 +30,11 @@ import java.util.Map;
  */
 public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
   public static interface OnDropMarkerListener<T> {
+    /**
+     * Dropped marker on `node`, OR `node` is null if dropped far from anything
+     * @param m
+     * @param node
+     */
     public void onDropMarker(Marker m, T node);
   }
 
@@ -588,6 +593,16 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
           OnDropMarkerListener<T> l = onDropMarkerListener;
           if (l != null) {
             l.onDropMarker(m, node.mirror);
+          }
+        }
+      });
+    } else {
+      mainThread.post(new Runnable() {
+        @Override
+        public void run() {
+          OnDropMarkerListener<T> l = onDropMarkerListener;
+          if (l != null) {
+            l.onDropMarker(m, null);
           }
         }
       });

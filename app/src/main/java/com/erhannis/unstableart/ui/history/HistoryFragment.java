@@ -101,17 +101,27 @@ public class HistoryFragment extends Fragment {
           //TODO This whole thing is sketchy and inconsistent with the distributed UI paradigm
 
           Iterator<Map.Entry<Marker, HistoryNode>> iter = mMarkerPositions.entrySet().iterator();
+          //NOTE List markers
           Marker veMarker = iter.next().getKey();
           Marker viewMarker = iter.next().getKey();
           Marker editMarker = iter.next().getKey();
           Marker linkMarker = iter.next().getKey();
+          Marker anchorMarker = iter.next().getKey();
 
-          //TODO Document this
+          //TODO Document all this
+
+          if (node == null && !ObjectsCompat.equals(m, anchorMarker)) {
+            return; // We don't want any of the other markers to process a null node
+          }
+
           if (ObjectsCompat.equals(m, linkMarker)) {
             // Link from edit node to target node
             HistoryNode fromNode = onvHistory.getMarkerPositions().get(editMarker);
             if (!Node.isAncestor(node, fromNode)) {
-              fromNode.addChild(node);
+              //TODO The attempted path prioritization here can conflict slightly with the `preferred parent` thing.  Not sure which is correct, or how to resolve.
+              fromNode.addChild(node); //TODO Is it legal to do this here, as opposed to only in the HistoryManager?
+              //TODO In particular, consider that the change wouldn't be synced back across wireless
+
               onvHistory.doAddLink(fromNode, node);
             } else {
               //TODO Theoretically, it might be fine, as long as the *preferred path* didn't cycle
@@ -157,23 +167,24 @@ public class HistoryFragment extends Fragment {
             priorityMarker = 0;
           } else if (ObjectsCompat.equals(m, viewMarker)) {
             priorityMarker = 1;
-          } else if (ObjectsCompat.equals(m, veMarker)) {
-            priorityMarker = 0; // Doesn't matter
-          } else {
+          } else { // Default favors view
+            // veMarker
+            // linkMarker
+            // anchorMarker
             priorityMarker = 0; //TODO Could potentially lead to problems
           }
-          onSelectHistory(onvHistory.getMarkerPositions().get(viewMarker), onvHistory.getMarkerPositions().get(editMarker), priorityMarker);
+          onSelectHistory(onvHistory.getMarkerPositions().get(viewMarker), onvHistory.getMarkerPositions().get(editMarker), onvHistory.getMarkerPositions().get(anchorMarker), priorityMarker);
         }
       });
     }
   }
 
-  protected void onSelectHistory(HistoryNode viewNode, HistoryNode editNode, int priorityMarker) {
+  protected void onSelectHistory(HistoryNode viewNode, HistoryNode editNode, HistoryNode anchorNode, int priorityMarker) {
     new Handler(Looper.getMainLooper()).post(new Runnable() {
       @Override
       public void run() {
         if (mListener != null) {
-          mListener.sendToHub("onSelectHistory", viewNode, editNode, priorityMarker);
+          mListener.sendToHub("onSelectHistory", viewNode, editNode, anchorNode, priorityMarker);
         }
       }
     });
@@ -212,7 +223,7 @@ public class HistoryFragment extends Fragment {
      * @param editNode
      * @param priority Which node was the primary target.  0 for view, 1 for edit.  Important for fixing invalid states without negating the user's action.
      */
-    public void onSelectHistory(HistoryNode viewNode, HistoryNode editNode, int priority);
+    public void onSelectHistory(HistoryNode viewNode, HistoryNode editNode, HistoryNode anchorNode, int priority);
   }
 
   public void showToast(String text) {

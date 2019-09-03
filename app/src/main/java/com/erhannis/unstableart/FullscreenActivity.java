@@ -60,6 +60,7 @@ import com.erhannis.unstableart.mechanics.stroke.StrokePoint;
 import com.erhannis.unstableart.settings.InputMapper;
 import com.erhannis.unstableart.ui.Spacer;
 import com.erhannis.unstableart.ui.colors.ColorsFragment;
+import com.erhannis.unstableart.ui.history.AnchorMarker;
 import com.erhannis.unstableart.ui.history.EditMarker;
 import com.erhannis.unstableart.ui.history.HistoryFragment;
 import com.erhannis.unstableart.ui.history.LinkMarker;
@@ -310,11 +311,14 @@ public class FullscreenActivity extends HubActivity implements
     ViewMarker viewMarker = new ViewMarker();
     EditMarker editMarker = new EditMarker();
     LinkMarker linkMarker = new LinkMarker();
+    AnchorMarker anchorMarker = new AnchorMarker();
     HistoryNode root = historyManager.getRoot();
+    //NOTE List markers
     markers.put(veMarker, null);
     markers.put(viewMarker, root);
     markers.put(editMarker, root);
     markers.put(linkMarker, null);
+    markers.put(anchorMarker, null);
     mHistoryFragment.reset(root, markers);
     //TODO Setup
     fragTransaction.add(historyContainer.getId(), mHistoryFragment, "HistoryFragment");
@@ -707,11 +711,15 @@ public class FullscreenActivity extends HubActivity implements
             HistoryNode root = historyManager.getRoot();
             HistoryNode selectedForView = historyManager.getSelectedForView();
             HistoryNode selectedForEdit = historyManager.getSelectedForEdit();
+            HistoryNode selectedForAnchor = historyManager.getSelectedForAnchor();
             LinkedHashMap<Marker, HistoryNode> markerPositions = onvHistory.getMarkerPositions();
             Iterator<Map.Entry<Marker, HistoryNode>> iter = markerPositions.entrySet().iterator();
+            //NOTE List markers
             iter.next(); // View/Edit
             iter.next().setValue(selectedForView); // View
             iter.next().setValue(selectedForEdit); // Edit
+            iter.next(); // Link
+            iter.next().setValue(selectedForAnchor); // Anchor
             mHistoryFragment.reset(root, markerPositions);
             //onvHistory.setMarkerPosition(onvHistory.getMarkerPositions().keySet().iterator().next(), historyManager.getSelected());
           }
@@ -962,7 +970,7 @@ public class FullscreenActivity extends HubActivity implements
         onSelectColor((Color)objects[0]);
         break;
       case "onSelectHistory":
-        onSelectHistory((HistoryNode)objects[0], (HistoryNode)objects[1], (Integer)objects[2]);
+        onSelectHistory((HistoryNode)objects[0], (HistoryNode)objects[1], (HistoryNode)objects[2], (Integer)objects[3]);
         break;
       case "onMoveColorsFragment":
         onMoveColorsFragment();
@@ -1275,8 +1283,8 @@ public class FullscreenActivity extends HubActivity implements
   }
 
   @Override
-  public void onSelectHistory(HistoryNode viewNode, HistoryNode editNode, int priorityMarker) {
-    historyManager.selectMarkers(viewNode, editNode, priorityMarker);
+  public void onSelectHistory(HistoryNode viewNode, HistoryNode editNode, HistoryNode anchorNode, int priorityMarker) {
+    historyManager.selectMarkers(viewNode, editNode, anchorNode, priorityMarker);
     scheduleRedraw();
   }
   //</editor-fold>

@@ -71,6 +71,9 @@ public class HistoryTestActivity extends AppCompatActivity {
     onvHistory.setOnDropMarkerListener(new OrderedNetworkView.OnDropMarkerListener<HistoryNode>() {
       @Override
       public void onDropMarker(Marker m, HistoryNode node) {
+        if (node == null) {
+          return;
+        }
         //TODO Document this
         HistoryNode prior = onvHistory.getMarkerPositions().get(m);
         if (ObjectsCompat.equals(m, viewMarker) && prior.children().contains(node)) {

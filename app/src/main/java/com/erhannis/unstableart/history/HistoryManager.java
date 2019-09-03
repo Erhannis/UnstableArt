@@ -29,13 +29,14 @@ public class HistoryManager implements Serializable {
   protected final RootHN root;
   protected HistoryNode selectedForView;
   protected HistoryNode selectedForEdit;
+  protected HistoryNode selectedForAnchor;
 
   protected transient Stroke mCurStroke = null;
 
   public HistoryManager() {
     //TODO Consider
     root = new RootHN();
-    selectMarkers(root, root, 0);
+    selectMarkers(root, root, null, 0);
 
     //TODO Just for testing
     testInit();
@@ -73,11 +74,19 @@ public class HistoryManager implements Serializable {
     }
   }
 
-  public synchronized void selectMarkers(HistoryNode viewNode, HistoryNode editNode, int priorityMarker) {
+  public synchronized void selectForAnchor(HistoryNode node) {
+    //TODO Send events, etc.
+    //TODO Check connected to root?
+    selectedForAnchor = node;
+    //TODO Could restrict to valid positions - but I think I'll just make it not work if invalid
+  }
+
+  public synchronized void selectMarkers(HistoryNode viewNode, HistoryNode editNode, HistoryNode anchorNode, int priorityMarker) {
     //TODO Send events, etc.
     //TODO Check connected to root?
     selectedForView = viewNode;
     selectedForEdit = editNode;
+    selectedForAnchor = anchorNode;
     if (!ObjectsCompat.equals(selectedForView, selectedForEdit) && !Node.isAncestor(selectedForEdit, selectedForView)) {
       // The marker order is invalid; move markers to match prioritized marker
       switch (priorityMarker) {
@@ -93,7 +102,16 @@ public class HistoryManager implements Serializable {
   }
 
   public synchronized void attach(HistoryNode child) {
-    attach(selectedForEdit, child);
+    //TODO Send events, etc.
+    //TODO Check connected to root?
+    if (selectedForEdit.children().contains(selectedForAnchor)) {
+      // A child is anchor - perform chain extension or whatever
+      selectedForEdit.children().remove(selectedForAnchor);
+      selectedForEdit.addChild(child);
+      child.addChild(selectedForAnchor);
+    } else {
+      selectedForEdit.addChild(child);
+    }
     selectForEdit(child);
   }
 
@@ -109,10 +127,8 @@ public class HistoryManager implements Serializable {
     return selectedForEdit;
   }
 
-  protected synchronized void attach(HistoryNode parent, HistoryNode child) {
-    //TODO Send events, etc.
-    //TODO Check connected to root?
-    parent.addChild(child);
+  public synchronized HistoryNode getSelectedForAnchor() {
+    return selectedForAnchor;
   }
 
   /**
@@ -167,8 +183,7 @@ public class HistoryManager implements Serializable {
   public synchronized Stroke commitStrokeTransaction() {
     //TODO Throw error if not in correct state?
     HistoryNode strokeNode = new AddStrokePHN(mCurStroke);
-    attach(selectedForEdit, strokeNode);
-    selectForEdit(strokeNode);
+    attach(strokeNode);
     Stroke stroke = mCurStroke;
     mCurStroke = null;
     return stroke;
