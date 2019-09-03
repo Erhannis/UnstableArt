@@ -1,6 +1,7 @@
 In order
 --------
-Color picker
+Collapse history
+Cache renders
 
 
 Duh
@@ -31,6 +32,7 @@ Brush back map to eraser
 Please fix the layers ui architecture
 color history
 Push/Pop tool settings, in pairs probably (or just a "fix tool" node, setting settings to whatever they were at that point...?)
+Color picker
 
 
 Ideas/Things to do
