@@ -11,13 +11,12 @@ def getGitHash = { ->
 }
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '26.0.2'
-
+    compileSdkVersion 27
+    buildToolsVersion '28.0.3'
     defaultConfig {
         applicationId "com.erhannis.unstableart"
         minSdkVersion 17
-        targetSdkVersion 25
+        targetSdkVersion 27
         versionCode 1
         versionName "1.0"
         buildConfigField "String", "GIT_HASH", "\"${getGitHash()}\""
@@ -33,7 +32,11 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     packagingOptions {
-        exclude 'META-INF/LICENSE'
+        merge 'META-INF/LICENSE'
+        merge 'META-INF/INDEX.LIST'
+    }
+    lintOptions {
+        abortOnError false
     }
 }
 
@@ -42,29 +45,34 @@ repositories {
         url "https://repo.eclipse.org/content/repositories/paho-snapshots/"
     }
     mavenLocal()
+    mavenCentral()
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     //TODO I wish I didn't have to use streamsupport!
-    compile 'com.android.support:appcompat-v7:25.3.0'
-    compile 'com.android.support:support-v4:25.3.0'
-    compile 'com.erhannis:MathNStuff:0.1.0-SNAPSHOT'
-    compile 'com.android.support:design:25.3.0'
-    compile 'com.esotericsoftware.kryo:kryo:2.23-SNAPSHOT'
-    compile 'net.sourceforge.streamsupport:streamsupport:1.5.4'
-    compile 'net.sourceforge.streamsupport:streamsupport-cfuture:1.5.4'
-    compile 'net.sourceforge.streamsupport:streamsupport-atomic:1.5.4'
-    compile 'net.sourceforge.streamsupport:streamsupport-flow:1.5.4'
-    compile 'net.sourceforge.streamsupport:streamsupport-literal:1.5.4'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile 'com.github.danielnilsson9:color-picker-view:1.4.0@aar'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:support-v4:27.1.1'
+    implementation 'com.erhannis:MathNStuff:0.1.0-SNAPSHOT'
+    implementation 'com.android.support:design:27.1.1'
+    implementation 'com.esotericsoftware.kryo:kryo:2.23-SNAPSHOT'
+    //implementation 'com.esotericsoftware:kryo:5.0.0-RC2'
+    //implementation 'com.esotericsoftware:kryo:5.0.0-RC4'
+    implementation 'net.sourceforge.streamsupport:streamsupport:1.5.4'
+    implementation 'net.sourceforge.streamsupport:streamsupport-cfuture:1.5.4'
+    implementation 'net.sourceforge.streamsupport:streamsupport-atomic:1.5.4'
+    implementation 'net.sourceforge.streamsupport:streamsupport-flow:1.5.4'
+    implementation 'net.sourceforge.streamsupport:streamsupport-literal:1.5.4'
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    implementation 'com.github.danielnilsson9:color-picker-view:1.4.0@aar'
 
-    compile 'com.erhannis.android:ekandroid:0.1.0-SNAPSHOT@aar'
-    compile ('com.erhannis.android:distributed-ui:1.0@aar') {
+    implementation project(path: ':orderednetworkview')
+    implementation 'com.erhannis.android:ekandroid:0.1.0-SNAPSHOT@aar'
+    implementation('com.erhannis.android:distributed-ui:1.0-SNAPSHOT@aar') {
         transitive = true
+        //exclude module: 'kryo'
     }
 
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
 }

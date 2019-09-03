@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -15,34 +14,32 @@ import android.os.Handler;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GestureDetectorCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.erhannis.android.distributedui.DistributedUIFragmentChange;
 import com.erhannis.android.distributedui.FragmentHandle;
 import com.erhannis.android.distributedui.HubActivity;
+import com.erhannis.android.orderednetworkview.Marker;
+import com.erhannis.android.orderednetworkview.OrderedNetworkView;
 import com.erhannis.mathnstuff.TimeoutTimer;
 import com.erhannis.unstableart.history.HistoryManager;
+import com.erhannis.unstableart.history.HistoryNode;
 import com.erhannis.unstableart.history.SetCanvasModeSMHN;
 import com.erhannis.unstableart.history.SetColorSMHN;
 import com.erhannis.unstableart.history.SetToolSMHN;
@@ -63,6 +60,12 @@ import com.erhannis.unstableart.mechanics.stroke.StrokePoint;
 import com.erhannis.unstableart.settings.InputMapper;
 import com.erhannis.unstableart.ui.Spacer;
 import com.erhannis.unstableart.ui.colors.ColorsFragment;
+import com.erhannis.unstableart.ui.history.AnchorMarker;
+import com.erhannis.unstableart.ui.history.EditMarker;
+import com.erhannis.unstableart.ui.history.HistoryFragment;
+import com.erhannis.unstableart.ui.history.LinkMarker;
+import com.erhannis.unstableart.ui.history.VEMarker;
+import com.erhannis.unstableart.ui.history.ViewMarker;
 import com.erhannis.unstableart.ui.layers.LayersFragment;
 import com.erhannis.unstableart.ui.tools.ActionsFragment;
 import com.erhannis.unstableart.ui.tools.ToolsFragment;
@@ -78,7 +81,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import java8.util.function.Consumer;
@@ -92,7 +98,8 @@ public class FullscreenActivity extends HubActivity implements
         LayersFragment.OnLayersFragmentInteractionListener<String>,
         ColorsFragment.OnColorsFragmentInteractionListener,
         ToolsFragment.OnToolsFragmentInteractionListener,
-        ActionsFragment.OnActionsFragmentInteractionListener {
+        ActionsFragment.OnActionsFragmentInteractionListener,
+        HistoryFragment.OnHistoryFragmentInteractionListener {
 //<editor-fold desc="Constants">
   private static final String TAG = "FullscreenActivity";
 
@@ -105,15 +112,16 @@ public class FullscreenActivity extends HubActivity implements
   private SurfaceView surf;
   private SurfaceHolder mSurfaceHolder;
 
-  private DrawerLayout mDrawerLayout;
-  private ActionBarDrawerToggle mDrawerToggle;
-  private LinearLayout mLeftDrawerView;
-  private LinearLayout mRightDrawerView;
+  private LinearLayout mTopLeftDrawerView;
+  private LinearLayout mBottomLeftDrawerView;
+  private LinearLayout mTopRightDrawerView;
+  private LinearLayout mBottomRightDrawerView;
 
   private LayersFragment<String> mLayersFragment;
   private ColorsFragment mColorsFragment;
   private ToolsFragment mToolsFragment;
   private ActionsFragment mActionsFragment;
+  private HistoryFragment mHistoryFragment;
 
   private Matrix mViewportMatrix = new Matrix();
   private Matrix mViewportMatrixInverse = new Matrix();
@@ -187,42 +195,44 @@ public class FullscreenActivity extends HubActivity implements
   protected void onStart() {
     super.onStart();
 
-    if(mDrawerLayout == null || mLeftDrawerView == null || mRightDrawerView == null || mDrawerToggle == null) {
+    if(mTopLeftDrawerView == null || mBottomLeftDrawerView == null || mTopRightDrawerView == null || mBottomRightDrawerView == null) {
       // Configure navigation drawer
-      mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-      mLeftDrawerView = (LinearLayout)findViewById(R.id.left_drawer);
-      mRightDrawerView = (LinearLayout)findViewById(R.id.right_drawer);
-      mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
+      mTopLeftDrawerView = (LinearLayout)findViewById(R.id.top_left_drawer);
+      mBottomLeftDrawerView = (LinearLayout)findViewById(R.id.bottom_left_drawer);
+      mTopRightDrawerView = (LinearLayout)findViewById(R.id.top_right_drawer);
+      mBottomRightDrawerView = (LinearLayout)findViewById(R.id.bottom_right_drawer);
 
-        /** Called when a drawer has settled in a completely closed state. */
-        public void onDrawerClosed(View drawerView) {
-          if(drawerView.equals(mLeftDrawerView)) {
-            getSupportActionBar().setTitle(getTitle());
-            supportInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-            mDrawerToggle.syncState();
+      // This is simultaneously elegant and horrifying, like a zombie ballerina
+      for (View[] buttonDrawerPair : new View[][]{
+              {findViewById(R.id.btnTopLeftDrawer), mTopLeftDrawerView},
+              {findViewById(R.id.btnBottomLeftDrawer), mBottomLeftDrawerView},
+              {findViewById(R.id.btnTopRightDrawer), mTopRightDrawerView},
+              {findViewById(R.id.btnBottomRightDrawer), mBottomRightDrawerView}
+      }) {
+        Button button = (Button)buttonDrawerPair[0];
+        View drawer = buttonDrawerPair[1];
+        button.setOnClickListener(new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            switch (drawer.getVisibility()) {
+              case View.VISIBLE:
+                button.setText("OPEN");
+                drawer.setVisibility(View.GONE);
+                break;
+              case View.INVISIBLE:
+              case View.GONE:
+              default:
+                button.setText("CLOSE");
+                drawer.setVisibility(View.VISIBLE);
+                break;
+            }
           }
-        }
-
-        /** Called when a drawer has settled in a completely open state. */
-        public void onDrawerOpened(View drawerView) {
-          if(drawerView.equals(mLeftDrawerView)) {
-            getSupportActionBar().setTitle(getString(R.string.app_name));
-            supportInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-            mDrawerToggle.syncState();
-          }
-        }
-
-        @Override
-        public void onDrawerSlide(View drawerView, float slideOffset) {
-          // Avoid normal indicator glyph behaviour. This is to avoid glyph movement when opening the right drawer
-          //super.onDrawerSlide(drawerView, slideOffset);
-        }
-      };
+        });
+      }
 
       initToolDrawer();
       initActionDrawer();
-
-      mDrawerLayout.addDrawerListener(mDrawerToggle); // Set the drawer toggle as the DrawerListener
+      initHistoryDrawer();
     }
 
     scheduleRedraw();
@@ -237,10 +247,10 @@ public class FullscreenActivity extends HubActivity implements
     layersContainer.setId(View.generateViewId());
     layersContainer.setOrientation(LinearLayout.VERTICAL);
 
-    mLeftDrawerView.addView(colorsContainer);
-    mLeftDrawerView.addView(new Spacer(this, 0xFF000000));
-    mLeftDrawerView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
-    mLeftDrawerView.addView(layersContainer);
+    mTopLeftDrawerView.addView(colorsContainer);
+    mTopLeftDrawerView.addView(new Spacer(this, 0xFF000000));
+    mTopLeftDrawerView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
+    mTopLeftDrawerView.addView(layersContainer);
 
     FragmentManager fragMan = getSupportFragmentManager();
     FragmentTransaction fragTransaction = fragMan.beginTransaction();
@@ -257,13 +267,6 @@ public class FullscreenActivity extends HubActivity implements
     fragTransaction.add(colorsContainer.getId(), mColorsFragment, "ColorsFragment");
 
     fragTransaction.commit();
-
-    mLeftDrawerView.setOnTouchListener(new View.OnTouchListener() {
-      @Override
-      public boolean onTouch(View v, MotionEvent event) {
-        return true;
-      }
-    });
   }
 
   protected void initActionDrawer() {
@@ -275,10 +278,10 @@ public class FullscreenActivity extends HubActivity implements
     toolsContainer.setId(View.generateViewId());
     toolsContainer.setOrientation(LinearLayout.VERTICAL);
 
-    mRightDrawerView.addView(actionsContainer);
-    mRightDrawerView.addView(new Spacer(this, 0xFF000000));
-    mRightDrawerView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
-    mRightDrawerView.addView(toolsContainer);
+    mTopRightDrawerView.addView(actionsContainer);
+    mTopRightDrawerView.addView(new Spacer(this, 0xFF000000));
+    mTopRightDrawerView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
+    mTopRightDrawerView.addView(toolsContainer);
 
     FragmentManager fragMan = getSupportFragmentManager();
     FragmentTransaction fragTransaction = fragMan.beginTransaction();
@@ -290,18 +293,43 @@ public class FullscreenActivity extends HubActivity implements
     fragTransaction.add(toolsContainer.getId(), mToolsFragment, "ToolsFragment");
 
     fragTransaction.commit();
+  }
 
-    mRightDrawerView.setOnTouchListener(new View.OnTouchListener() {
-      @Override
-      public boolean onTouch(View v, MotionEvent event) {
-        return true;
-      }
-    });
+  protected void initHistoryDrawer() {
+    LinearLayout historyContainer = new LinearLayout(this);
+    historyContainer.setId(View.generateViewId());
+    historyContainer.setOrientation(LinearLayout.VERTICAL);
+
+    mBottomRightDrawerView.addView(historyContainer);
+
+    FragmentManager fragMan = getSupportFragmentManager();
+    FragmentTransaction fragTransaction = fragMan.beginTransaction();
+
+    mHistoryFragment = new HistoryFragment();
+    LinkedHashMap<Marker, HistoryNode> markers = new LinkedHashMap<>();
+    VEMarker veMarker = new VEMarker();
+    ViewMarker viewMarker = new ViewMarker();
+    EditMarker editMarker = new EditMarker();
+    LinkMarker linkMarker = new LinkMarker();
+    AnchorMarker anchorMarker = new AnchorMarker();
+    HistoryNode root = historyManager.getRoot();
+    //NOTE List markers
+    markers.put(veMarker, null);
+    markers.put(viewMarker, root);
+    markers.put(editMarker, root);
+    markers.put(linkMarker, null);
+    markers.put(anchorMarker, null);
+    mHistoryFragment.reset(root, markers);
+    //TODO Setup
+    fragTransaction.add(historyContainer.getId(), mHistoryFragment, "HistoryFragment");
+
+    fragTransaction.commit();
   }
 
   private void saveTo(File file) throws IOException {
     //TODO Static Kryo?
     Kryo kryo = new Kryo();
+    kryo.setRegistrationRequired(false); //TODO SECURITY My understanding is that this could cause security holes
     Output output = new Output(new FileOutputStream(file));
     output.writeString(BuildConfig.GIT_HASH);
     kryo.writeObject(output, historyManager);
@@ -315,6 +343,7 @@ public class FullscreenActivity extends HubActivity implements
   private void loadFrom(InputStream inputStream) throws IOException {
     //TODO Static Kryo?
     Kryo kryo = new Kryo();
+    kryo.setRegistrationRequired(false); //TODO SECURITY My understanding is that this could cause security holes
     String versionString = null;
     Input input = null;
     try {
@@ -424,9 +453,7 @@ public class FullscreenActivity extends HubActivity implements
       @Override
       public void onLongPress(MotionEvent e) {
         //TODO Map
-        mViewportMatrix.reset();
-        mViewportMatrixInverse.reset();
-        scheduleRedraw();
+        showToast("Long press");
       }
 
       @Override
@@ -446,8 +473,10 @@ public class FullscreenActivity extends HubActivity implements
       @Override
       public boolean onDoubleTap(MotionEvent e) {
         //TODO Map
-        showToast("Double tap");
-        return false;
+        mViewportMatrix.reset();
+        mViewportMatrixInverse.reset();
+        scheduleRedraw();
+        return true;
       }
 
       @Override
@@ -669,53 +698,38 @@ public class FullscreenActivity extends HubActivity implements
       mLayersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
     }
 
+    //TODO Ditto
+    //TODO And wow, this seems pretty awful
+    if (mHistoryFragment != null) {
+      runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          //TODO Remember that the UI thread must be unburdened, to catch brush strokes.  Are these calls problematic?
+          //TODO THIS IS THE WORST
+          OrderedNetworkView<HistoryNode> onvHistory = mHistoryFragment.getOnvHistory();
+          if (onvHistory != null) {
+            HistoryNode root = historyManager.getRoot();
+            HistoryNode selectedForView = historyManager.getSelectedForView();
+            HistoryNode selectedForEdit = historyManager.getSelectedForEdit();
+            HistoryNode selectedForAnchor = historyManager.getSelectedForAnchor();
+            LinkedHashMap<Marker, HistoryNode> markerPositions = onvHistory.getMarkerPositions();
+            Iterator<Map.Entry<Marker, HistoryNode>> iter = markerPositions.entrySet().iterator();
+            //NOTE List markers
+            iter.next(); // View/Edit
+            iter.next().setValue(selectedForView); // View
+            iter.next().setValue(selectedForEdit); // Edit
+            iter.next(); // Link
+            iter.next().setValue(selectedForAnchor); // Anchor
+            mHistoryFragment.reset(root, markerPositions);
+            //onvHistory.setMarkerPosition(onvHistory.getMarkerPositions().keySet().iterator().next(), historyManager.getSelected());
+          }
+        }
+      });
+    }
+
     //viewport.drawText("" + debugInfo, 10, 10, new Paint());
 
     return result;
-  }
-
-  @Override
-  protected void onPostCreate(Bundle savedInstanceState) {
-    super.onPostCreate(savedInstanceState);
-
-    mDrawerToggle.syncState();
-    // Trigger the initial hide() shortly after the activity has been
-    // created, to briefly hint to the user that UI controls
-    // are available.
-    delayedHide(100);
-  }
-
-  @Override
-  public void onConfigurationChanged(Configuration newConfig) {
-    super.onConfigurationChanged(newConfig);
-
-    mDrawerToggle.onConfigurationChanged(newConfig);
-  }
-
-  @Override
-  public boolean onPrepareOptionsMenu(Menu menu) {
-    //TODO What does this have to do with the left drawer?
-    // If the nav drawer is open, hide action items related to the content view
-    for(int i = 0; i< menu.size(); i++)
-      menu.getItem(i).setVisible(!mDrawerLayout.isDrawerOpen(mLeftDrawerView));
-
-    return super.onPrepareOptionsMenu(menu);
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    //TODO What does this have to do with the right drawer?
-    switch(item.getItemId()) {
-      case android.R.id.home:
-        mDrawerToggle.onOptionsItemSelected(item);
-
-        if(mDrawerLayout.isDrawerOpen(mRightDrawerView))
-          mDrawerLayout.closeDrawer(mRightDrawerView);
-
-        return true;
-    }
-
-    return super.onOptionsItemSelected(item);
   }
 
   @Override
@@ -749,14 +763,21 @@ public class FullscreenActivity extends HubActivity implements
   }
 
   //<editor-fold desc="EXPORTABLE">
-  // From http://stackoverflow.com/a/10904665/513038
   public static void getTextInput(Context ctx, String title, final Consumer<String> callback) {
+    getTextInput(ctx, title, "", callback);
+  }
+
+  // From http://stackoverflow.com/a/10904665/513038
+  public static void getTextInput(Context ctx, String title, CharSequence existing, final Consumer<String> callback) {
     AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
     builder.setTitle(title);
 
 // Set up the input
     final EditText input = new EditText(ctx);
     input.setInputType(InputType.TYPE_CLASS_TEXT);
+    if (existing != null) {
+      input.setText(existing);
+    }
     builder.setView(input);
 
 // Set up the buttons
@@ -948,6 +969,9 @@ public class FullscreenActivity extends HubActivity implements
       case "onSelectColor":
         onSelectColor((Color)objects[0]);
         break;
+      case "onSelectHistory":
+        onSelectHistory((HistoryNode)objects[0], (HistoryNode)objects[1], (HistoryNode)objects[2], (Integer)objects[3]);
+        break;
       case "onMoveColorsFragment":
         onMoveColorsFragment();
         break;
@@ -1083,7 +1107,8 @@ public class FullscreenActivity extends HubActivity implements
         }
         break;
       case ActionsFragment.M_COLOR:
-        getTextInput(FullscreenActivity.this, "8 digit hex color", new Consumer<String>() {
+        int curColor = historyManager.rebuild().state.color.getARGBInt(); //LOSS //TODO This seems really heavy
+        getTextInput(FullscreenActivity.this, "8 digit hex color", Long.toString(curColor, 16), new Consumer<String>() {
           @Override
           public void accept(String s) {
             try {
@@ -1096,7 +1121,8 @@ public class FullscreenActivity extends HubActivity implements
         });
         break;
       case ActionsFragment.M_SIZE:
-        getTextInput(FullscreenActivity.this, "Size, double-precision", new Consumer<String>() {
+        double curSize = historyManager.rebuild().state.size; //TODO This seems really heavy
+        getTextInput(FullscreenActivity.this, "Size, double-precision", curSize + "", new Consumer<String>() {
           @Override
           public void accept(String s) {
             try {
@@ -1254,6 +1280,12 @@ public class FullscreenActivity extends HubActivity implements
         });
         break;
     }
+  }
+
+  @Override
+  public void onSelectHistory(HistoryNode viewNode, HistoryNode editNode, HistoryNode anchorNode, int priorityMarker) {
+    historyManager.selectMarkers(viewNode, editNode, anchorNode, priorityMarker);
+    scheduleRedraw();
   }
   //</editor-fold>
 }
