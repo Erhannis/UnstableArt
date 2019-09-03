@@ -13,7 +13,13 @@ import java.util.Objects;
 
 public abstract class Node<T extends Node> { // This is AMAZING jiggerypokery
   // The elements are defined to be in descending priority order
-  public final LinkedList<T> children = new LinkedList<>();
+  private final LinkedList<Object> children = new LinkedList<Object>();
+
+  //TODO Once Kryo supports both good generics AND deep graphs, get rid of the accessor
+  public LinkedList<T> children() {
+    return (LinkedList<T>)(Object)this.children;
+  }
+
 
   /**
    * Checks if `descendant` is recursively a child of `ancestor`.
@@ -29,7 +35,7 @@ public abstract class Node<T extends Node> { // This is AMAZING jiggerypokery
     added.add(ancestor);
     while (!pending.isEmpty()) {
       Node<T> item = pending.remove();
-      for (T child : item.children) {
+      for (T child : item.children()) {
         if (!added.contains(child)) {
           if (ObjectsCompat.equals(child, descendant)) {
             return true;
@@ -50,7 +56,7 @@ public abstract class Node<T extends Node> { // This is AMAZING jiggerypokery
     HashSet<T> added = new HashSet<>();
 
     nodeStack.addLast(ancestor);
-    childStack.addLast(ancestor.children.iterator());
+    childStack.addLast(ancestor.children().iterator());
     added.add(ancestor);
     while (!nodeStack.isEmpty()) {
       T curNode = nodeStack.getLast();
@@ -66,7 +72,7 @@ public abstract class Node<T extends Node> { // This is AMAZING jiggerypokery
         T child = curIter.next();
         if (!added.contains(child)) {
           nodeStack.addLast(child);
-          childStack.addLast(child.children.iterator());
+          childStack.addLast(child.children().iterator());
           added.add(child);
         } // else do nothing and the iterator will tick up
       }
@@ -96,9 +102,9 @@ public abstract class Node<T extends Node> { // This is AMAZING jiggerypokery
     boolean changed = false;
     while (i.hasNext()) {
       next = i.next();
-      if (!ObjectsCompat.equals(cur.children.getFirst(), next)) {
-        cur.children.remove(next);
-        cur.children.addFirst(next);
+      if (!ObjectsCompat.equals(cur.children().getFirst(), next)) {
+        cur.children().remove(next);
+        cur.children().addFirst(next);
         changed = true;
       }
       cur = next;

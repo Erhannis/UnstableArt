@@ -322,6 +322,7 @@ public class FullscreenActivity extends HubActivity implements
   private void saveTo(File file) throws IOException {
     //TODO Static Kryo?
     Kryo kryo = new Kryo();
+    kryo.setRegistrationRequired(false); //TODO SECURITY My understanding is that this could cause security holes
     Output output = new Output(new FileOutputStream(file));
     output.writeString(BuildConfig.GIT_HASH);
     kryo.writeObject(output, historyManager);
@@ -335,6 +336,7 @@ public class FullscreenActivity extends HubActivity implements
   private void loadFrom(InputStream inputStream) throws IOException {
     //TODO Static Kryo?
     Kryo kryo = new Kryo();
+    kryo.setRegistrationRequired(false); //TODO SECURITY My understanding is that this could cause security holes
     String versionString = null;
     Input input = null;
     try {

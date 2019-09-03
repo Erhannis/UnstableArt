@@ -201,13 +201,13 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
     added.put(root.mirror, root);
     while (!pending.isEmpty()) {
       MirrorNode<T> item = pending.remove();
-      for (T child : item.mirror.children) {
+      for (T child : item.mirror.children()) {
         if (!added.containsKey(child)) {
           MirrorNode<T> mirror = new MirrorNode<>(child);
           added.put(child, mirror);
           pending.push(mirror);
         }
-        item.children.add(added.get(child));
+        item.children().add(added.get(child));
       }
     }
 
@@ -284,8 +284,8 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
 
       { // Draw links
         double i = 0;
-        double c = node.children.size();
-        for (MirrorNode<T> child : node.children) {
+        double c = node.children().size();
+        for (MirrorNode<T> child : node.children()) {
           if (!completed.contains(child)) {
             pending.push(child);
             completed.add(child);
@@ -353,8 +353,8 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
       netSize.union((float)nodePos[0], (float)nodePos[1]);
 
       double newX = nodePos[0];
-      newX -= COL_SIZE * ((node.mirror.children.size() - 1) / 2.0);
-      for (MirrorNode<T> child : node.children) {
+      newX -= COL_SIZE * ((node.mirror.children().size() - 1) / 2.0);
+      for (MirrorNode<T> child : node.children()) {
         double newY = nodePos[1] - ROW_SIZE;
         if (nodePositions.containsKey(child)) {
           if (nodePositions.get(child)[1] > newY) {
@@ -400,13 +400,13 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
     if (nodeToMirror.containsKey(child)) {
       MirrorNode<T> pm = nodeToMirror.get(parent);
       MirrorNode<T> cm = nodeToMirror.get(child);
-      pm.children.remove(cm);
-      pm.children.addFirst(cm);
+      pm.children().remove(cm);
+      pm.children().addFirst(cm);
     } else {
       MirrorNode<T> pm = nodeToMirror.get(parent);
       MirrorNode<T> cm = new MirrorNode<>(child);
       nodeToMirror.put(child, cm);
-      pm.children.addFirst(cm);
+      pm.children().addFirst(cm);
     }
   }
 

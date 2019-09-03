@@ -32,7 +32,8 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     packagingOptions {
-        exclude 'META-INF/LICENSE'
+        merge 'META-INF/LICENSE'
+        merge 'META-INF/INDEX.LIST'
     }
     lintOptions {
         abortOnError false
@@ -44,6 +45,7 @@ repositories {
         url "https://repo.eclipse.org/content/repositories/paho-snapshots/"
     }
     mavenLocal()
+    mavenCentral()
 }
 
 dependencies {
@@ -55,6 +57,8 @@ dependencies {
     implementation 'com.erhannis:MathNStuff:0.1.0-SNAPSHOT'
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.esotericsoftware.kryo:kryo:2.23-SNAPSHOT'
+    //implementation 'com.esotericsoftware:kryo:5.0.0-RC2'
+    //implementation 'com.esotericsoftware:kryo:5.0.0-RC4'
     implementation 'net.sourceforge.streamsupport:streamsupport:1.5.4'
     implementation 'net.sourceforge.streamsupport:streamsupport-cfuture:1.5.4'
     implementation 'net.sourceforge.streamsupport:streamsupport-atomic:1.5.4'
@@ -67,6 +71,7 @@ dependencies {
     implementation 'com.erhannis.android:ekandroid:0.1.0-SNAPSHOT@aar'
     implementation('com.erhannis.android:distributed-ui:1.0-SNAPSHOT@aar') {
         transitive = true
+        //exclude module: 'kryo'
     }
 
     testImplementation 'junit:junit:4.12'

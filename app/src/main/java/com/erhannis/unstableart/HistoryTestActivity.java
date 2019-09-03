@@ -73,7 +73,7 @@ public class HistoryTestActivity extends AppCompatActivity {
       public void onDropMarker(Marker m, HistoryNode node) {
         //TODO Document this
         HistoryNode prior = onvHistory.getMarkerPositions().get(m);
-        if (ObjectsCompat.equals(m, viewMarker) && prior.children.contains(node)) {
+        if (ObjectsCompat.equals(m, viewMarker) && prior.children().contains(node)) {
           // They're dropping the view marker on a child node, rather than using redo - they probably want to prefer that link
           prior.addChild(node);
           onvHistory.doAddLink(prior, node);

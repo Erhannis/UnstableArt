@@ -139,8 +139,8 @@ public class HistoryManager implements Serializable {
    * @return whether redo happened
    */
   public synchronized boolean tryRedo() {
-    if (!selectedForEdit.children.isEmpty()) {
-      selectForEdit(selectedForEdit.children.peekFirst());
+    if (!selectedForEdit.children().isEmpty()) {
+      selectForEdit(selectedForEdit.children().peekFirst());
       return true;
     } else {
       return false;
@@ -245,7 +245,7 @@ public class HistoryManager implements Serializable {
           return ((AddLayerLMHN)node).aChild;
         }
       }
-      for (HistoryNode child : node.children) {
+      for (HistoryNode child : node.children()) {
         // Just in case we ever allow cycles
         if (!searched.contains(child)) {
           toSearch.offer(child);
@@ -262,8 +262,8 @@ public class HistoryManager implements Serializable {
     HistoryNode curr = root;
     ArrayList<HistoryNode> chain = new ArrayList<HistoryNode>();
     chain.add(curr);
-    while (!curr.children.isEmpty() && !ObjectsCompat.equals(curr, selectedForView)) {
-      curr = curr.children.getFirst();
+    while (!curr.children().isEmpty() && !ObjectsCompat.equals(curr, selectedForView)) {
+      curr = curr.children().getFirst();
       chain.add(curr);
     }
     // Now we have a list of actions, from start to finish

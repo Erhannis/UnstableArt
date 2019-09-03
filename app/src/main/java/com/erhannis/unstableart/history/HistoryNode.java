@@ -34,8 +34,8 @@ public abstract class HistoryNode extends DrawableNode<HistoryNode> implements S
   }
 
   public void addChild(HistoryNode child) {
-    children.remove(child);
-    children.addFirst(child);
+    children().remove(child);
+    children().addFirst(child);
     //TODO See `preferredParent`
     child.preferredParent = this;
     //TODO Notify anybody?
@@ -48,8 +48,8 @@ public abstract class HistoryNode extends DrawableNode<HistoryNode> implements S
    */
   public static <T extends HistoryNode> void rebuildPreferredParents(T root) {
     HistoryNode cur = root;
-    while (!cur.children.isEmpty()) {
-      HistoryNode next = cur.children.getFirst();
+    while (!cur.children().isEmpty()) {
+      HistoryNode next = cur.children().getFirst();
       next.preferredParent = cur;
       cur = next;
     }
