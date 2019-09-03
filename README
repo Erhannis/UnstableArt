@@ -8,8 +8,8 @@ Distributed widgets: Keep the color picker etc. open on your phone while you dra
 
 Building:
 *  You'll need to run `mvn clean install` on https://github.com/romix/kryo/tree/kryo-2.23-continuations - it's the only code I've found that will serialize my long history chains.
+*  And also `mvn clean install` my util project, MathNStuff.  ( https://github.com/Erhannis/MathNStuff )
+*  And ALSO clone and run `./gradlew clean uploadArchives` on my Android util project, EKAndroid.  ( https://github.com/Erhannis/EKAndroid.git )
 
 Released under the MIT license.
 
-Note: you'll probably need to clone and `mvn clean install` my util project, MathNStuff.  ( https://github.com/Erhannis/MathNStuff )
-And ALSO clone and run `./gradlew clean uploadArchives` on my Android util project, EKAndroid.  ( https://github.com/Erhannis/EKAndroid.git )
