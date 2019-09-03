@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.ObjectsCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +31,8 @@ import java.util.Map;
 /**
  */
 public class HistoryFragment extends Fragment {
+  private static final String TAG = "HistoryFragment";
+
   //TODO Seems like there's a bit of a trail of cached values....
   protected HistoryNode mRoot;
   protected LinkedHashMap<Marker, HistoryNode> mMarkerPositions;
@@ -98,20 +101,30 @@ public class HistoryFragment extends Fragment {
           //TODO This whole thing is sketchy and inconsistent with the distributed UI paradigm
 
           Iterator<Map.Entry<Marker, HistoryNode>> iter = mMarkerPositions.entrySet().iterator();
+          Marker veMarker = iter.next().getKey();
           Marker viewMarker = iter.next().getKey();
           Marker editMarker = iter.next().getKey();
           Marker linkMarker = iter.next().getKey();
 
           //TODO Document this
-          //if (ObjectsCompat.equals(m, viewMarker) && prior.children.contains(node)) {
-          if (ObjectsCompat.equals(m, linkMarker)) { //TODO This is kindof a hack
-            // They're dropping the view marker on a child node, rather than using redo - they probably want to prefer that link
-            HistoryNode prior = onvHistory.getMarkerPositions().get(editMarker);
-            prior.addChild(node);
-            onvHistory.doAddLink(prior, node);
+          if (ObjectsCompat.equals(m, linkMarker)) {
+            // Link from edit node to target node
+            HistoryNode fromNode = onvHistory.getMarkerPositions().get(editMarker);
+            if (!Node.isAncestor(node, fromNode)) {
+              fromNode.addChild(node);
+              onvHistory.doAddLink(fromNode, node);
+            } else {
+              //TODO Theoretically, it might be fine, as long as the *preferred path* didn't cycle
+              Log.e(TAG, "Tried to link a cycle into history!");
+            }
+          } else if (ObjectsCompat.equals(m, veMarker)) {
+            onvHistory.setMarkerPosition(viewMarker, node);
+            onvHistory.setMarkerPosition(editMarker, node);
           } else {
             onvHistory.setMarkerPosition(m, node);
           }
+
+          //TODO Also allow cut links?
 
           { // Ensure consistency of view/edit markers
             LinkedHashMap<Marker, HistoryNode> markerPositions = onvHistory.getMarkerPositions();
@@ -144,6 +157,8 @@ public class HistoryFragment extends Fragment {
             priorityMarker = 0;
           } else if (ObjectsCompat.equals(m, viewMarker)) {
             priorityMarker = 1;
+          } else if (ObjectsCompat.equals(m, veMarker)) {
+            priorityMarker = 0; // Doesn't matter
           } else {
             priorityMarker = 0; //TODO Could potentially lead to problems
           }

@@ -5,14 +5,14 @@ import android.graphics.drawable.Drawable;
 
 import com.erhannis.unstableart.R;
 
-public class LinkMarker extends UAMarker {
-    public LinkMarker() {
+public class VEMarker extends UAMarker {
+    public VEMarker() {
         //TODO Proper icon
-        super(alterDrawable(procureDrawable(R.drawable.m_link)), "Link");
+        super(alterDrawable(procureDrawable(R.drawable.m_view_edit)), "View/Edit");
     }
 
     private static Drawable alterDrawable(Drawable drawable) {
-        drawable.setColorFilter(0xFFFF0000, PorterDuff.Mode.SRC_IN);  //TODO Setting
+        drawable.setColorFilter(0xFF00FFFF, PorterDuff.Mode.SRC_IN);  //TODO Setting
         return drawable;
     }
 }

@@ -63,6 +63,7 @@ import com.erhannis.unstableart.ui.colors.ColorsFragment;
 import com.erhannis.unstableart.ui.history.EditMarker;
 import com.erhannis.unstableart.ui.history.HistoryFragment;
 import com.erhannis.unstableart.ui.history.LinkMarker;
+import com.erhannis.unstableart.ui.history.VEMarker;
 import com.erhannis.unstableart.ui.history.ViewMarker;
 import com.erhannis.unstableart.ui.layers.LayersFragment;
 import com.erhannis.unstableart.ui.tools.ActionsFragment;
@@ -305,10 +306,12 @@ public class FullscreenActivity extends HubActivity implements
 
     mHistoryFragment = new HistoryFragment();
     LinkedHashMap<Marker, HistoryNode> markers = new LinkedHashMap<>();
+    VEMarker veMarker = new VEMarker();
     ViewMarker viewMarker = new ViewMarker();
     EditMarker editMarker = new EditMarker();
     LinkMarker linkMarker = new LinkMarker();
     HistoryNode root = historyManager.getRoot();
+    markers.put(veMarker, null);
     markers.put(viewMarker, root);
     markers.put(editMarker, root);
     markers.put(linkMarker, null);
@@ -706,6 +709,7 @@ public class FullscreenActivity extends HubActivity implements
             HistoryNode selectedForEdit = historyManager.getSelectedForEdit();
             LinkedHashMap<Marker, HistoryNode> markerPositions = onvHistory.getMarkerPositions();
             Iterator<Map.Entry<Marker, HistoryNode>> iter = markerPositions.entrySet().iterator();
+            iter.next(); // View/Edit
             iter.next().setValue(selectedForView); // View
             iter.next().setValue(selectedForEdit); // Edit
             mHistoryFragment.reset(root, markerPositions);

@@ -15,7 +15,7 @@ public class ViewMarker extends UAMarker {
     }
 
     private static Drawable alterDrawable(Drawable drawable) {
-        drawable.setColorFilter(0xFF00FFFF, PorterDuff.Mode.SRC_IN);  //TODO Setting
+        drawable.setColorFilter(0xFF0000FF, PorterDuff.Mode.SRC_IN);  //TODO Setting
         return drawable;
     }
 }

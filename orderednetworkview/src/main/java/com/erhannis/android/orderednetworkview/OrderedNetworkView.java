@@ -13,6 +13,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.widget.Toast;
 
 import com.erhannis.mathnstuff.MeMath;
 import com.erhannis.mathnstuff.MeUtils;
@@ -96,7 +97,14 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
         case MotionEvent.ACTION_UP:
           reset = true;
           if (selectedMarker != null) {
-            OrderedNetworkView.this.metaDropMarkerAtSpot(selectedMarker, xy);
+            if (!getUiBox().contains(event.getX(), event.getY())) {
+              // Dropped outside marker box
+              OrderedNetworkView.this.metaDropMarkerAtSpot(selectedMarker, xy);
+            } else {
+              // Dropped inside marker box
+              OrderedNetworkView.this.metaTapMarker(selectedMarker);
+            }
+            selectedMarker = null;
           }
           return false;
         case MotionEvent.ACTION_DOWN:
@@ -584,6 +592,11 @@ public class OrderedNetworkView<T extends DrawableNode<T>> extends View {
         }
       });
     }
+  }
+
+  private void metaTapMarker(final Marker m) {
+    //TODO Map
+    Toast.makeText(getContext(), m.name, Toast.LENGTH_LONG).show();
   }
 
   private MirrorNode<T> getNearestNode(float[] xy) {
