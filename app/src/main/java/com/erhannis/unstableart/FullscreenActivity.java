@@ -230,7 +230,8 @@ public class FullscreenActivity extends HubActivity implements
         });
       }
 
-      initToolDrawer();
+      initColorDrawer();
+      initLayerDrawer();
       initActionDrawer();
       initHistoryDrawer();
     }
@@ -238,19 +239,35 @@ public class FullscreenActivity extends HubActivity implements
     scheduleRedraw();
   }
 
-  protected void initToolDrawer() {
+  protected void initColorDrawer() {
     LinearLayout colorsContainer = new LinearLayout(this);
     colorsContainer.setId(View.generateViewId());
     colorsContainer.setOrientation(LinearLayout.VERTICAL);
 
+    mTopLeftDrawerView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
+
+    mTopLeftDrawerView.addView(colorsContainer);
+
+    FragmentManager fragMan = getSupportFragmentManager();
+    FragmentTransaction fragTransaction = fragMan.beginTransaction();
+
+    mColorsFragment = new ColorsFragment();
+    //TODO Set current color?
+    //FullState fullState = historyManager.rebuild();
+    //colorsFragment.setCurColor();
+    fragTransaction.add(colorsContainer.getId(), mColorsFragment, "ColorsFragment");
+
+    fragTransaction.commit();
+  }
+
+  protected void initLayerDrawer() {
     LinearLayout layersContainer = new LinearLayout(this);
     layersContainer.setId(View.generateViewId());
     layersContainer.setOrientation(LinearLayout.VERTICAL);
 
-    mTopLeftDrawerView.addView(colorsContainer);
-    mTopLeftDrawerView.addView(new Spacer(this, 0xFF000000));
-    mTopLeftDrawerView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
-    mTopLeftDrawerView.addView(layersContainer);
+    mBottomLeftDrawerView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
+
+    mBottomLeftDrawerView.addView(layersContainer);
 
     FragmentManager fragMan = getSupportFragmentManager();
     FragmentTransaction fragTransaction = fragMan.beginTransaction();
@@ -259,12 +276,6 @@ public class FullscreenActivity extends HubActivity implements
     FullState fullState = historyManager.rebuild();
     mLayersFragment.setTree(fullState.iCanvas, fullState.state.iSelectedLayer.getId());
     fragTransaction.add(layersContainer.getId(), mLayersFragment, "LayersFragment");
-
-    mColorsFragment = new ColorsFragment();
-    //TODO Set current color?
-    //FullState fullState = historyManager.rebuild();
-    //colorsFragment.setCurColor();
-    fragTransaction.add(colorsContainer.getId(), mColorsFragment, "ColorsFragment");
 
     fragTransaction.commit();
   }
@@ -278,9 +289,10 @@ public class FullscreenActivity extends HubActivity implements
     toolsContainer.setId(View.generateViewId());
     toolsContainer.setOrientation(LinearLayout.VERTICAL);
 
+    mTopRightDrawerView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
+
     mTopRightDrawerView.addView(actionsContainer);
     mTopRightDrawerView.addView(new Spacer(this, 0xFF000000));
-    mTopRightDrawerView.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
     mTopRightDrawerView.addView(toolsContainer);
 
     FragmentManager fragMan = getSupportFragmentManager();
@@ -1160,7 +1172,8 @@ public class FullscreenActivity extends HubActivity implements
           break;
         }
       case ActionsFragment.M_SAVE_AS:
-        getTextInput(FullscreenActivity.this, "Save to path/filename (*.uaf)", new Consumer<String>() {
+        String filename = mLastSave != null ? mLastSave.getAbsolutePath() : "/sdcard/" + System.currentTimeMillis() + ".uaf";
+        getTextInput(FullscreenActivity.this, "Save to path/filename (*.uaf)", filename, new Consumer<String>() {
           @Override
           public void accept(String s) {
             final File f = new File(s);
