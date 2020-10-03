@@ -39,6 +39,18 @@
             android:text="Add color"/>
 
         <Button
+            android:id="@+id/btnRemoveColorFromSpline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Remove color"/>
+
+        <Button
+            android:id="@+id/btnClearSpline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Clear"/>
+
+        <Button
             android:id="@+id/btnReticulateSpline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

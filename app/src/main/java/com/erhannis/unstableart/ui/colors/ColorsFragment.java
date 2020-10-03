@@ -89,15 +89,46 @@ public class ColorsFragment extends Fragment {
 
       EditText etSplinePoints = (EditText)llView.findViewById(R.id.etSplinePoints);
       Button btnAddColorToSpline = (Button)llView.findViewById(R.id.btnAddColorToSpline);
+      Button btnRemoveColorFromSpline = (Button)llView.findViewById(R.id.btnRemoveColorFromSpline);
+      Button btnClearSpline = (Button)llView.findViewById(R.id.btnClearSpline);
       Button btnReticulateSpline = (Button)llView.findViewById(R.id.btnReticulateSpline);
       SeekBar sbSplineValue = (SeekBar)llView.findViewById(R.id.sbSplineValue);
+      //TODO These are pretty hardcoded
       btnAddColorToSpline.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-          if (mListener != null) {
+          if (mListener != null && mCurColor != null) {
             double[] rgb = new double[] {mCurColor.getR(), mCurColor.getG(), mCurColor.getB()};
             Editable str = etSplinePoints.getText();
-            str.insert(str.length()-1, ","+new Gson().toJson(rgb));
+            if (str.length() == 2) {
+              str.insert(str.length() - 1, new Gson().toJson(rgb));
+            } else {
+              str.insert(str.length() - 1, "," + new Gson().toJson(rgb));
+            }
+            //TODO Broadcast?
+          }
+        }
+      });
+      btnRemoveColorFromSpline.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          if (mListener != null) {
+            String str = etSplinePoints.getText().toString();
+            int s = str.lastIndexOf("[");
+            str = str.substring(0, Math.max(s-1,0))+"]";
+            if (str.length() <= 1) {
+              str = "[]";
+            }
+            etSplinePoints.setText(str);
+            //TODO Broadcast?
+          }
+        }
+      });
+      btnClearSpline.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          if (mListener != null) {
+            etSplinePoints.setText("[]");
             //TODO Broadcast?
           }
         }
