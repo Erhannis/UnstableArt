@@ -5,19 +5,33 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.util.JsonReader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.erhannis.android.distributedui.ButtonsFragment;
 import com.erhannis.android.distributedui.DistributedUiActivity;
+import com.erhannis.mathnstuff.splines.BezierSpline;
+import com.erhannis.mathnstuff.splines.ColorSolid;
+import com.erhannis.mathnstuff.splines.ColorSpline;
 import com.erhannis.unstableart.R;
+import com.erhannis.unstableart.UAApplication;
 import com.erhannis.unstableart.mechanics.color.Color;
 import com.erhannis.unstableart.mechanics.color.IntColor;
+import com.erhannis.unstableart.mechanics.color.SplineColor;
 import com.github.danielnilsson9.colorpickerview.view.ColorPickerView;
+import com.google.gson.Gson;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
 
 /**
  * //TODO Add support for high-bit colors
@@ -26,6 +40,7 @@ import com.github.danielnilsson9.colorpickerview.view.ColorPickerView;
  */
 public class ColorsFragment extends Fragment {
   protected Color mCurColor;
+  protected ColorSpline mSpline; //TODO Other kinds of spline?
 
   private LinearLayout llView;
 
@@ -71,6 +86,68 @@ public class ColorsFragment extends Fragment {
           selectColor(mCurColor);
         }
       });
+
+      EditText etSplinePoints = (EditText)llView.findViewById(R.id.etSplinePoints);
+      Button btnAddColorToSpline = (Button)llView.findViewById(R.id.btnAddColorToSpline);
+      Button btnReticulateSpline = (Button)llView.findViewById(R.id.btnReticulateSpline);
+      SeekBar sbSplineValue = (SeekBar)llView.findViewById(R.id.sbSplineValue);
+      btnAddColorToSpline.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          if (mListener != null) {
+            double[] rgb = new double[] {mCurColor.getR(), mCurColor.getG(), mCurColor.getB()};
+            Editable str = etSplinePoints.getText();
+            str.insert(str.length()-1, ","+new Gson().toJson(rgb));
+            //TODO Broadcast?
+          }
+        }
+      });
+      btnReticulateSpline.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          if (mListener != null) {
+            ColorSpline cs = new ColorSpline();
+            cs.spline.SetOrder(2);
+            cs.space = ColorSolid.RGB_CUBE;
+            double[][] points = new Gson().fromJson(etSplinePoints.getText().toString(), double[][].class);
+            double[][] ptsDimsFirst = new double[points[0].length][points.length];
+            for (int i = 0; i < points.length; i++) {
+              for (int j = 0; j < points[i].length; j++) {
+                ptsDimsFirst[j][i] = points[i][j];
+              }
+            }
+            try {
+              cs.SetPoints(ptsDimsFirst);
+            } catch (IllegalArgumentException e) {
+              e.printStackTrace();
+              Toast.makeText(UAApplication.getContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+              return;
+            }
+            mSpline = cs;
+
+            mCurColor = new SplineColor(mSpline, ((double)sbSplineValue.getProgress())/sbSplineValue.getMax());
+            selectColor(mCurColor);
+          }
+        }
+      });
+      sbSplineValue.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+          mCurColor = new SplineColor(mSpline, ((double)seekBar.getProgress())/seekBar.getMax());
+          selectColor(mCurColor);
+        }
+      });
+
       Button btnMoveFragment = (Button)llView.findViewById(R.id.btnMoveFragment);
       btnMoveFragment.setOnClickListener(new View.OnClickListener() {
         @Override

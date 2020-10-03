@@ -21,6 +21,37 @@
         android:layout_height="wrap_content"
         android:text="(Colors go here)"/>
 
+    <EditText
+        android:id="@+id/etSplinePoints"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="[[0,0,0],[1,0,1],[1,1,1]]"
+        android:hint="(spline points)"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/btnAddColorToSpline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add color"/>
+
+        <Button
+            android:id="@+id/btnReticulateSpline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Reticulate"/>
+    </LinearLayout>
+
+    <SeekBar
+        android:id="@+id/sbSplineValue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:min="0"
+        android:max="1000000000"/>
+
     <Button
         android:id="@+id/btnMoveFragment"
         android:layout_width="wrap_content"
